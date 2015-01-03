@@ -33,6 +33,7 @@
 package com.openpeer.sample.view;
 
 import android.content.Context;
+import android.text.TextUtils;
 import android.util.AttributeSet;
 import android.view.View;
 import android.widget.FrameLayout;
@@ -78,7 +79,10 @@ public class UserItemView extends FrameLayout implements ItemViewInterface {
     @Override
     public void update(Object user) {
         mUser = (OPUser) user;
-        Picasso.with(getContext()).load(mUser.getAvatarUri()).into(imageView);
+        String avatarUri = mUser.getAvatarUri();
+        if(!TextUtils.isEmpty(avatarUri)) {
+            Picasso.with(getContext()).load(avatarUri).into(imageView);
+        }
         textView.setText(((OPUser) user).getName());
         removeView.setVisibility(mDeleteMode ? VISIBLE : GONE);
     }

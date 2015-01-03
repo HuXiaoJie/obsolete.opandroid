@@ -86,6 +86,8 @@ public class OPContentProvider extends ContentProvider implements ContentUriReso
 
         CONVERSATIONS(ConversationEntry.URI_PATH_INFO),//Conversations table for direct access
         CONVERSATION(ConversationEntry.URI_PATH_INFO_ID),// Conversation item
+        CONVERSATION_EVENTS(DatabaseContracts.ConversationEventEntry.URI_PATH_INFO),//Conversations table for direct access
+        CONVERSATION_EVENT(DatabaseContracts.ConversationEventEntry.URI_PATH_INFO_ID),// Conversation item
 
         WINDOW_PARTICIPANTS(ParticipantEntry.URI_PATH_INFO),
         WINDOW_PARTICIPANT(ParticipantEntry.URI_PATH_INFO_ID),
