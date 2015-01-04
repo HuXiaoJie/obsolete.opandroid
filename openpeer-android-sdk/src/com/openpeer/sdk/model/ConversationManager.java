@@ -117,8 +117,12 @@ public class ConversationManager extends OPConversationThreadDelegate {
                     (type, participantInfo, conversationId);
                 if (conversation != null) {
                     conversation.setParticipants(participantInfo.getParticipants());
-                    conversation.setThread(getThread(type, conversation.getConversationId(), participantInfo,
-                                                     true));
+                    if (!conversation.isDisabled()) {
+                        conversation.setThread(getThread(type,
+                                                         conversation.getConversationId(),
+                                                         participantInfo,
+                                                         true));
+                    }
                     cacheCbcToConversation(participantInfo.getCbcId(), conversation);
                     cacheConversation(conversation);
                 }
@@ -274,17 +278,28 @@ public class ConversationManager extends OPConversationThreadDelegate {
             OPLogger.debug(OPLogLevel.LogLevel_Detail,
                            "onConversationThreadContactsChanged find old thread cbcId " + oldCbcId);
             if (conversation != null) {
+                conversation.setDisabled(amIRemoved(thread));
                 conversation.onContactsChanged(thread);
             }
             if (oldCbcId != 0) {
                 mCbcToThreads.remove(oldCbcId);
             }
+
         } else {
             OPLogger.debug(OPLogLevel.LogLevel_Detail, "onConversationThreadContactsChanged " +
                 "couldn't find cached thread for " + thread.getThreadID());
         }
 
         cacheThread(thread);
+    }
+
+    boolean amIRemoved(OPConversationThread thread) {
+        for (OPContact contact : thread.getContacts()) {
+            if (contact.isSelf()) {
+                return false;
+            }
+        }
+        return true;
     }
 
     @Override

@@ -113,6 +113,8 @@ public class ChatFragment extends BaseFragment implements
     String mConversationId;
     String mType;
     ParticipantInfo mParticipantInfo;
+    Menu mOptionsMenu;
+
     public static ChatFragment newTestInstance() {
         ChatFragment fragment = new ChatFragment();
         return fragment;
@@ -137,14 +139,14 @@ public class ChatFragment extends BaseFragment implements
         long cbcId = OPModelUtils.getWindowId(userIds);
         OPNotificationBuilder.cancelNotificationForChat((int) cbcId);
         List<OPUser> participants = OPDataManager.getInstance().getUsers(userIds);
-        mParticipantInfo = new ParticipantInfo(cbcId,participants);
+        mParticipantInfo = new ParticipantInfo(cbcId, participants);
         setHasOptionsMenu(true);
-        if(OPDataManager.getInstance().isAccountReady()){
+        if (OPDataManager.getInstance().isAccountReady()) {
             setup();
         }
     }
 
-    void setup(){
+    void setup() {
         mSession = ConversationManager.getInstance().getConversation(GroupChatMode.valueOf(mType),
                                                                      mParticipantInfo,
                                                                      mConversationId, true);
@@ -152,13 +154,15 @@ public class ChatFragment extends BaseFragment implements
         mConversationId = mSession.getConversationId();
         mSession.registerListener(this);
     }
+
     @Override
     public void onDestroy() {
         super.onDestroy();
-        if(mSession!=null) {
+        if (mSession != null) {
             mSession.unregisterListener(this);
         }
     }
+
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
@@ -206,7 +210,7 @@ public class ChatFragment extends BaseFragment implements
     }
 
     void updateUsersView() {
-        List<OPUser> users=mParticipantInfo.getParticipants();
+        List<OPUser> users = mParticipantInfo.getParticipants();
         if (users.size() == 1) {
             getActivity().getActionBar().setTitle(users.get(0).getName());
         } else {
@@ -216,6 +220,10 @@ public class ChatFragment extends BaseFragment implements
             }
             getActivity().getActionBar().setTitle(TextUtils.join(",", names));
         }
+
+        boolean enabled = mSession != null && !mSession.isDisabled();
+        mComposeBox.setEnabled(enabled);
+        mSendButton.setEnabled(enabled);
     }
 
     View setupView(View view) {
@@ -470,7 +478,7 @@ public class ChatFragment extends BaseFragment implements
                             ((PeerMessageView) convertView).update(message);
                         } else if (convertView instanceof ConversationEventView) {
                             ((ConversationEventView) convertView)
-                                    .update(message);
+                                .update(message);
                         }
                     }
                 }
@@ -518,7 +526,7 @@ public class ChatFragment extends BaseFragment implements
                 break;
             case VIEWTYPE_CONVERSATION_EVENT_VIEW:
                 view = (ConversationEventView) LayoutInflater.from(context)
-                        .inflate(R.layout.item_conversation_event, null);
+                    .inflate(R.layout.item_conversation_event, null);
 
                 break;
             }
@@ -575,13 +583,17 @@ public class ChatFragment extends BaseFragment implements
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
         super.onCreateOptionsMenu(menu, inflater);
         inflater.inflate(R.menu.menu_chat, menu);
+        mOptionsMenu = menu;
     }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
+        if (mSession == null || mSession.isDisabled()) {
+            return true;
+        }
         switch (item.getItemId()){
         case R.id.menu_call:{
-            if(mSession==null){
+            if (mSession == null) {
                 //TODO: error handling
                 return true;
             }
@@ -648,6 +660,7 @@ public class ChatFragment extends BaseFragment implements
 
     //this is stupid. There must be a better way to persist this state;
     boolean mVideo;
+
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         switch (requestCode){
@@ -767,11 +780,12 @@ public class ChatFragment extends BaseFragment implements
             }
         });
     }
-    private void makeCall(long[] userIds,boolean video) {
+
+    private void makeCall(long[] userIds, boolean video) {
         Intent intent = new Intent(getActivity(), CallActivity.class);
         intent.putExtra(IntentData.ARG_PEER_USER_IDS, userIds);
         intent.putExtra(IntentData.ARG_VIDEO, video);
-        intent.putExtra(IntentData.ARG_CONVERSATION_ID,mSession.getConversationId());
+        intent.putExtra(IntentData.ARG_CONVERSATION_ID, mSession.getConversationId());
 
         startActivity(intent);
     }
@@ -788,12 +802,12 @@ public class ChatFragment extends BaseFragment implements
                 return null;
             }
             // Returns a new CursorLoader
-            mLoader= new CursorLoader(getActivity(), // Parent activity context
-                                    uri,
-                                    null,
-                                    null, // No selection clause
-                                    null, // No selection arguments
-                                    "time asc" // Default sort order
+            mLoader = new CursorLoader(getActivity(), // Parent activity context
+                                       uri,
+                                       null,
+                                       null, // No selection clause
+                                       null, // No selection arguments
+                                       "time asc" // Default sort order
             );
             return mLoader;
         default:
@@ -837,13 +851,14 @@ public class ChatFragment extends BaseFragment implements
         mType = GroupChatMode.thread.toString();
 
     }
+
     // Beginning of SessionListener implementation
     static final int MENUID_DELETE_MESSAGE = 10000;
 
     @Override
     public void onCreateContextMenu(ContextMenu menu, View v,
                                     ContextMenuInfo menuInfo) {
-        if (v == mMessagesList) {
+        if (v == mMessagesList && !mSession.isDisabled()) {
             AdapterView.AdapterContextMenuInfo acmi = (AdapterContextMenuInfo) menuInfo;
 
             if (acmi.targetView instanceof SelfMessageView

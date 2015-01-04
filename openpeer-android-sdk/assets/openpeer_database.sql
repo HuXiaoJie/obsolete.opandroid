@@ -86,6 +86,7 @@ CREATE TABLE "conversation" (
 	 "account_id" integer NOT NULL,
 	 "start_time" integer NOT NULL,
 	 "participants" integer NOT NULL,
+	 "disabled" integer DEFAULT 0,
 	CONSTRAINT "fk_conversation_account_id" FOREIGN KEY ("account_id") REFERENCES "account" ("_id") ON DELETE RESTRICT,
 	CONSTRAINT "fk_conversation_participants" FOREIGN KEY ("participants") REFERENCES "participants" ("cbc_id") ON DELETE RESTRICT
 );

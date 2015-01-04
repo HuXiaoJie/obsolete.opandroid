@@ -71,6 +71,11 @@ public class OPConversation extends Observable {
     private long _id;// database id
     private String conversationId = "";
     private String topic;
+    private boolean mDisabled;
+
+    public boolean isDisabled() {
+        return mDisabled;
+    }
 
     public ParticipantInfo getParticipantInfo() {
         return participantInfo;
@@ -119,6 +124,10 @@ public class OPConversation extends Observable {
     public void setTopic(String topic) {
         this.topic = topic;
         sendSystemMessage(topic);
+    }
+
+    public void setDisabled(boolean disabled){
+        mDisabled=disabled;
     }
 
     public long getId() {

@@ -568,6 +568,10 @@ public class OPDataManager {
             conversation.setCbcId(cursor.getLong(cursor.getColumnIndex(DatabaseContracts
                                                                            .ConversationEntry
                                                                            .COLUMN_PARTICIPANTS)));
+            conversation.setDisabled(cursor.getInt(cursor.getColumnIndex(DatabaseContracts
+                                                                             .ConversationEntry
+                                                                             .COLUMN_DISABLED))
+                                         == 0 ? false : true);
 
         } else {
             //TODO: error handling. There should be only one record
@@ -946,15 +950,10 @@ public class OPDataManager {
 
     public long updateConversation(OPConversation conversation) {
         ContentValues values = new ContentValues();
-        values.put(DatabaseContracts.ConversationEntry.COLUMN_TYPE, conversation.getType().name());
-        values.put(DatabaseContracts.ConversationEntry.COLUMN_START_TIME,
-                   System.currentTimeMillis());
         values.put(DatabaseContracts.ConversationEntry.COLUMN_PARTICIPANTS,
                    conversation.getCurrentWindowId());
-        values.put(DatabaseContracts.ConversationEntry.COLUMN_CONVERSATION_ID,
-                   conversation.getConversationId());
-        values.put(DatabaseContracts.ConversationEntry.COLUMN_ACCOUNT_ID,
-                   getLoggedinUser().getUserId());
+        values.put(DatabaseContracts.ConversationEntry.COLUMN_DISABLED,
+                   conversation.isDisabled());
         int count = update(DatabaseContracts.ConversationEntry.TABLE_NAME, values,
                            DatabaseContracts.ConversationEntry.COLUMN_CONVERSATION_ID + "=?",
                            new String[]{conversation.getConversationId()});

@@ -161,6 +161,7 @@ public class DatabaseContracts {
         public static final String COLUMN_START_TIME = "start_time";
         public static final String COLUMN_PARTICIPANTS = "participants";
         public static final String COLUMN_CONVERSATION_ID = "conversation_id";
+        public static final String COLUMN_DISABLED = "disabled";
     }
 
     public static abstract class ConversationEventEntry implements BaseColumns {
