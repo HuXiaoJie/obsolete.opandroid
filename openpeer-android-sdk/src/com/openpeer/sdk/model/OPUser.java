@@ -99,7 +99,7 @@ public class OPUser {
     public OPUser(OPContact contact, List<OPIdentityContact> iContacts) {
         this.mOPContact = contact;
         this.mIdentityContacts = iContacts;
-        mPeerUri=mOPContact.getPeerURI();
+        mPeerUri = mOPContact.getPeerURI();
     }
 
     public OPUser() {
@@ -120,7 +120,6 @@ public class OPUser {
     }
 
     /**
-     *
      * @return User peer uri
      */
     public String getPeerUri() {
@@ -130,11 +129,13 @@ public class OPUser {
     public void setPeerUri(String peerUri) {
         this.mPeerUri = peerUri;
     }
+
     /**
      * Wrapper function to return the peer file public
+     *
      * @return
      */
-    public String getPeerFilePublic(){
+    public String getPeerFilePublic() {
         return getPreferredContact().getPeerFilePublic().getPeerFileString();
     }
 
@@ -183,11 +184,12 @@ public class OPUser {
     /**
      * Find the preferred identity contact of a specific network. This is primarily designed for
      * showing contacts by network. The implementation is not finalized yet.
-     *
+     * <p/>
      * TODO: implement the function and make it public
+     *
      * @return Preferred contact of a specific network,e.g. Facebook,Twitter
      */
-    private OPIdentityContact getPreferredContactOfNetwork(String network){
+    private OPIdentityContact getPreferredContactOfNetwork(String network) {
         return mIdentityContacts.get(0);
     }
 
@@ -195,13 +197,9 @@ public class OPUser {
         return contact.getPeerURI().equals(getOPContact().getPeerURI());
     }
 
-//    public boolean isSelf() {
-//        if(OPDataManager.getInstance().isAccountReady()) {
-//            return mUserId == OPDataManager.getInstance().getSharedAccount().getSelfContactId();
-//        } else {
-//            return false;
-//        }
-//    }
+    public boolean isSelf() {
+        return mUserId == OPDataManager.getInstance().getCurrentUserId();
+    }
 
     @Override
     public boolean equals(Object o) {

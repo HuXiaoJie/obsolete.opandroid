@@ -92,7 +92,7 @@ public class OPDataManager {
     private List<OPIdentityContact> mSelfContacts;
     private Context mContext;
 
-    OPUser mLoggedInUser;
+    long mCurrentUserId;
     /**
      * Users cache using peer uri as index
      */
@@ -269,34 +269,20 @@ public class OPDataManager {
         mContentUriProvider = provider;
     }
 
-    public void setupForTest() {
-        mLoggedInUser = new OPUser();
-        mLoggedInUser.setUserId(1);
-    }
+    public long getCurrentUserId() {
+        if (mCurrentUserId == 0) {
 
+            Cursor cursor = query(DatabaseContracts.OpenpeerContactEntry.URI_PATH_LOGIN_USER, null,
+                                  null, null);
 
-    public OPUser getLoggedinUser() {
-        if (mLoggedInUser != null) {
-            return mLoggedInUser;
-        }
-        Cursor cursor = query(DatabaseContracts.OpenpeerContactEntry.URI_PATH_LOGIN_USER, null,
-                              null, null);
-        if (cursor == null) {
-            OPLogger.debug(OPLogLevel.LogLevel_Debug,
-                           "getLoggedinUser retrieved 0 row");
-            return null;
-        }
-        if (cursor.getCount() > 0) {
-            cursor.moveToFirst();
-            long selfContactId = cursor.getLong(0);
+            if (cursor.getCount() > 0) {
+                cursor.moveToFirst();
+                mCurrentUserId = cursor.getLong(0);
+            }
             cursor.close();
-            OPUser user = getUserById(selfContactId);
-            cacheUser(user);
-            return user;
         }
-        return null;
+        return mCurrentUserId;
     }
-
 
     public String getReloginInfo() {
         String selection = DatabaseContracts.AccountEntry.COLUMN_LOGGED_IN + "=1";
@@ -939,7 +925,7 @@ public class OPDataManager {
         values.put(DatabaseContracts.ConversationEntry.COLUMN_CONVERSATION_ID,
                    conversation.getConversationId());
         values.put(DatabaseContracts.ConversationEntry.COLUMN_ACCOUNT_ID,
-                   getLoggedinUser().getUserId());
+                   getCurrentUserId());
         id = getId(insert(DatabaseContracts.ConversationEntry.TABLE_NAME, values));
         conversation.setId(id);
         saveParticipants(conversation.getCurrentWindowId(), conversation.getParticipants());
@@ -963,7 +949,6 @@ public class OPDataManager {
                                                   .URI_PATH_INFO_CONTEXT), null);
         return count;
     }
-
 
     public long saveConversationEvent(OPConversationEvent event) {
         ContentValues values = new ContentValues();
@@ -1639,7 +1624,7 @@ public class OPDataManager {
                        String[] whereArgs) {
         Uri uri = mContentUriProvider.getContentUri("/" + tableName);
         return getContentResolver().update(uri, values, whereClause,
-                                                    whereArgs);
+                                           whereArgs);
 
     }
 
@@ -1648,7 +1633,7 @@ public class OPDataManager {
         Uri uri = mContentUriProvider.getContentUri("/" + tableName);
 
         return getContentResolver().query(uri, columns, whereClause,
-                                                   whereArgs, null);
+                                          whereArgs, null);
     }
 
     private boolean upsert(String tableName, ContentValues values, String whereClause,
@@ -1656,13 +1641,13 @@ public class OPDataManager {
         boolean result;
         Uri uri = mContentUriProvider.getContentUri("/" + tableName);
         Cursor cursor = getContentResolver().query(uri, null,
-                                                            whereClause, whereArgs, null);
+                                                   whereClause, whereArgs, null);
         if (cursor != null) {
             if (cursor.getCount() > 0) {
 
                 int updatedCount = getContentResolver().update(uri,
-                                                                        values, whereClause,
-                                                                        whereArgs);
+                                                               values, whereClause,
+                                                               whereArgs);
                 result = (updatedCount > 0);
             }
             cursor.close();
@@ -1697,9 +1682,10 @@ public class OPDataManager {
         }
         return 0;
     }
-    private ContentResolver getContentResolver(){
-        if(mContext==null){
-            mContext=OPHelper.getInstance().getApplicationContext();
+
+    private ContentResolver getContentResolver() {
+        if (mContext == null) {
+            mContext = OPHelper.getInstance().getApplicationContext();
         }
         return mContext.getContentResolver();
     }

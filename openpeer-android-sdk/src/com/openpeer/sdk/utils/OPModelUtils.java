@@ -38,7 +38,6 @@ import android.util.Log;
 import com.openpeer.javaapi.OPContact;
 import com.openpeer.javaapi.OPContactProfileInfo;
 import com.openpeer.javaapi.OPConversationThread;
-import com.openpeer.javaapi.OPIdentityContact;
 import com.openpeer.sdk.app.OPDataManager;
 import com.openpeer.sdk.model.OPUser;
 
@@ -53,9 +52,7 @@ public class OPModelUtils {
      */
     public static long getWindowId(long userIds[]) {
         long tmp[] = new long[userIds.length + 1];
-        tmp[userIds.length] = OPDataManager.getInstance()
-                .getLoggedinUser()
-                .getUserId();
+        tmp[userIds.length] = OPDataManager.getInstance().getCurrentUserId();
         System.arraycopy(userIds, 0, tmp, 0, userIds.length);
         Arrays.sort(tmp);
         String arr[] = new String[tmp.length];
