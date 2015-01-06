@@ -29,63 +29,46 @@
  *******************************************************************************/
 package com.openpeer.sample.push;
 
-import android.text.TextUtils;
-import android.util.Log;
-
 import com.google.gson.annotations.SerializedName;
-import com.openpeer.javaapi.OPMessage;
-import com.openpeer.sdk.app.OPDataManager;
-import com.openpeer.sdk.model.OPConversation;
-import com.openpeer.sdk.model.OPUser;
 
-import java.util.List;
-
-public class PushMessage {
-    // "{\"audience\" : {\"device_token\" : \"%@\"}, \"device_types\" : [ \"ios\" ], \"notification\" : {\"ios\" : {\"sound\":\"message-received\",\"alert\": \"%@\",\"content-available\": true,\"priority\": 10}}, \"message\" : {\"title\" : \"%@\", \"body\" : \"%@\", \"content_type\" : \"text/html\"} }"
-    final static String extraFormatStr = "{\"peerURI\":\"%s\",\"peerURIs\":\"%s\",\"messageId\":\"%s\",\"replacesMessageId\":\"%s\",\"message\":\"%s\",\"location\":\"%s\",\"date\":\"%d\"}";
+public class UAPushMessage {
+    // "{\"audience\" : {\"device_token\" : \"%@\"}, \"device_types\" : [ \"ios\" ],
+    // \"notification\" : {\"ios\" : {\"sound\":\"message-received\",\"alert\": \"%@\",
+    // \"content-available\": true,\"priority\": 10}}, \"message\" : {\"title\" : \"%@\",
+    // \"body\" : \"%@\", \"content_type\" : \"text/html\"} }"
+//    final static String extraFormatStr = "{\"peerURI\":\"%s\",\"peerURIs\":\"%s\"," +
+//        "\"messageId\":\"%s\",\"replacesMessageId\":\"%s\",\"messageType\":\"%s\"," +
+//        "\"message\":\"%s\",\"location\":\"%s\",\"date\":\"%d\",\"conversationType\":\"%s\"," +
+//        "\"conversationId\":\"%s\"}";
     Object audience;
     Notification notification;
     RichMessage message;
     String device_types[] = new String[]{"android"};
 
-    public static PushMessage fromOPMessage(String peerUrisOfOtherParticipants, OPMessage opMessage, PushToken token) {
+    public static UAPushMessage fromOPMessage(PushExtra payload, String message, PushToken token) {
 
-        PushMessage pushMessage = new PushMessage();
-        Log.d("test", "pushing message " + opMessage);
+        UAPushMessage pushMessage = new UAPushMessage();
+        pushMessage.setAudience(token);
         if (token.getType().equals(PushToken.TYPE_APID)) {
             AndroidNotification notification = new AndroidNotification();
-            notification.alert = opMessage.getMessage();
+            notification.alert = message;
             notification.android = new AndroidOverride();
-            notification.android.extra = new AndroidExtra(
-                    OPDataManager.getInstance().getSharedAccount().getPeerUri(),
-                    peerUrisOfOtherParticipants,
-                    opMessage.getMessageId(),
-                    opMessage.getReplacesMessageId(),
-                    OPDataManager.getInstance().getSharedAccount().getLocationID(),
-                    opMessage.getTime().toMillis(false) / 1000 + "");
+            notification.android.extra = payload;
             pushMessage.notification = notification;
 
         } else {
             IosNotification notification = new IosNotification();
-            notification.ios = new IosOverride(opMessage.getMessage());
+            notification.ios = new IosOverride(message);
             pushMessage.notification = notification;
 
             RichMessage msg = new RichMessage();
             msg.title = "";
-            msg.body = String
-                    .format(extraFormatStr,
-                            OPDataManager.getInstance().getSharedAccount().getPeerUri(),
-                            peerUrisOfOtherParticipants,
-                            opMessage.getMessageId(),
-                            opMessage.getReplacesMessageId(),
-                            opMessage.getMessage(),
-                            OPDataManager.getInstance().getSharedAccount().getLocationID(),
-                            opMessage.getTime().toMillis(false) / 1000);
+            msg.body = payload.toJsonBlob();
 
             msg.content_type = RichMessage.DEFAULT_CONTENT_TYPE;
             pushMessage.setMessage(msg);
         }
-        return pushMessage.setAudience(token);
+        return pushMessage;
 
     }
 
@@ -93,12 +76,12 @@ public class PushMessage {
         return message;
     }
 
-    public PushMessage setMessage(RichMessage message) {
+    public UAPushMessage setMessage(RichMessage message) {
         this.message = message;
         return this;
     }
 
-    public PushMessage setAudience(PushToken token) {
+    public UAPushMessage setAudience(PushToken token) {
         if (token.getType().equals(PushToken.TYPE_APID)) {
             audience = new Audience(token.getToken());
             device_types = new String[]{"android"};
@@ -148,7 +131,7 @@ public class PushMessage {
     }
 
     static class AndroidOverride {
-        AndroidExtra extra;
+        PushExtra extra;
     }
 
     static class IosOverride {
@@ -163,29 +146,6 @@ public class PushMessage {
 
         public IosOverride(String alert) {
             this.alert = alert;
-        }
-    }
-
-    static class AndroidExtra {
-        String peerURI;
-        String peerURIs;
-        String location;
-        String messageId;
-        String replacesMessageId;
-        String date;
-
-        //empty constructor is required for GSON
-        AndroidExtra() {
-        }
-
-        AndroidExtra(String peerUri, String peerUris,String messageId,
-                     String replacesMessageId, String location, String timeInMillis) {
-            this.peerURI = peerUri;
-            this.peerURIs = peerUris;
-            this.messageId = messageId;
-            this.replacesMessageId = replacesMessageId;
-            this.date = timeInMillis;
-            this.location = location;
         }
     }
 }

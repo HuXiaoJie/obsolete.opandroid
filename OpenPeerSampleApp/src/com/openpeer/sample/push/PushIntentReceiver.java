@@ -38,15 +38,10 @@ import android.text.TextUtils;
 import android.util.Log;
 
 import com.openpeer.javaapi.AccountStates;
-import com.openpeer.javaapi.MessageDeliveryStates;
 import com.openpeer.javaapi.OPMessage;
 import com.openpeer.sample.OPNotificationBuilder;
 import com.openpeer.sdk.app.OPDataManager;
-import com.openpeer.sdk.app.OPHelper;
-import com.openpeer.sdk.model.ConversationManager;
-import com.openpeer.sdk.model.GroupChatMode;
 import com.openpeer.sdk.model.MessageEditState;
-import com.openpeer.sdk.model.OPConversation;
 import com.openpeer.sdk.model.OPUser;
 import com.openpeer.sdk.model.ParticipantInfo;
 import com.openpeer.sdk.utils.OPModelUtils;
@@ -69,13 +64,6 @@ import retrofit.client.Response;
 public class PushIntentReceiver extends BroadcastReceiver {
     private static final String logTag = "PushIntentReceiver";
     public static final String EXTRA_MESSAGE_ID_KEY = "_uamid";
-
-    static final String KEY_PEER_URI = "peerURI";
-    static final String KEY_SENDER_NAME = "senderName";
-    static final String KEY_MESSAGE_ID = "messageId";
-    static final String KEY_REPLACES_MESSAGE_ID = "replacesMessageId";
-
-    static final String KEY_SEND_TIME = "date";
 
     // A set of actions that launch activities when a push is opened. Update
     // with any custom actions that also start activities when a push is opened.
@@ -105,52 +93,6 @@ public class PushIntentReceiver extends BroadcastReceiver {
 
             logPushExtras(intent);
 
-            String senderUri = intent.getStringExtra(KEY_PEER_URI);
-            String messageId = intent.getStringExtra(KEY_MESSAGE_ID);
-            String replacesMessageId = intent
-                    .getStringExtra(KEY_REPLACES_MESSAGE_ID);
-
-            OPUser sender = OPDataManager.getInstance()
-                    .getUserByPeerUri(senderUri);
-            if (sender == null) {
-                Log.e(logTag, "onReceive Couldn't find user for peer "
-                        + senderUri);
-                return;
-            }
-            List<OPUser> users = new ArrayList<>();
-            users.add(sender);
-
-            String peerURIsString = intent.getStringExtra("peerURIs");
-            if(!TextUtils.isEmpty(peerURIsString)) {
-                String peerURIs[] = TextUtils.split(peerURIsString, ",");
-                for (String uri : peerURIs) {
-                    OPUser user = OPDataManager.getInstance().getUserByPeerUri(uri);
-                    if (user == null) {
-                        //TODO: error handling
-                        Log.e(logTag, "peerUri user not found " + uri);
-                        return;
-                    } else {
-                        users.add(user);
-                    }
-                }
-            }
-
-            OPMessage opMessage = new OPMessage(
-                    sender.getUserId(),
-                    OPMessage.OPMessageType.TYPE_TEXT,
-                    intent.getStringExtra(PushManager.EXTRA_ALERT),
-                    Long.parseLong(intent.getStringExtra(KEY_SEND_TIME)) * 1000,
-                    messageId,
-                    MessageEditState.Normal);
-            if (replacesMessageId != null) {
-                opMessage.setReplacesMessageId(replacesMessageId);
-            }
-
-            String conversationId = "";
-            ParticipantInfo participantInfo = new ParticipantInfo(OPModelUtils.getWindowId(users), users);
-
-            OPDataManager.getInstance().saveMessage(opMessage,
-                                                             conversationId,participantInfo);
             //TODO: Now notify observer
 
         } else if (action.equals(PushManager.ACTION_NOTIFICATION_OPENED)) {
@@ -220,45 +162,6 @@ public class PushIntentReceiver extends BroadcastReceiver {
                             + intent.getStringExtra(key) + "]"
                     );
         }
-    }
-
-    public Notification buildNotification(String alert,
-            Map<String, String> extras) {
-
-        String replacesMessageId = extras.get(KEY_REPLACES_MESSAGE_ID);
-        if (!TextUtils.isEmpty(replacesMessageId)) {
-            Log.d(logTag,
-                    "buildNotification don't notify for replacesMessageId "
-                            + replacesMessageId);
-            return null;
-        }
-
-        String senderUri = extras.get(KEY_PEER_URI);
-        String senderName = extras.get(KEY_SENDER_NAME);
-        String messageId = extras.get(KEY_MESSAGE_ID);
-
-        Log.d("test", "peerURI " + senderUri + " sender name " + senderName
-                + " message id " + messageId);
-        OPUser sender = OPDataManager.getInstance().getUserByPeerUri(
-                senderUri);
-        if (sender == null) {
-            Log.e("test", "Couldn't find user for peer " + senderUri);
-        }
-        OPMessage message = new OPMessage(sender.getUserId(),
-                OPMessage.OPMessageType.TYPE_TEXT,
-                alert,
-                Long.parseLong(extras.get(KEY_SEND_TIME)),
-                messageId,
-                MessageEditState.Normal);
-
-        return OPNotificationBuilder.buildNotificationForMessage(
-                new long[] { message.getSenderId() }, message);
-    }
-
-    public int getNextId(String alert, Map<String, String> extras) {
-        String senderUri = extras.get(KEY_PEER_URI);
-
-        return senderUri.hashCode();
     }
 
 }

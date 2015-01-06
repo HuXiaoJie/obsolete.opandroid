@@ -49,9 +49,6 @@ import retrofit.Callback;
 import retrofit.RetrofitError;
 import retrofit.client.Response;
 
-/**
- * Created by brucexia on 2014-11-28.
- */
 public class UAPushService implements PushServiceInterface {
 
     private static UAPushService instance;
@@ -93,33 +90,43 @@ public class UAPushService implements PushServiceInterface {
                         }
                         peerURIs = TextUtils.join(",", peerUris);
                     }
-                    new UAPushProviderImpl().pushMessage(peerURIs,
-                                                         message, token,
-                                                         new Callback<PushResult>() {
-                                                             @Override
-                                                             public void success(
-                                                                 PushResult pushResult,
-                                                                 Response response) {
-                                                                 OPDataManager.getInstance()
-                                                                     .updateMessageDeliveryStatus(
-                                                                         message.getMessageId(),
-                                                                         conversation.getConversationId(), MessageDeliveryStates
-                                                                             .MessageDeliveryState_Sent);
+                    UAPushMessage uaPushMessage = UAPushMessage.fromOPMessage(
+                        new PushExtra
+                            (OPDataManager.getInstance().getSharedAccount().getPeerUri(),
+                             peerURIs,
+                             message.getMessageType(),
+                             message.getMessageId(),
+                             message.getMessageId(),
+                             conversation.getType().toString(),
+                             conversation.getConversationId(),
+                             OPDataManager.getInstance().getSharedAccount().getLocationID(),
+                             message.getTime().toMillis(false) / 1000 + ""),
+                        message.getMessage(),
+                        token);
+                    new UAPushProviderImpl().
+                        pushMessage(uaPushMessage,
+                                    new Callback<PushResult>() {
+                                        @Override
+                                        public void success(
+                                            PushResult pushResult,
+                                            Response response) {
+                                            OPDataManager.getInstance().updateMessageDeliveryStatus(
+                                                message.getMessageId(),
+                                                conversation.getConversationId(),
+                                                MessageDeliveryStates.MessageDeliveryState_Sent);
+                                        }
 
-                                                             }
+                                        @Override
+                                        public void failure(RetrofitError error) {
 
-                                                             @Override
-                                                             public void failure(
-                                                                 RetrofitError error) {
-
-                                                                 if (error != null) {
-                                                                     OPLogger.debug(
-                                                                         OPLogLevel.LogLevel_Basic,
-                                                                         "eror pushing message "
-                                                                             + error.getMessage());
-                                                                 }
-                                                             }
-                                                         });
+                                            if (error != null) {
+                                                OPLogger.debug(
+                                                    OPLogLevel.LogLevel_Basic,
+                                                    "eror pushing message "
+                                                        + error.getMessage());
+                                            }
+                                        }
+                                    });
                 }
 
                 @Override

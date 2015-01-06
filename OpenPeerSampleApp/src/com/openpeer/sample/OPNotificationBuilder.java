@@ -34,11 +34,8 @@ import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
-import android.content.pm.ApplicationInfo;
-import android.content.pm.PackageManager.NameNotFoundException;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.util.Log;
 
 import com.openpeer.javaapi.OPCall;
 import com.openpeer.javaapi.OPMessage;
@@ -46,9 +43,7 @@ import com.openpeer.sample.conversation.CallActivity;
 import com.openpeer.sample.conversation.ConversationActivity;
 import com.openpeer.sample.util.CallUtil;
 import com.openpeer.sample.util.SettingsHelper;
-import com.openpeer.sdk.app.OPDataManager;
 import com.openpeer.sdk.model.OPConversation;
-import com.openpeer.sdk.model.OPUser;
 
 public class OPNotificationBuilder {
 	private static String TAG = OPNotificationBuilder.class.getSimpleName();
@@ -88,16 +83,7 @@ public class OPNotificationBuilder {
 		notificationManager.notify(notificationId, notification);
 	}
 
-	public static void showNotificationForMessage(OPConversation session, OPMessage message) {
-		Context context = OPApplication.getInstance();
-		Notification notification = buildNotificationForMessage(session.getParticipantIDs(), message);
-		int notificationId = (int) session.getCurrentWindowId() + NOTIFICATION_ID_BASE_MESSAGE;
-		// Show the notification
-		NotificationManager notificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
-		notificationManager.notify(notificationId, notification);
-	}
-
-	public static Notification buildNotificationForMessage(long participantIds[], OPMessage message) {
+	public static Notification buildNotificationForMessage(long participantIds[], OPMessage message, String conversationType, String conversationId) {
 		Context context = OPApplication.getInstance();
 		Intent launchIntent = null;
 		// TODO build proper strings
@@ -116,6 +102,8 @@ public class OPNotificationBuilder {
 		launchIntent = new Intent(context, ConversationActivity.class);
 		launchIntent.putExtra(IntentData.ARG_CONVERSATION_ACTION, IntentData.ACTION_CHAT);
 		launchIntent.putExtra(IntentData.ARG_PEER_USER_IDS, participantIds);
+		launchIntent.putExtra(IntentData.ARG_CONVERSATION_TYPE, conversationType);
+		launchIntent.putExtra(IntentData.ARG_CONVERSATION_ID, conversationId);
 		// Set the intent to perform when tapped
 		launchIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
 
