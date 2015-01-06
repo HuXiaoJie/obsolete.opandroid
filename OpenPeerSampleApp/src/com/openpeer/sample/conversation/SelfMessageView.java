@@ -83,7 +83,7 @@ public class SelfMessageView extends RelativeLayout {
         mMessage = data;
 
         time.setText(DateFormatUtils.getSameDayTime(data.getTime()
-                .toMillis(true)));
+                .toMillis(false)));
 
         switch (data.getEditState()) {
         case Deleted:

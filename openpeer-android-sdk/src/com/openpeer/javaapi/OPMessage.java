@@ -29,13 +29,11 @@
  *******************************************************************************/
 package com.openpeer.javaapi;
 
+import android.text.format.Time;
+
 import com.openpeer.sdk.app.OPDataManager;
-import com.openpeer.sdk.datastore.DatabaseContracts.MessageEntry;
 import com.openpeer.sdk.model.MessageEditState;
 import com.openpeer.sdk.model.OPUser;
-
-import android.database.Cursor;
-import android.text.format.Time;
 
 public class OPMessage {
     public static final int DS_DISCOVERING = 0;

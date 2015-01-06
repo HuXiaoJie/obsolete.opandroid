@@ -86,7 +86,7 @@ public class PeerMessageView extends RelativeLayout {
             }
         }
 
-        time.setText(DateFormatUtils.getSameDayTime(data.getTime().toMillis(true)));
+        time.setText(DateFormatUtils.getSameDayTime(data.getTime().toMillis(false)));
         switch (data.getEditState()) {
         case Deleted:
             text.setText(R.string.msg_deleted);
