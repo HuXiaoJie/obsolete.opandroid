@@ -37,7 +37,10 @@ import android.util.Log;
 import com.openpeer.javaapi.OPMessage;
 import com.openpeer.sample.OPNotificationBuilder;
 import com.openpeer.sdk.app.OPDataManager;
+import com.openpeer.sdk.model.ConversationManager;
+import com.openpeer.sdk.model.GroupChatMode;
 import com.openpeer.sdk.model.MessageEditState;
+import com.openpeer.sdk.model.OPConversation;
 import com.openpeer.sdk.model.OPUser;
 import com.openpeer.sdk.model.ParticipantInfo;
 import com.openpeer.sdk.utils.OPModelUtils;
@@ -84,13 +87,13 @@ public class OPPushNotificationBuilder implements PushNotificationBuilder {
         OPMessage message = new OPMessage(sender.getUserId(),
                                           messageType,
                                           alert,
-                                          Long.parseLong(extras.get(KEY_SEND_TIME))*1000l,
+                                          Long.parseLong(extras.get(KEY_SEND_TIME)) * 1000l,
                                           messageId,
                                           MessageEditState.Normal);
         String peerURIsString = extras.get("peerURIs");
         List<OPUser> users = new ArrayList<>();
         users.add(sender);
-        if(!TextUtils.isEmpty(peerURIsString)) {
+        if (!TextUtils.isEmpty(peerURIsString)) {
             String peerURIs[] = TextUtils.split(peerURIsString, ",");
             for (String uri : peerURIs) {
                 OPUser user = OPDataManager.getInstance().getUserByPeerUri(uri);
@@ -103,12 +106,16 @@ public class OPPushNotificationBuilder implements PushNotificationBuilder {
                 }
             }
         }
-        ParticipantInfo participantInfo = new ParticipantInfo(OPModelUtils.getWindowId(users), users);
-
+        ParticipantInfo participantInfo = new ParticipantInfo(OPModelUtils.getWindowId(users),
+                                                              users);
+        //Make sure conversation is saved in db.
+        OPConversation conversation = ConversationManager.getInstance().getConversation
+            (GroupChatMode.valueOf(conversationType), participantInfo, conversationId, true);
         OPDataManager.getInstance().saveMessage(message,
-                                                conversationId,participantInfo);
+                                                conversationId, participantInfo);
+        //For contact based conversation, teh conversation id might be different.
         return OPNotificationBuilder.buildNotificationForMessage(
-            new long[]{sender.getUserId()}, message, conversationType, conversationId);
+            new long[]{sender.getUserId()}, message, conversationType, conversation.getConversationId());
     }
 
     @Override
