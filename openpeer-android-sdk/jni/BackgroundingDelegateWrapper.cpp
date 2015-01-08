@@ -51,7 +51,7 @@ void BackgroundingDelegateWrapper::onBackgroundingGoingToBackground(
 		jobject subsciptionObject = jni_env->NewObject(cls, method);
 
 		//fill new field with pointer to core pointer
-		IBackgroundingSubscriptionPtr* ptrToSubscription = new boost::shared_ptr<IBackgroundingSubscription>(subscription);
+		IBackgroundingSubscriptionPtr* ptrToSubscription = new std::shared_ptr<IBackgroundingSubscription>(subscription);
 		jfieldID fid = jni_env->GetFieldID(cls, "nativeClassPointer", "J");
 		jni_env->SetLongField(subsciptionObject, fid, (jlong)ptrToSubscription);
 
@@ -61,7 +61,7 @@ void BackgroundingDelegateWrapper::onBackgroundingGoingToBackground(
 		jobject notifierObject = jni_env->NewObject(cls, method);
 
 		//fill new field with pointer to core pointer
-		IBackgroundingNotifierPtr* ptrToNotifier = new boost::shared_ptr<IBackgroundingNotifier>(notifier);
+		IBackgroundingNotifierPtr* ptrToNotifier = new std::shared_ptr<IBackgroundingNotifier>(notifier);
 		fid = jni_env->GetFieldID(cls, "nativeClassPointer", "J");
 		jni_env->SetLongField(notifierObject, fid, (jlong)ptrToNotifier);
 
@@ -124,7 +124,7 @@ void BackgroundingDelegateWrapper::onBackgroundingGoingToBackgroundNow(
 		jobject subsciptionObject = jni_env->NewObject(cls, method);
 
 		//fill new field with pointer to core pointer
-		IBackgroundingSubscriptionPtr* ptrToSubscription = new boost::shared_ptr<IBackgroundingSubscription>(subscription);
+		IBackgroundingSubscriptionPtr* ptrToSubscription = new std::shared_ptr<IBackgroundingSubscription>(subscription);
 		jfieldID fid = jni_env->GetFieldID(cls, "nativeClassPointer", "J");
 		jni_env->SetLongField(subsciptionObject, fid, (jlong)ptrToSubscription);
 
@@ -187,7 +187,7 @@ void BackgroundingDelegateWrapper::onBackgroundingReturningFromBackground(
 		jobject subsciptionObject = jni_env->NewObject(cls, method);
 
 		//fill new field with pointer to core pointer
-		IBackgroundingSubscriptionPtr* ptrToSubscription = new boost::shared_ptr<IBackgroundingSubscription>(subscription);
+		IBackgroundingSubscriptionPtr* ptrToSubscription = new std::shared_ptr<IBackgroundingSubscription>(subscription);
 		jfieldID fid = jni_env->GetFieldID(cls, "nativeClassPointer", "J");
 		jni_env->SetLongField(subsciptionObject, fid, (jlong)ptrToSubscription);
 
@@ -250,7 +250,7 @@ void BackgroundingDelegateWrapper::onBackgroundingApplicationWillQuit(
 		jobject subsciptionObject = jni_env->NewObject(cls, method);
 
 		//fill new field with pointer to core pointer
-		IBackgroundingSubscriptionPtr* ptrToSubscription = new boost::shared_ptr<IBackgroundingSubscription>(subscription);
+		IBackgroundingSubscriptionPtr* ptrToSubscription = new std::shared_ptr<IBackgroundingSubscription>(subscription);
 		jfieldID fid = jni_env->GetFieldID(cls, "nativeClassPointer", "J");
 		jni_env->SetLongField(subsciptionObject, fid, (jlong)ptrToSubscription);
 

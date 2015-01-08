@@ -51,6 +51,6 @@ public:
 	virtual ~IdentityDelegateWrapper();
 };
 
-typedef boost::shared_ptr<IdentityDelegateWrapper> IdentityDelegateWrapperPtr;
+typedef std::shared_ptr<IdentityDelegateWrapper> IdentityDelegateWrapperPtr;
 
 #endif //_IDENTITY_DELEGATE_WRAPPER_H_

@@ -62,6 +62,6 @@ public:
 	virtual ~LoggerDelegateWrapper();
 };
 
-typedef boost::shared_ptr<LoggerDelegateWrapper> LoggerDelegateWrapperPtr;
+typedef std::shared_ptr<LoggerDelegateWrapper> LoggerDelegateWrapperPtr;
 
 #endif //_LOGGER_DELEGATE_WRAPPER_H_

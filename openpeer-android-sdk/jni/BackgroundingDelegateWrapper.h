@@ -34,6 +34,6 @@ public:
 	virtual ~BackgroundingDelegateWrapper();
 };
 
-typedef boost::shared_ptr<BackgroundingDelegateWrapper> BackgroundingDelegateWrapperPtr;
+typedef std::shared_ptr<BackgroundingDelegateWrapper> BackgroundingDelegateWrapperPtr;
 
 #endif //_BACKGROUNDING_DELEGATE_WRAPPER_H_

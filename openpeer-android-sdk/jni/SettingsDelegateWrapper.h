@@ -79,6 +79,6 @@ public:
 	virtual ~SettingsDelegateWrapper();
 };
 
-typedef boost::shared_ptr<SettingsDelegateWrapper> SettingsDelegateWrapperPtr;
+typedef std::shared_ptr<SettingsDelegateWrapper> SettingsDelegateWrapperPtr;
 
 #endif //_SETTINGS_DELEGATE_WRAPPER_H_

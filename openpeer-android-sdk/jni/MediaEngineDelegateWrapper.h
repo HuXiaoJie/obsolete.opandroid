@@ -53,6 +53,6 @@ public:
 	virtual ~MediaEngineDelegateWrapper();
 };
 
-typedef boost::shared_ptr<MediaEngineDelegateWrapper> MediaEngineDelegateWrapperPtr;
+typedef std::shared_ptr<MediaEngineDelegateWrapper> MediaEngineDelegateWrapperPtr;
 
 #endif //_MEDIA_ENGINE_DELEGATE_WRAPPER_H_

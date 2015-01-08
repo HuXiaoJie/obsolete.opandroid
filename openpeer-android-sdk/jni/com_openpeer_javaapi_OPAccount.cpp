@@ -148,14 +148,14 @@ JNIEXPORT jobject JNICALL Java_com_openpeer_javaapi_OPAccount_login
 			method = jni_env->GetMethodID(cls, "<init>", "()V");
 			object = jni_env->NewObject(cls, method);
 
-			IAccountPtr* ptrToAccount = new boost::shared_ptr<IAccount>(accountPtr);
+			IAccountPtr* ptrToAccount = new std::shared_ptr<IAccount>(accountPtr);
 			jfieldID fid = jni_env->GetFieldID(cls, "nativeClassPointer", "J");
 			jlong acc = (jlong) ptrToAccount;
 			jni_env->SetLongField(object, fid, acc);
 
 			if (accountDelegatePtr != NULL)
 			{
-				AccountDelegateWrapperPtr* ptrToAccountDelegateWrapperPtr= new boost::shared_ptr<AccountDelegateWrapper>(accountDelegatePtr);
+				AccountDelegateWrapperPtr* ptrToAccountDelegateWrapperPtr= new std::shared_ptr<AccountDelegateWrapper>(accountDelegatePtr);
 				jfieldID delegateFid = jni_env->GetFieldID(cls, "nativeDelegatePointer", "J");
 				jlong delegate = (jlong) ptrToAccountDelegateWrapperPtr;
 				jni_env->SetLongField(object, delegateFid, delegate);
@@ -240,14 +240,14 @@ JNIEXPORT jobject JNICALL Java_com_openpeer_javaapi_OPAccount_relogin
 			object = jni_env->NewObject(cls, method);
 			globalAccount = object;
 
-			IAccountPtr* ptrToAccount = new boost::shared_ptr<IAccount>(accountPtr);
+			IAccountPtr* ptrToAccount = new std::shared_ptr<IAccount>(accountPtr);
 			jfieldID fid = jni_env->GetFieldID(cls, "nativeClassPointer", "J");
 			jlong acc = (jlong) ptrToAccount;
 			jni_env->SetLongField(object, fid, acc);
 
 			if (accountDelegatePtr != NULL)
 			{
-				AccountDelegateWrapperPtr* ptrToAccountDelegateWrapperPtr= new boost::shared_ptr<AccountDelegateWrapper>(accountDelegatePtr);
+				AccountDelegateWrapperPtr* ptrToAccountDelegateWrapperPtr= new std::shared_ptr<AccountDelegateWrapper>(accountDelegatePtr);
 				jfieldID delegateFid = jni_env->GetFieldID(cls, "nativeDelegatePointer", "J");
 				jlong delegate = (jlong) ptrToAccountDelegateWrapperPtr;
 				jni_env->SetLongField(object, delegateFid, delegate);
@@ -588,7 +588,7 @@ JNIEXPORT jobject JNICALL Java_com_openpeer_javaapi_OPAccount_getAssociatedIdent
 			jmethodID identityConstructorMethodID = jni_env->GetMethodID(identityClass, "<init>", "()V");
 			jobject identityObject = jni_env->NewObject(identityClass, identityConstructorMethodID);
 
-			IIdentityPtr* ptrToIdentity =  new boost::shared_ptr<IIdentity>(*coreListIter);
+			IIdentityPtr* ptrToIdentity =  new std::shared_ptr<IIdentity>(*coreListIter);
 			jfieldID fid = jni_env->GetFieldID(identityClass, "nativeClassPointer", "J");
 			jlong identity = (jlong) ptrToIdentity;
 			jni_env->SetLongField(identityObject, fid, identity);
