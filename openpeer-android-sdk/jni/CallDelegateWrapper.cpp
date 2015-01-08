@@ -72,7 +72,7 @@ void CallDelegateWrapper::onCallStateChanged(ICallPtr call, ICall::CallStates st
 		jobject callObject = jni_env->NewObject(cls, method);
 
 		//fill new field with pointer to core pointer
-		ICallPtr* ptrToCall = new boost::shared_ptr<ICall>(call);
+		ICallPtr* ptrToCall = new std::shared_ptr<ICall>(call);
 		jfieldID fid = jni_env->GetFieldID(cls, "nativeClassPointer", "J");
 		jni_env->SetLongField(callObject, fid, (jlong)ptrToCall);
 

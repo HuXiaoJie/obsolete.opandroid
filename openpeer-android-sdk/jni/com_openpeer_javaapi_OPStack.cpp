@@ -62,7 +62,7 @@ JNIEXPORT jobject JNICALL Java_com_openpeer_javaapi_OPStack_singleton
 		method = jni_env->GetMethodID(cls, "<init>", "()V");
 		object = jni_env->NewObject(cls, method);
 
-		IStackPtr* ptrToStack = new boost::shared_ptr<IStack>(IStack::singleton());
+		IStackPtr* ptrToStack = new std::shared_ptr<IStack>(IStack::singleton());
 		jfieldID fid = jni_env->GetFieldID(cls, "nativeClassPointer", "J");
 		jlong stack = (jlong) ptrToStack;
 		jni_env->SetLongField(object, fid, stack);
@@ -101,7 +101,7 @@ JNIEXPORT void JNICALL Java_com_openpeer_javaapi_OPStack_setup
 		coreStackPtr->get()->setup(stackDelegatePtr, mediaEngineDelegatePtr);
 		if (stackDelegatePtr)
 		{
-			StackDelegateWrapperPtr* ptrToStackDelegate = new boost::shared_ptr<StackDelegateWrapper>(stackDelegatePtr);
+			StackDelegateWrapperPtr* ptrToStackDelegate = new std::shared_ptr<StackDelegateWrapper>(stackDelegatePtr);
 			jfieldID delegateFid = jni_env->GetFieldID(stackClass, "nativeDelegatePointer", "J");
 			jlong delegate = (jlong) ptrToStackDelegate;
 			jni_env->SetLongField(owner, delegateFid, delegate);

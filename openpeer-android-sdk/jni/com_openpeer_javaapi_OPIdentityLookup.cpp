@@ -164,7 +164,7 @@ JNIEXPORT jobject JNICALL Java_com_openpeer_javaapi_OPIdentityLookup_create
 
 	if(identityLookup)
 	{
-		IIdentityLookupPtr* ptrToIdentityLookup = new boost::shared_ptr<IIdentityLookup>(identityLookup);
+		IIdentityLookupPtr* ptrToIdentityLookup = new std::shared_ptr<IIdentityLookup>(identityLookup);
 		if(jni_env)
 		{
 			cls = findClass("com/openpeer/javaapi/OPIdentityLookup");
@@ -177,7 +177,7 @@ JNIEXPORT jobject JNICALL Java_com_openpeer_javaapi_OPIdentityLookup_create
 
 			if (identityLookupDelegatePtr != NULL)
 			{
-				IdentityLookupDelegateWrapperPtr* ptrToIdentityLookupDelegateWrapperPtr= new boost::shared_ptr<IdentityLookupDelegateWrapper>(identityLookupDelegatePtr);
+				IdentityLookupDelegateWrapperPtr* ptrToIdentityLookupDelegateWrapperPtr= new std::shared_ptr<IdentityLookupDelegateWrapper>(identityLookupDelegatePtr);
 				jfieldID delegateFid = jni_env->GetFieldID(cls, "nativeDelegatePointer", "J");
 				jlong delegate = (jlong) ptrToIdentityLookupDelegateWrapperPtr;
 				jni_env->SetLongField(object, delegateFid, delegate);

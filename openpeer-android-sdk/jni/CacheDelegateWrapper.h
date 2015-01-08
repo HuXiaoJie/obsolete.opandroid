@@ -52,6 +52,6 @@ public:
 	virtual ~CacheDelegateWrapper();
 };
 
-typedef boost::shared_ptr<CacheDelegateWrapper> CacheDelegateWrapperPtr;
+typedef std::shared_ptr<CacheDelegateWrapper> CacheDelegateWrapperPtr;
 
 #endif //_CACHE_DELEGATE_WRAPPER_H_

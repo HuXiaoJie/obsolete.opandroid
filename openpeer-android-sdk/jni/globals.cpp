@@ -1,4 +1,5 @@
 #include "globals.h"
+#include <iostream>
 
 JavaVM *android_jvm;
 jobject jni_object;

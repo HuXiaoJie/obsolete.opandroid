@@ -49,6 +49,6 @@ public:
 	virtual ~CallDelegateWrapper();
 };
 
-typedef boost::shared_ptr<CallDelegateWrapper> CallDelegateWrapperPtr;
+typedef std::shared_ptr<CallDelegateWrapper> CallDelegateWrapperPtr;
 
 #endif //_CALL_DELEGATE_WRAPPER_H_

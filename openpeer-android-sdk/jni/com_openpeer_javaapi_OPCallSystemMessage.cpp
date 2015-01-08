@@ -84,7 +84,7 @@ JNIEXPORT jobject JNICALL Java_com_openpeer_javaapi_OPCallSystemMessage_create
 
 	if (systemMessagePtr)
 	{
-		CallSystemMessagePtr* ptrToSystemMessage = new boost::shared_ptr<CallSystemMessage>(systemMessagePtr);
+		CallSystemMessagePtr* ptrToSystemMessage = new std::shared_ptr<CallSystemMessage>(systemMessagePtr);
 		cls = findClass("com/openpeer/javaapi/OPCallSystemMessage");
 		method = jni_env->GetMethodID(cls, "<init>", "()V");
 		object = jni_env->NewObject(cls, method);
@@ -146,7 +146,7 @@ JNIEXPORT jobject JNICALL Java_com_openpeer_javaapi_OPCallSystemMessage_extract
 		method = jni_env->GetMethodID(cls, "<init>", "()V");
 		object = jni_env->NewObject(cls, method);
 
-		CallSystemMessagePtr* ptrToCallSystemMessage = new boost::shared_ptr<CallSystemMessage>(systemMessagePtr);
+		CallSystemMessagePtr* ptrToCallSystemMessage = new std::shared_ptr<CallSystemMessage>(systemMessagePtr);
 		jfieldID fid = jni_env->GetFieldID(cls, "nativeClassPointer", "J");
 		jlong systemMessage = (jlong) ptrToCallSystemMessage;
 		jni_env->SetLongField(object, fid, systemMessage);
@@ -257,7 +257,7 @@ JNIEXPORT jobject JNICALL Java_com_openpeer_javaapi_OPCallSystemMessage_toDebug
 	if (coreCallSystemMessagePtr)
 	{
 		ElementPtr coreEl = coreCallSystemMessagePtr->get()->toDebug();
-		ElementPtr* ptrToElement = new boost::shared_ptr<Element>(coreEl);
+		ElementPtr* ptrToElement = new std::shared_ptr<Element>(coreEl);
 		cls = findClass("com/openpeer/javaapi/OPElement");
 		method = jni_env->GetMethodID(cls, "<init>", "()V");
 		object = jni_env->NewObject(cls, method);

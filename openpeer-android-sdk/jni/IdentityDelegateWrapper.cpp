@@ -76,7 +76,7 @@ void IdentityDelegateWrapper::onIdentityStateChanged(
 		jobject identityObject = jni_env->NewObject(cls, method);
 
 		//fill new field with pointer to core pointer
-		IIdentityPtr* ptrToIdentity = new boost::shared_ptr<IIdentity>(identity);
+		IIdentityPtr* ptrToIdentity = new std::shared_ptr<IIdentity>(identity);
 		jfieldID fid = jni_env->GetFieldID(cls, "nativeClassPointer", "J");
 		jni_env->SetLongField(identityObject, fid, (jlong)ptrToIdentity);
 
@@ -132,7 +132,7 @@ void IdentityDelegateWrapper::onIdentityPendingMessageForInnerBrowserWindowFrame
 		jobject identityObject = jni_env->NewObject(cls, method);
 
 		//fill new field with pointer to core pointer
-		IIdentityPtr* ptrToIdentity = new boost::shared_ptr<IIdentity>(identity);
+		IIdentityPtr* ptrToIdentity = new std::shared_ptr<IIdentity>(identity);
 		jfieldID fid = jni_env->GetFieldID(cls, "nativeClassPointer", "J");
 		jni_env->SetLongField(identityObject, fid, (jlong)ptrToIdentity);
 
@@ -188,7 +188,7 @@ void IdentityDelegateWrapper::onIdentityRolodexContactsDownloaded(IIdentityPtr i
 		jobject identityObject = jni_env->NewObject(cls, method);
 
 		//fill new field with pointer to core pointer
-		IIdentityPtr* ptrToIdentity = new boost::shared_ptr<IIdentity>(identity);
+		IIdentityPtr* ptrToIdentity = new std::shared_ptr<IIdentity>(identity);
 		jfieldID fid = jni_env->GetFieldID(cls, "nativeClassPointer", "J");
 		jni_env->SetLongField(identityObject, fid, (jlong)ptrToIdentity);
 
