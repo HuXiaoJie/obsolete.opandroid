@@ -143,10 +143,12 @@ void CacheDelegateWrapper::store(const char *cookieNamePath,
 		jmethodID timeSetMillisMethodID   = jni_env->GetMethodID(timeCls, "set", "(J)V");
 
 		//Convert and set time from C++ to Android; Fetch methods needed to accomplish this
-		Time time_t_epoch = boost::posix_time::time_from_string("1970-01-01 00:00:00.000");
+
+		long milliseconds_since_epoch =
+		    expires.time_since_epoch() /
+		    std::chrono::milliseconds(1);
 		//calculate and set Expires Time
-		zsLib::Duration closedTimeDuration = expires - time_t_epoch;
-		jni_env->CallVoidMethod(object, timeSetMillisMethodID, closedTimeDuration.total_milliseconds());
+		jni_env->CallVoidMethod(object, timeSetMillisMethodID, milliseconds_since_epoch);
 	}
 	if (javaDelegate != NULL)
 	{

@@ -102,7 +102,7 @@ JNIEXPORT void JNICALL Java_com_openpeer_javaapi_OPCache_store
 	{
 		jmethodID timeMethodID   = jni_env->GetMethodID(cls, "toMillis", "(Z)J");
 		jlong longValue = jni_env->CallLongMethod(expires, timeMethodID, false);
-		t = boost::posix_time::from_time_t(longValue/1000) + boost::posix_time::millisec(longValue % 1000);
+		t = std::chrono::time_point<std::chrono::system_clock>(std::chrono::milliseconds(longValue));
 	}
 
 	String strString;

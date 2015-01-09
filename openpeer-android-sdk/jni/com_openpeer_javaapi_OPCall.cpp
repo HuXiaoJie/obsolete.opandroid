@@ -483,15 +483,16 @@ JNIEXPORT jobject JNICALL Java_com_openpeer_javaapi_OPCall_getCreationTime
 		if(jni_env)
 		{
 			//Convert and set time from C++ to Android; Fetch methods needed to accomplish this
-			Time time_t_epoch = boost::posix_time::time_from_string("1970-01-01 00:00:00.000");
 			jclass timeCls = findClass("android/text/format/Time");
 			jmethodID timeMethodID = jni_env->GetMethodID(timeCls, "<init>", "()V");
 			jmethodID timeSetMillisMethodID   = jni_env->GetMethodID(timeCls, "set", "(J)V");
 
 			//calculate and set Ring time
-			zsLib::Duration creationTimeDuration = creationTime - time_t_epoch;
+			long milliseconds_since_epoch =
+					creationTime.time_since_epoch() /
+					std::chrono::milliseconds(1);
 			object = jni_env->NewObject(timeCls, timeMethodID);
-			jni_env->CallVoidMethod(object, timeSetMillisMethodID, creationTimeDuration.total_milliseconds());
+			jni_env->CallVoidMethod(object, timeSetMillisMethodID, milliseconds_since_epoch);
 		}
 	}
 	else
@@ -532,15 +533,16 @@ JNIEXPORT jobject JNICALL Java_com_openpeer_javaapi_OPCall_getRingTime
 		if(jni_env)
 		{
 			//Convert and set time from C++ to Android; Fetch methods needed to accomplish this
-			Time time_t_epoch = boost::posix_time::time_from_string("1970-01-01 00:00:00.000");
 			jclass timeCls = findClass("android/text/format/Time");
 			jmethodID timeMethodID = jni_env->GetMethodID(timeCls, "<init>", "()V");
 			jmethodID timeSetMillisMethodID   = jni_env->GetMethodID(timeCls, "set", "(J)V");
 
 			//calculate and set Ring Time
-			zsLib::Duration ringTimeDuration = ringTime - time_t_epoch;
+			long milliseconds_since_epoch =
+					ringTime.time_since_epoch() /
+					std::chrono::milliseconds(1);
 			object = jni_env->NewObject(timeCls, timeMethodID);
-			jni_env->CallVoidMethod(object, timeSetMillisMethodID, ringTimeDuration.total_milliseconds());
+			jni_env->CallVoidMethod(object, timeSetMillisMethodID, milliseconds_since_epoch);
 		}
 	}
 	else
@@ -581,15 +583,16 @@ JNIEXPORT jobject JNICALL Java_com_openpeer_javaapi_OPCall_getAnswerTime
 		if(jni_env)
 		{
 			//Convert and set time from C++ to Android; Fetch methods needed to accomplish this
-			Time time_t_epoch = boost::posix_time::time_from_string("1970-01-01 00:00:00.000");
 			jclass timeCls = findClass("android/text/format/Time");
 			jmethodID timeMethodID = jni_env->GetMethodID(timeCls, "<init>", "()V");
 			jmethodID timeSetMillisMethodID   = jni_env->GetMethodID(timeCls, "set", "(J)V");
 
 			//calculate and set Answer Time
-			zsLib::Duration answerTimeDuration = answerTime - time_t_epoch;
+			long milliseconds_since_epoch =
+					answerTime.time_since_epoch() /
+					std::chrono::milliseconds(1);
 			object = jni_env->NewObject(timeCls, timeMethodID);
-			jni_env->CallVoidMethod(object, timeSetMillisMethodID, answerTimeDuration.total_milliseconds());
+			jni_env->CallVoidMethod(object, timeSetMillisMethodID, milliseconds_since_epoch);
 		}
 	}
 	else
@@ -631,15 +634,16 @@ JNIEXPORT jobject JNICALL Java_com_openpeer_javaapi_OPCall_getClosedTime
 		if(jni_env)
 		{
 			//Convert and set time from C++ to Android; Fetch methods needed to accomplish this
-			Time time_t_epoch = boost::posix_time::time_from_string("1970-01-01 00:00:00.000");
 			jclass timeCls = findClass("android/text/format/Time");
 			jmethodID timeMethodID = jni_env->GetMethodID(timeCls, "<init>", "()V");
 			jmethodID timeSetMillisMethodID   = jni_env->GetMethodID(timeCls, "set", "(J)V");
 
 			//calculate and set Answer Time
-			zsLib::Duration closedTimeDuration = closedTime - time_t_epoch;
+			long milliseconds_since_epoch =
+					closedTime.time_since_epoch() /
+					std::chrono::milliseconds(1);
 			object = jni_env->NewObject(timeCls, timeMethodID);
-			jni_env->CallVoidMethod(object, timeSetMillisMethodID, closedTimeDuration.total_milliseconds());
+			jni_env->CallVoidMethod(object, timeSetMillisMethodID, milliseconds_since_epoch);
 		}
 	}
 	else

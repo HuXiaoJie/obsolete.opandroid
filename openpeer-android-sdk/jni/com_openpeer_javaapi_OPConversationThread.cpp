@@ -273,16 +273,12 @@ JNIEXPORT jobject JNICALL Java_com_openpeer_javaapi_OPConversationThread_create
 						"(Z)J");
 				jlong longValue = jni_env->CallLongMethod(lastUpdated, timeMethodID,
 						false);
-				Time t = boost::posix_time::from_time_t(longValue / 1000)
-				+ boost::posix_time::millisec(longValue % 1000);
+				Time t = std::chrono::time_point<std::chrono::system_clock>(std::chrono::milliseconds(longValue));
 				coreIdentityContact.mLastUpdated = t;
 
 				//Add expires to IdentityContact structure
-				//jclass timeCls = findClass("android/text/format/Time");
-				//jmethodID timeMethodID   = jni_env->GetMethodID(timeCls, "toMillis", "(Z)J");
 				longValue = jni_env->CallLongMethod(expires, timeMethodID, false);
-				t = boost::posix_time::from_time_t(longValue / 1000)
-				+ boost::posix_time::millisec(longValue % 1000);
+				t = std::chrono::time_point<std::chrono::system_clock>(std::chrono::milliseconds(longValue));
 				coreIdentityContact.mExpires = t;
 
 				//				__android_log_print(ANDROID_LOG_INFO, "com.openpeer.jni", "mIdentityProvider %s ", coreIdentityContact.mIdentityProvider.c_str());
@@ -812,28 +808,30 @@ JNIEXPORT jobject JNICALL Java_com_openpeer_javaapi_OPConversationThread_getIden
 			jni_env->CallVoidMethod(object, method, (int) coreContact.mWeight);
 
 			//Convert and set time from C++ to Android; Fetch methods needed to accomplish this
-			Time time_t_epoch = boost::posix_time::time_from_string(
-					"1970-01-01 00:00:00.000");
 			jclass timeCls = findClass("android/text/format/Time");
 			jmethodID timeMethodID = jni_env->GetMethodID(timeCls, "<init>", "()V");
 			jmethodID timeSetMillisMethodID = jni_env->GetMethodID(timeCls, "set",
 					"(J)V");
 
 			//calculate and set Last Updated
-			zsLib::Duration lastUpdated = coreContact.mLastUpdated - time_t_epoch;
+			long milliseconds_since_epoch =
+					coreContact.mLastUpdated.time_since_epoch() /
+					std::chrono::milliseconds(1);
 			jobject timeLastUpdatedObject = jni_env->NewObject(timeCls, timeMethodID);
 			jni_env->CallVoidMethod(timeLastUpdatedObject, timeSetMillisMethodID,
-					lastUpdated.total_milliseconds());
+					milliseconds_since_epoch);
 			//Time has been converted, now call OPIdentityContact setter
 			method = jni_env->GetMethodID(cls, "setLastUpdated",
 					"(Landroid/text/format/Time;)V");
 			jni_env->CallVoidMethod(object, method, timeLastUpdatedObject);
 
 			//calculate and set Expires
-			zsLib::Duration expires = coreContact.mExpires - time_t_epoch;
+			milliseconds_since_epoch =
+					coreContact.mExpires.time_since_epoch() /
+					std::chrono::milliseconds(1);
 			jobject timeExpiresObject = jni_env->NewObject(timeCls, timeMethodID);
 			jni_env->CallVoidMethod(timeExpiresObject, timeSetMillisMethodID,
-					expires.total_milliseconds());
+					milliseconds_since_epoch);
 			//Time has been converted, now call OPIdentityContact setter
 			method = jni_env->GetMethodID(cls, "setExpires",
 					"(Landroid/text/format/Time;)V");
@@ -1448,18 +1446,18 @@ JNIEXPORT jobject JNICALL Java_com_openpeer_javaapi_OPConversationThread_getMess
 
 				//Convert parameter and call setTime method on return object
 				//Convert and set time from C++ to Android; Fetch methods needed to accomplish this
-				Time time_t_epoch = boost::posix_time::time_from_string(
-						"1970-01-01 00:00:00.000");
 				jclass timeCls = findClass("android/text/format/Time");
 				jmethodID timeMethodID = jni_env->GetMethodID(timeCls, "<init>", "()V");
 				jmethodID timeSetMillisMethodID = jni_env->GetMethodID(timeCls, "set",
 						"(J)V");
 
 				//calculate and set time
-				zsLib::Duration timeDuration = outTime - time_t_epoch;
+				long milliseconds_since_epoch =
+						outTime.time_since_epoch() /
+						std::chrono::milliseconds(1);
 				jobject timeObject = jni_env->NewObject(timeCls, timeMethodID);
 				jni_env->CallVoidMethod(timeObject, timeSetMillisMethodID,
-						timeDuration.total_milliseconds());
+						milliseconds_since_epoch);
 
 				//set time to OPMessage
 				jni_env->CallVoidMethod(messageObject, setTimeMethodID, timeObject);

@@ -172,7 +172,7 @@ JNIEXPORT jstring JNICALL Java_com_openpeer_javaapi_OPStack_createAuthorizedAppl
 	cls = findClass("android/text/format/Time");
 	jmethodID timeMethodID   = env->GetMethodID(cls, "toMillis", "(Z)J");
 	jlong longValue = env->CallLongMethod(expires, timeMethodID, false);
-	Time t = boost::posix_time::from_time_t(longValue/1000) + boost::posix_time::millisec(longValue % 1000);
+	Time t = std::chrono::time_point<std::chrono::system_clock>(std::chrono::milliseconds(longValue));
 
 	authorizedApplicationID =  env->NewStringUTF(IStack::createAuthorizedApplicationID(applicationIDString, applicationIDSharedSecretString, t).c_str());
 
@@ -207,15 +207,16 @@ JNIEXPORT jobject JNICALL Java_com_openpeer_javaapi_OPStack_getAuthorizedApplica
 	if (jni_env)
 	{
 		//Convert and set time from C++ to Android; Fetch methods needed to accomplish this
-		Time time_t_epoch = boost::posix_time::time_from_string("1970-01-01 00:00:00.000");
 		jclass timeCls = findClass("android/text/format/Time");
 		jmethodID timeMethodID = jni_env->GetMethodID(timeCls, "<init>", "()V");
 		jmethodID timeSetMillisMethodID   = jni_env->GetMethodID(timeCls, "set", "(J)V");
 
 		//calculate and set expiry time
-		zsLib::Duration expiryTimeDuration = expiryTime - time_t_epoch;
+		long milliseconds_since_epoch =
+			expiryTime.time_since_epoch() /
+		    std::chrono::milliseconds(1);
 		object = jni_env->NewObject(timeCls, timeMethodID);
-		jni_env->CallVoidMethod(object, timeSetMillisMethodID, expiryTimeDuration.total_milliseconds());
+		jni_env->CallVoidMethod(object, timeSetMillisMethodID, milliseconds_since_epoch);
 	}
 	return object;
 }
@@ -242,9 +243,9 @@ JNIEXPORT jboolean JNICALL Java_com_openpeer_javaapi_OPStack_isAuthorizedApplica
 		return ret;
 	}
 
-	Duration duration = Seconds(1);
+	//Duration duration = Seconds(1);
 
-	ret = IStack::isAuthorizedApplicationIDExpiryWindowStillValid(authorizedApplicationIDString, duration);
+	ret = IStack::isAuthorizedApplicationIDExpiryWindowStillValid(authorizedApplicationIDString, Seconds(1));
 }
 
 /*

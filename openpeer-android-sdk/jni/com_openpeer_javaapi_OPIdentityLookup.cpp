@@ -136,7 +136,7 @@ JNIEXPORT jobject JNICALL Java_com_openpeer_javaapi_OPIdentityLookup_create
 				//Add last updated to IdentityLookupInfo structure
 				jlong longValue = jni_env->CallLongMethod(lastUpdated, timeMethodID, false);
 				jni_env->DeleteLocalRef(lastUpdated);
-				Time t = boost::posix_time::from_time_t(longValue/1000) + boost::posix_time::millisec(longValue % 1000);
+				Time t = std::chrono::time_point<std::chrono::system_clock>(std::chrono::milliseconds(longValue));
 				identityLookupInfo.mLastUpdated = t;
 
 				//add core contacts to list for removal
@@ -407,15 +407,16 @@ JNIEXPORT jobject JNICALL Java_com_openpeer_javaapi_OPIdentityLookup_getUpdatedI
 			jni_env->CallVoidMethod(object, method, (int)coreContact.mWeight);
 
 			//Convert and set time from C++ to Android; Fetch methods needed to accomplish this
-			Time time_t_epoch = boost::posix_time::time_from_string("1970-01-01 00:00:00.000");
 			jclass timeCls = findClass("android/text/format/Time");
 			jmethodID timeMethodID = jni_env->GetMethodID(timeCls, "<init>", "()V");
 			jmethodID timeSetMillisMethodID   = jni_env->GetMethodID(timeCls, "set", "(J)V");
 
 			//calculate and set Last Updated
-			zsLib::Duration lastUpdated = coreContact.mLastUpdated - time_t_epoch;
+			long milliseconds_since_epoch =
+					coreContact.mLastUpdated.time_since_epoch() /
+					std::chrono::milliseconds(1);
 			jobject timeLastUpdatedObject = jni_env->NewObject(timeCls, timeMethodID);
-			jni_env->CallVoidMethod(timeLastUpdatedObject, timeSetMillisMethodID, lastUpdated.total_milliseconds());
+			jni_env->CallVoidMethod(timeLastUpdatedObject, timeSetMillisMethodID, milliseconds_since_epoch);
 			//Time has been converted, now call OPIdentityContact setter
 			method = jni_env->GetMethodID(cls, "setLastUpdated", "(Landroid/text/format/Time;)V");
 			jni_env->CallVoidMethod(object, method, timeLastUpdatedObject);
@@ -423,9 +424,11 @@ JNIEXPORT jobject JNICALL Java_com_openpeer_javaapi_OPIdentityLookup_getUpdatedI
 			jni_env->DeleteLocalRef(timeLastUpdatedObject);
 
 			//calculate and set Expires
-			zsLib::Duration expires = coreContact.mExpires - time_t_epoch;
+			milliseconds_since_epoch =
+					coreContact.mExpires.time_since_epoch() /
+					std::chrono::milliseconds(1);
 			jobject timeExpiresObject = jni_env->NewObject(timeCls, timeMethodID);
-			jni_env->CallVoidMethod(timeExpiresObject, timeSetMillisMethodID, expires.total_milliseconds());
+			jni_env->CallVoidMethod(timeExpiresObject, timeSetMillisMethodID, milliseconds_since_epoch);
 			//Time has been converted, now call OPIdentityContact setter
 			method = jni_env->GetMethodID(cls, "setExpires", "(Landroid/text/format/Time;)V");
 			jni_env->CallVoidMethod(object, method, timeExpiresObject);
@@ -601,14 +604,15 @@ JNIEXPORT jobject JNICALL Java_com_openpeer_javaapi_OPIdentityLookup_getUnchange
 
 			// Call "setLastUpdated method to fetch contact from Identity lookup info
 			//Convert and set time from C++ to Android; Fetch methods needed to accomplish this
-			Time time_t_epoch = boost::posix_time::time_from_string("1970-01-01 00:00:00.000");
 			jclass timeCls = findClass("android/text/format/Time");
 			jmethodID timeMethodID = jni_env->GetMethodID(timeCls, "<init>", "()V");
 			jmethodID timeSetMillisMethodID   = jni_env->GetMethodID(timeCls, "set", "(J)V");
-			//calculate and set Ring time
-			zsLib::Duration creationTimeDuration = coreListIter->mLastUpdated - time_t_epoch;
+			//calculate and set mLastUpdated time
+			long milliseconds_since_epoch =
+					coreListIter->mLastUpdated.time_since_epoch() /
+					std::chrono::milliseconds(1);
 			jobject lastUpdatedObject = jni_env->NewObject(timeCls, timeMethodID);
-			jni_env->CallVoidMethod(lastUpdatedObject, timeSetMillisMethodID, creationTimeDuration.total_milliseconds());
+			jni_env->CallVoidMethod(lastUpdatedObject, timeSetMillisMethodID, milliseconds_since_epoch);
 			jni_env->CallObjectMethod( identityLookupInfoObject, setLastUpdatedMethodID, lastUpdatedObject);
 
 			//add to return List
@@ -685,14 +689,15 @@ JNIEXPORT jobject JNICALL Java_com_openpeer_javaapi_OPIdentityLookup_getInvalidI
 
 			// Call "setLastUpdated method to fetch contact from Identity lookup info
 			//Convert and set time from C++ to Android; Fetch methods needed to accomplish this
-			Time time_t_epoch = boost::posix_time::time_from_string("1970-01-01 00:00:00.000");
 			jclass timeCls = findClass("android/text/format/Time");
 			jmethodID timeMethodID = jni_env->GetMethodID(timeCls, "<init>", "()V");
 			jmethodID timeSetMillisMethodID   = jni_env->GetMethodID(timeCls, "set", "(J)V");
-			//calculate and set Ring time
-			zsLib::Duration creationTimeDuration = coreListIter->mLastUpdated - time_t_epoch;
+			//calculate and set mLastUpdated time
+			long milliseconds_since_epoch =
+					coreListIter->mLastUpdated.time_since_epoch() /
+					std::chrono::milliseconds(1);
 			jobject lastUpdatedObject = jni_env->NewObject(timeCls, timeMethodID);
-			jni_env->CallVoidMethod(lastUpdatedObject, timeSetMillisMethodID, creationTimeDuration.total_milliseconds());
+			jni_env->CallVoidMethod(lastUpdatedObject, timeSetMillisMethodID, milliseconds_since_epoch);
 			jni_env->CallObjectMethod( identityLookupInfoObject, setLastUpdatedMethodID, lastUpdatedObject);
 
 			//add to return List

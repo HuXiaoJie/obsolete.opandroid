@@ -208,16 +208,12 @@ IdentityContact identityContactFromJava(jobject identityContactObject) {
         "(Z)J");
     jlong longValue = jni_env->CallLongMethod(lastUpdated, timeMethodID,
         false);
-    Time t = boost::posix_time::from_time_t(longValue / 1000)
-        + boost::posix_time::millisec(longValue % 1000);
+    Time t = std::chrono::time_point<std::chrono::system_clock>(std::chrono::milliseconds(longValue));
     coreIdentityContact.mLastUpdated = t;
 
     //Add expires to IdentityContact structure
-    //jclass timeCls = findClass("android/text/format/Time");
-    //jmethodID timeMethodID   = jni_env->GetMethodID(timeCls, "toMillis", "(Z)J");
     longValue = jni_env->CallLongMethod(expires, timeMethodID, false);
-    t = boost::posix_time::from_time_t(longValue / 1000)
-        + boost::posix_time::millisec(longValue % 1000);
+    t = std::chrono::time_point<std::chrono::system_clock>(std::chrono::milliseconds(longValue));
     coreIdentityContact.mExpires = t;
 
   }
