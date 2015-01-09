@@ -118,6 +118,7 @@ public class ConversationManager extends OPConversationThreadDelegate {
                 if (conversation != null) {
                     conversation.setParticipants(participantInfo.getParticipants());
                     if (!conversation.isDisabled()) {
+                        //For contact based conversation, teh conversation id might be different.
                         conversation.setThread(getThread(type,
                                                          conversation.getConversationId(),
                                                          participantInfo,
@@ -217,19 +218,10 @@ public class ConversationManager extends OPConversationThreadDelegate {
 
     public OPConversationThread getThread(GroupChatMode conversationType, String conversationId,
                                           ParticipantInfo participantInfo, boolean createNew) {
+        if (!OPDataManager.getInstance().isAccountReady()) {
+            return null;
+        }
         OPConversationThread thread = null;
-//        switch (mode){
-//        case contact:{
-//            thread = findThreadByCbcId(participantInfo.getCbcId());
-//            break;
-//        }
-//        case thread:{
-//            if (mThreads != null) {
-//                thread = mThreads.get(conversationId);
-//            }
-//            break;
-//        }
-//        }
         String metaData = ThreadMetaData.newMetaData(conversationType.toString()).toJsonBlob();
         if (thread == null && createNew) {
             thread = OPConversationThread.create(
