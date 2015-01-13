@@ -21,6 +21,6 @@ public:
 	virtual ~PushMessagingDatabaseAbstractionDelegateWrapper();
 };
 
-typedef boost::shared_ptr<PushMessagingDatabaseAbstractionDelegateWrapper> PushMessagingDatabaseAbstractionDelegateWrapperPtr;
+typedef std::shared_ptr<PushMessagingDatabaseAbstractionDelegateWrapper> PushMessagingDatabaseAbstractionDelegateWrapperPtr;
 
 #endif //_PUSH_MESSAGING_DATABASE_ABSTRACTION_DELEGATE_WRAPPER_H_

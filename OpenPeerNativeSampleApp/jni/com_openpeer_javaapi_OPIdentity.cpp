@@ -100,14 +100,14 @@ JNIEXPORT jobject JNICALL Java_com_openpeer_javaapi_OPIdentity_login
 			method = jni_env->GetMethodID(cls, "<init>", "()V");
 			object = jni_env->NewObject(cls, method);
 
-			IIdentityPtr* ptrToIdentity = new boost::shared_ptr<IIdentity>(identityPtr);
+			IIdentityPtr* ptrToIdentity = new std::shared_ptr<IIdentity>(identityPtr);
 			jfieldID fid = jni_env->GetFieldID(cls, "nativeClassPointer", "J");
 			jlong identity = (jlong) ptrToIdentity;
 			jni_env->SetLongField(object, fid, identity);
 
 			if (identityDelegatePtr != NULL)
 			{
-				IdentityDelegateWrapperPtr* ptrToIdentityDelegateWrapperPtr= new boost::shared_ptr<IdentityDelegateWrapper>(identityDelegatePtr);
+				IdentityDelegateWrapperPtr* ptrToIdentityDelegateWrapperPtr= new std::shared_ptr<IdentityDelegateWrapper>(identityDelegatePtr);
 				jfieldID delegateFid = jni_env->GetFieldID(cls, "nativeDelegatePointer", "J");
 				jlong delegate = (jlong) ptrToIdentityDelegateWrapperPtr;
 				jni_env->SetLongField(object, delegateFid, delegate);
@@ -188,14 +188,14 @@ JNIEXPORT jobject JNICALL Java_com_openpeer_javaapi_OPIdentity_loginWithIdentity
 			method = jni_env->GetMethodID(cls, "<init>", "()V");
 			object = jni_env->NewObject(cls, method);
 
-			IIdentityPtr* ptrToIdentity = new boost::shared_ptr<IIdentity>(identityPtr);
+			IIdentityPtr* ptrToIdentity = new std::shared_ptr<IIdentity>(identityPtr);
 			jfieldID fid = jni_env->GetFieldID(cls, "nativeClassPointer", "J");
 			jlong identity = (jlong) ptrToIdentity;
 			jni_env->SetLongField(object, fid, identity);
 
 			if (identityDelegatePtr != NULL)
 			{
-				IdentityDelegateWrapperPtr* ptrToIdentityDelegateWrapperPtr= new boost::shared_ptr<IdentityDelegateWrapper>(identityDelegatePtr);
+				IdentityDelegateWrapperPtr* ptrToIdentityDelegateWrapperPtr= new std::shared_ptr<IdentityDelegateWrapper>(identityDelegatePtr);
 				jfieldID delegateFid = jni_env->GetFieldID(cls, "nativeDelegatePointer", "J");
 				jlong delegate = (jlong) ptrToIdentityDelegateWrapperPtr;
 				jni_env->SetLongField(object, delegateFid, delegate);
@@ -354,7 +354,7 @@ JNIEXPORT void JNICALL Java_com_openpeer_javaapi_OPIdentity_attachDelegate
 		coreIdentityPtr->get()->attachDelegate(identityDelegatePtr, outerFrameURLUponReloadStr);
 		if (identityDelegatePtr != NULL)
 		{
-			IdentityDelegateWrapperPtr* ptrToIdentityDelegateWrapperPtr= new boost::shared_ptr<IdentityDelegateWrapper>(identityDelegatePtr);
+			IdentityDelegateWrapperPtr* ptrToIdentityDelegateWrapperPtr= new std::shared_ptr<IdentityDelegateWrapper>(identityDelegatePtr);
 			jfieldID delegateFid = jni_env->GetFieldID(identityClass, "nativeDelegatePointer", "J");
 			jlong delegate = (jlong) ptrToIdentityDelegateWrapperPtr;
 			jni_env->SetLongField(owner, delegateFid, delegate);
@@ -411,7 +411,7 @@ JNIEXPORT void JNICALL Java_com_openpeer_javaapi_OPIdentity_attachDelegateAndPre
 
 		if (identityDelegatePtr != NULL)
 		{
-			IdentityDelegateWrapperPtr* ptrToIdentityDelegateWrapperPtr= new boost::shared_ptr<IdentityDelegateWrapper>(identityDelegatePtr);
+			IdentityDelegateWrapperPtr* ptrToIdentityDelegateWrapperPtr= new std::shared_ptr<IdentityDelegateWrapper>(identityDelegatePtr);
 			jfieldID delegateFid = jni_env->GetFieldID(identityClass, "nativeDelegatePointer", "J");
 			jlong delegate = (jlong) ptrToIdentityDelegateWrapperPtr;
 			jni_env->SetLongField(owner, delegateFid, delegate);

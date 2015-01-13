@@ -45,7 +45,7 @@ void PushMessagingQueryDelegateWrapper::onPushMessagingQueryUploaded(IPushMessag
 		jobject pushMessagingQueryObject = jni_env->NewObject(cls, method);
 
 		//fill new field with pointer to core pointer
-		IPushMessagingQueryPtr* ptrToPushMessagingQuery = new boost::shared_ptr<IPushMessagingQuery>(query);
+		IPushMessagingQueryPtr* ptrToPushMessagingQuery = new std::shared_ptr<IPushMessagingQuery>(query);
 		jfieldID fid = jni_env->GetFieldID(cls, "nativeClassPointer", "J");
 		jni_env->SetLongField(pushMessagingQueryObject, fid, (jlong)ptrToPushMessagingQuery);
 
@@ -104,7 +104,7 @@ void PushMessagingQueryDelegateWrapper::onPushMessagingQueryPushStatesChanged(IP
 		jobject pushMessagingQueryObject = jni_env->NewObject(cls, method);
 
 		//fill new field with pointer to core pointer
-		IPushMessagingQueryPtr* ptrToPushMessagingQuery = new boost::shared_ptr<IPushMessagingQuery>(query);
+		IPushMessagingQueryPtr* ptrToPushMessagingQuery = new std::shared_ptr<IPushMessagingQuery>(query);
 		jfieldID fid = jni_env->GetFieldID(cls, "nativeClassPointer", "J");
 		jni_env->SetLongField(pushMessagingQueryObject, fid, (jlong)ptrToPushMessagingQuery);
 

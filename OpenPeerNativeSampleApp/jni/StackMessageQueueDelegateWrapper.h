@@ -20,6 +20,6 @@ public:
 	virtual ~StackMessageQueueDelegateWrapper();
 };
 
-typedef boost::shared_ptr<StackMessageQueueDelegateWrapper> StackMessageQueueDelegateWrapperPtr;
+typedef std::shared_ptr<StackMessageQueueDelegateWrapper> StackMessageQueueDelegateWrapperPtr;
 
 #endif //_STACK_MESSAGE_QUEUE_DELEGATE_WRAPPER_H_

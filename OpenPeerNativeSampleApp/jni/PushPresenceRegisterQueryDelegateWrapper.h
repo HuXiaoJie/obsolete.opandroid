@@ -20,6 +20,6 @@ public:
 	virtual ~PushPresenceRegisterQueryDelegateWrapper();
 };
 
-typedef boost::shared_ptr<PushPresenceRegisterQueryDelegateWrapper> PushPresenceRegisterQueryDelegateWrapperPtr;
+typedef std::shared_ptr<PushPresenceRegisterQueryDelegateWrapper> PushPresenceRegisterQueryDelegateWrapperPtr;
 
 #endif //_PUSH_PRESENCE_REGISTER_QUERY_DELEGATE_WRAPPER_H_

@@ -45,7 +45,7 @@ void PushPresenceRegisterQueryDelegateWrapper::onPushPresenceRegisterQueryComple
 		jobject pushPresenceRegisterQueryObject = jni_env->NewObject(cls, method);
 
 		//fill new field with pointer to core pointer
-		IPushPresenceRegisterQueryPtr* ptrToPushPresenceRegisterQuery = new boost::shared_ptr<IPushPresenceRegisterQuery>(query);
+		IPushPresenceRegisterQueryPtr* ptrToPushPresenceRegisterQuery = new std::shared_ptr<IPushPresenceRegisterQuery>(query);
 		jfieldID fid = jni_env->GetFieldID(cls, "nativeClassPointer", "J");
 		jni_env->SetLongField(pushPresenceRegisterQueryObject, fid, (jlong)ptrToPushPresenceRegisterQuery);
 

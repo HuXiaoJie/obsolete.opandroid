@@ -30,7 +30,7 @@ JNIEXPORT jobject JNICALL Java_com_openpeer_javaapi_OPStackMessageQueue_singleto
 		method = jni_env->GetMethodID(cls, "<init>", "()V");
 		object = jni_env->NewObject(cls, method);
 
-		IStackMessageQueuePtr* ptrToStackMessageQueue = new boost::shared_ptr<IStackMessageQueue>(IStackMessageQueue::singleton());
+		IStackMessageQueuePtr* ptrToStackMessageQueue = new std::shared_ptr<IStackMessageQueue>(IStackMessageQueue::singleton());
 		jfieldID fid = jni_env->GetFieldID(cls, "nativeClassPointer", "J");
 		jlong stackMessageQueue = (jlong) ptrToStackMessageQueue;
 		jni_env->SetLongField(object, fid, stackMessageQueue);
@@ -61,7 +61,7 @@ JNIEXPORT void JNICALL Java_com_openpeer_javaapi_OPStackMessageQueue_interceptPr
 		coreStackMesssageQueuePtr->get()->interceptProcessing(stackMessageQueueDelegatePtr);
 		if (stackMessageQueueDelegatePtr)
 		{
-			StackMessageQueueDelegateWrapperPtr* ptrToStackMessageQueueDelegate = new boost::shared_ptr<StackMessageQueueDelegateWrapper>(stackMessageQueueDelegatePtr);
+			StackMessageQueueDelegateWrapperPtr* ptrToStackMessageQueueDelegate = new std::shared_ptr<StackMessageQueueDelegateWrapper>(stackMessageQueueDelegatePtr);
 			jfieldID delegateFid = jni_env->GetFieldID(stackMessageQueueClass, "nativeDelegatePointer", "J");
 			jlong delegate = (jlong) ptrToStackMessageQueueDelegate;
 			jni_env->SetLongField(owner, delegateFid, delegate);

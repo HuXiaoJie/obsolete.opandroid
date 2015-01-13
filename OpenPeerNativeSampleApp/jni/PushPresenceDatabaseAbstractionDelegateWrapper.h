@@ -21,6 +21,6 @@ public:
 	virtual ~PushPresenceDatabaseAbstractionDelegateWrapper();
 };
 
-typedef boost::shared_ptr<PushPresenceDatabaseAbstractionDelegateWrapper> PushPresenceDatabaseAbstractionDelegateWrapperPtr;
+typedef std::shared_ptr<PushPresenceDatabaseAbstractionDelegateWrapper> PushPresenceDatabaseAbstractionDelegateWrapperPtr;
 
 #endif //_PUSH_PRESENCE_DATABASE_ABSTRACTION_DELEGATE_WRAPPER_H_

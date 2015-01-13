@@ -45,7 +45,7 @@ void IdentityLookupDelegateWrapper::onIdentityLookupCompleted(IIdentityLookupPtr
 		jobject identityLookupObject = jni_env->NewObject(cls, method);
 
 		//fill new field with pointer to core pointer
-		IIdentityLookupPtr* ptrToIdentityLookup = new boost::shared_ptr<IIdentityLookup>(identityLookup);
+		IIdentityLookupPtr* ptrToIdentityLookup = new std::shared_ptr<IIdentityLookup>(identityLookup);
 		jfieldID fid = jni_env->GetFieldID(cls, "nativeClassPointer", "J");
 		jni_env->SetLongField(identityLookupObject, fid, (jlong)ptrToIdentityLookup);
 

@@ -25,6 +25,6 @@ public:
 	virtual ~PushMessagingDelegateWrapper();
 };
 
-typedef boost::shared_ptr<PushMessagingDelegateWrapper> PushMessagingDelegateWrapperPtr;
+typedef std::shared_ptr<PushMessagingDelegateWrapper> PushMessagingDelegateWrapperPtr;
 
 #endif //_PUSH_MESSAGING_DELEGATE_WRAPPER_H_

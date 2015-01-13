@@ -19,6 +19,6 @@ public:
 	virtual ~BackgroundingCompletionDelegateWrapper();
 };
 
-typedef boost::shared_ptr<BackgroundingCompletionDelegateWrapper> BackgroundingCompletionDelegateWrapperPtr;
+typedef std::shared_ptr<BackgroundingCompletionDelegateWrapper> BackgroundingCompletionDelegateWrapperPtr;
 
 #endif //_BACKGROUNDING_COMPLETION_DELEGATE_WRAPPER_H_

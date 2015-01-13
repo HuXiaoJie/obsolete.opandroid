@@ -45,7 +45,7 @@ void PushMessagingDelegateWrapper::onPushMessagingStateChanged(IPushMessagingPtr
 		jobject pushMessagingObject = jni_env->NewObject(cls, method);
 
 		//fill new field with pointer to core pointer
-		IPushMessagingPtr* ptrToPushMessaging = new boost::shared_ptr<IPushMessaging>(messaging);
+		IPushMessagingPtr* ptrToPushMessaging = new std::shared_ptr<IPushMessaging>(messaging);
 		jfieldID fid = jni_env->GetFieldID(cls, "nativeClassPointer", "J");
 		jni_env->SetLongField(pushMessagingObject, fid, (jlong)ptrToPushMessaging);
 
@@ -104,7 +104,7 @@ void PushMessagingDelegateWrapper::onPushMessagingNewMessages(IPushMessagingPtr 
 		jobject pushMessagingObject = jni_env->NewObject(cls, method);
 
 		//fill new field with pointer to core pointer
-		IPushMessagingPtr* ptrToPushMessaging = new boost::shared_ptr<IPushMessaging>(messaging);
+		IPushMessagingPtr* ptrToPushMessaging = new std::shared_ptr<IPushMessaging>(messaging);
 		jfieldID fid = jni_env->GetFieldID(cls, "nativeClassPointer", "J");
 		jni_env->SetLongField(pushMessagingObject, fid, (jlong)ptrToPushMessaging);
 

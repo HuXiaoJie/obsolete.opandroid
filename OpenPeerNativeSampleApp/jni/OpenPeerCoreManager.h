@@ -25,6 +25,10 @@ public:
 
 	static void fillJavaTokenFromCoreObject(jobject javaToken, IIdentity::Token coreToken);
 
+	static zsLib::Time convertTimeFromJava(jobject timeObject);
+	static jobject convertTimeFromCore(zsLib::Time coreTime);
+	static jobject convertSecondsFromCore(zsLib::Seconds coreSeconds);
+
 	//push messaging helper methods
 
 	//Push info related helper methods

@@ -22,6 +22,6 @@ public:
 	virtual ~AccountDelegateWrapper();
 };
 
-typedef boost::shared_ptr<AccountDelegateWrapper> AccountDelegateWrapperPtr;
+typedef std::shared_ptr<AccountDelegateWrapper> AccountDelegateWrapperPtr;
 
 #endif //_ACCOUNT_DELEGATE_WRAPPER_H_

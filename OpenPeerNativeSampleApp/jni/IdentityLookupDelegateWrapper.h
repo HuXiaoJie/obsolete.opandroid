@@ -20,6 +20,6 @@ public:
 	virtual ~IdentityLookupDelegateWrapper();
 };
 
-typedef boost::shared_ptr<IdentityLookupDelegateWrapper> IdentityLookupDelegateWrapperPtr;
+typedef std::shared_ptr<IdentityLookupDelegateWrapper> IdentityLookupDelegateWrapperPtr;
 
 #endif //_IDENTITY_LOOKUP_DELEGATE_WRAPPER_H_

@@ -87,7 +87,7 @@ JNIEXPORT jobject JNICALL Java_com_openpeer_javaapi_OPCall_placeCall
 	{
 		if(jni_env)
 		{
-			ICallPtr* ptrToCall = new boost::shared_ptr<ICall>(callPtr);
+			ICallPtr* ptrToCall = new std::shared_ptr<ICall>(callPtr);
 			cls = findClass("com/openpeer/javaapi/OPCall");
 			method = jni_env->GetMethodID(cls, "<init>", "()V");
 			object = jni_env->NewObject(cls, method);
@@ -189,7 +189,7 @@ JNIEXPORT jobject JNICALL Java_com_openpeer_javaapi_OPCall_getConversationThread
 	if (coreCallPtr)
 	{
 		convThreadPtr = coreCallPtr->get()->getConversationThread();
-		IConversationThreadPtr* ptrToConversationThread = new boost::shared_ptr<IConversationThread>(convThreadPtr);
+		IConversationThreadPtr* ptrToConversationThread = new std::shared_ptr<IConversationThread>(convThreadPtr);
 		cls = findClass("com/openpeer/javaapi/OPConversationThread");
 		jmethodID method = jni_env->GetMethodID(cls, "<init>", "()V");
 		ret = jni_env->NewObject(cls, method);
@@ -230,7 +230,7 @@ JNIEXPORT jobject JNICALL Java_com_openpeer_javaapi_OPCall_getCaller
 	if (coreCallPtr)
 	{
 		contactPtr = coreCallPtr->get()->getCaller();
-		IContactPtr* ptrToContact = new boost::shared_ptr<IContact>(contactPtr);
+		IContactPtr* ptrToContact = new std::shared_ptr<IContact>(contactPtr);
 		cls = findClass("com/openpeer/javaapi/OPContact");
 		jmethodID method = jni_env->GetMethodID(cls, "<init>", "()V");
 		ret = jni_env->NewObject(cls, method);
@@ -271,7 +271,7 @@ JNIEXPORT jobject JNICALL Java_com_openpeer_javaapi_OPCall_getCallee
 	if (coreCallPtr)
 	{
 		contactPtr = coreCallPtr->get()->getCallee();
-		IContactPtr* ptrToContact = new boost::shared_ptr<IContact>(contactPtr);
+		IContactPtr* ptrToContact = new std::shared_ptr<IContact>(contactPtr);
 		cls = findClass("com/openpeer/javaapi/OPContact");
 		jmethodID method = jni_env->GetMethodID(cls, "<init>", "()V");
 		ret = jni_env->NewObject(cls, method);

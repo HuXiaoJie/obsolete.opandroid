@@ -45,7 +45,7 @@ void AccountDelegateWrapper::onAccountStateChanged(IAccountPtr account, IAccount
 		jobject accountObject = jni_env->NewObject(cls, method);
 
 		//fill new field with pointer to core pointer
-		IAccountPtr* ptrToAccount = new boost::shared_ptr<IAccount>(account);
+		IAccountPtr* ptrToAccount = new std::shared_ptr<IAccount>(account);
 		jfieldID fid = jni_env->GetFieldID(cls, "nativeClassPointer", "J");
 		jni_env->SetLongField(accountObject, fid, (jlong)ptrToAccount);
 
@@ -105,7 +105,7 @@ void AccountDelegateWrapper::onAccountAssociatedIdentitiesChanged(IAccountPtr ac
 		jobject accountObject = jni_env->NewObject(cls, method);
 
 		//fill new field with pointer to core pointer
-		IAccountPtr* ptrToAccount = new boost::shared_ptr<IAccount>(account);
+		IAccountPtr* ptrToAccount = new std::shared_ptr<IAccount>(account);
 		jfieldID fid = jni_env->GetFieldID(cls, "nativeClassPointer", "J");
 		jni_env->SetLongField(accountObject, fid, (jlong)ptrToAccount);
 
@@ -164,7 +164,7 @@ void AccountDelegateWrapper::onAccountPendingMessageForInnerBrowserWindowFrame(I
 		jobject accountObject = jni_env->NewObject(cls, method);
 
 		//fill new field with pointer to core pointer
-		IAccountPtr* ptrToAccount = new boost::shared_ptr<IAccount>(account);
+		IAccountPtr* ptrToAccount = new std::shared_ptr<IAccount>(account);
 		jfieldID fid = jni_env->GetFieldID(cls, "nativeClassPointer", "J");
 		jni_env->SetLongField(accountObject, fid, (jlong)ptrToAccount);
 

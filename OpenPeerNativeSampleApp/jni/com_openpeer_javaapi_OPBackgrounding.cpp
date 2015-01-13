@@ -99,7 +99,7 @@ JNIEXPORT jobject JNICALL Java_com_openpeer_javaapi_OPBackgrounding_subscribe
 			method = jni_env->GetMethodID(cls, "<init>", "()V");
 			object = jni_env->NewObject(cls, method);
 
-			IBackgroundingSubscriptionPtr* ptrToSubscription = new boost::shared_ptr<IBackgroundingSubscription>(subscriptionPtr);
+			IBackgroundingSubscriptionPtr* ptrToSubscription = new std::shared_ptr<IBackgroundingSubscription>(subscriptionPtr);
 			jfieldID fid = jni_env->GetFieldID(cls, "nativeClassPointer", "J");
 			jlong subs = (jlong) ptrToSubscription;
 			jni_env->SetLongField(object, fid, subs);

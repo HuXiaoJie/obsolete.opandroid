@@ -1,31 +1,14 @@
 LOCAL_PATH := $(call my-dir)/../..
 WEBRTC_LIBS_PATH := libs/op/libs/ortc-lib/libs/build/android/webrtc
-BOOST_LIBS_PATH := libs/op/libs/ortc-lib/libs/build/android/boost/lib
-ANDROIDNDK_PATH := /usr/ndk/x86_64/android-ndk-r8e
+ANDROIDNDK_PATH := /usr/ndk/x86_64/android-ndk-r10c
 
 #zLib shared library
 include $(CLEAR_VARS)
-ZLIB_LIB_PATH := ./OpenPeerNativeSampleApp/jni
+ZLIB_LIB_PATH := ./openpeer-android-sdk/jni
 LOCAL_MODULE := z_shared
 LOCAL_SRC_FILES := \
     $(ZLIB_LIB_PATH)/libz_shared.so
 include $(PREBUILT_SHARED_LIBRARY)
-
-#openssl:begin
-include $(CLEAR_VARS)
-OPENSSL_LIB_PATH := libs/op/libs/ortc-lib/libs/build/android/openssl
-LOCAL_MODULE := libcrypto
-LOCAL_SRC_FILES := \
-    $(OPENSSL_LIB_PATH)/libcrypto.a
-include $(PREBUILT_STATIC_LIBRARY)
-
-include $(CLEAR_VARS)
-OPENSSL_LIB_PATH := libs/op/libs/ortc-lib/libs/build/android/openssl
-LOCAL_MODULE := libssl
-LOCAL_SRC_FILES := \
-    $(OPENSSL_LIB_PATH)/libssl.a
-include $(PREBUILT_STATIC_LIBRARY)
-#openssl:end
 
 #curl lib
 include $(CLEAR_VARS)
@@ -309,9 +292,9 @@ include $(PREBUILT_STATIC_LIBRARY)
 #cryptopp
 include $(CLEAR_VARS)
 CRYPTOPP_LIBS_PATH := libs/op/libs/ortc-lib/libs/build/android/cryptopp
-LOCAL_MODULE := libcryptopp
+LOCAL_MODULE := libcryptopp_android
 LOCAL_SRC_FILES := \
-    $(CRYPTOPP_LIBS_PATH)/libcryptopp.a
+    $(CRYPTOPP_LIBS_PATH)/libcryptopp_android.a
 include $(PREBUILT_STATIC_LIBRARY)
 
 #udns
@@ -330,85 +313,12 @@ LOCAL_SRC_FILES := \
     $(ZSLIB_LIBS_PATH)/libzslib_android.a
 include $(PREBUILT_STATIC_LIBRARY)
 
-#Boost libs
+#idnkit
 include $(CLEAR_VARS)
-LOCAL_MODULE := libboost_atomic-gcc-mt-1_53
+ZSLIB_LIBS_PATH := libs/op/libs/ortc-lib/libs/build/android/idnkit
+LOCAL_MODULE := libidnkitandroid
 LOCAL_SRC_FILES := \
-    $(BOOST_LIBS_PATH)/libboost_atomic-gcc-mt-1_53.a
-include $(PREBUILT_STATIC_LIBRARY)
-
-include $(CLEAR_VARS)
-LOCAL_MODULE := libboost_chrono-gcc-mt-1_53
-LOCAL_SRC_FILES := \
-    $(BOOST_LIBS_PATH)/libboost_chrono-gcc-mt-1_53.a
-include $(PREBUILT_STATIC_LIBRARY)
-
-include $(CLEAR_VARS)
-LOCAL_MODULE := libboost_date_time-gcc-mt-1_53
-LOCAL_SRC_FILES := \
-    $(BOOST_LIBS_PATH)/libboost_date_time-gcc-mt-1_53.a
-include $(PREBUILT_STATIC_LIBRARY)
-
-include $(CLEAR_VARS)
-LOCAL_MODULE := libboost_filesystem-gcc-mt-1_53
-LOCAL_SRC_FILES := \
-    $(BOOST_LIBS_PATH)/libboost_filesystem-gcc-mt-1_53.a
-include $(PREBUILT_STATIC_LIBRARY)
-
-include $(CLEAR_VARS)
-LOCAL_MODULE := libboost_graph-gcc-mt-1_53
-LOCAL_SRC_FILES := \
-    $(BOOST_LIBS_PATH)/libboost_graph-gcc-mt-1_53.a
-include $(PREBUILT_STATIC_LIBRARY)
-
-include $(CLEAR_VARS)
-LOCAL_MODULE := libboost_iostreams-gcc-mt-1_53
-LOCAL_SRC_FILES := \
-    $(BOOST_LIBS_PATH)/libboost_iostreams-gcc-mt-1_53.a
-include $(PREBUILT_STATIC_LIBRARY)
-
-include $(CLEAR_VARS)
-LOCAL_MODULE := libboost_program_options-gcc-mt-1_53
-LOCAL_SRC_FILES := \
-    $(BOOST_LIBS_PATH)/libboost_program_options-gcc-mt-1_53.a
-include $(PREBUILT_STATIC_LIBRARY)
-
-include $(CLEAR_VARS)
-LOCAL_MODULE := libboost_random-gcc-mt-1_53
-LOCAL_SRC_FILES := \
-    $(BOOST_LIBS_PATH)/libboost_random-gcc-mt-1_53.a
-include $(PREBUILT_STATIC_LIBRARY)
-
-include $(CLEAR_VARS)
-LOCAL_MODULE := libboost_regex-gcc-mt-1_53
-LOCAL_SRC_FILES := \
-    $(BOOST_LIBS_PATH)/libboost_regex-gcc-mt-1_53.a
-include $(PREBUILT_STATIC_LIBRARY)
-
-include $(CLEAR_VARS)
-LOCAL_MODULE := libboost_signals-gcc-mt-1_53
-LOCAL_SRC_FILES := \
-    $(BOOST_LIBS_PATH)/libboost_signals-gcc-mt-1_53.a
-include $(PREBUILT_STATIC_LIBRARY)
-
-include $(CLEAR_VARS)
-LOCAL_MODULE := libboost_system-gcc-mt-1_53
-LOCAL_SRC_FILES := \
-    $(BOOST_LIBS_PATH)/libboost_system-gcc-mt-1_53.a
-include $(PREBUILT_STATIC_LIBRARY)
-
-include $(CLEAR_VARS)
-LOCAL_MODULE := libboost_thread-gcc-mt-1_53
-LOCAL_SRC_FILES := \
-    $(BOOST_LIBS_PATH)/libboost_thread-gcc-mt-1_53.a
-include $(PREBUILT_STATIC_LIBRARY)
-
-#punycode
-include $(CLEAR_VARS)
-PUNYCODE_LIBS_PATH := libs/op/libs/ortc-lib/libs/build/android/punycode
-LOCAL_MODULE := libpunycode_android
-LOCAL_SRC_FILES := \
-    $(PUNYCODE_LIBS_PATH)/libpunycode_android.a
+    $(ZSLIB_LIBS_PATH)/libidnkit_android.a
 include $(PREBUILT_STATIC_LIBRARY)
 
 #hfsservices
@@ -417,6 +327,22 @@ SERVICES_LIBS_PATH := libs/op/libs/ortc-lib/libs/build/android/op-services-cpp
 LOCAL_MODULE := libhfservices_android
 LOCAL_SRC_FILES := \
     $(SERVICES_LIBS_PATH)/libhfservices_android.a
+include $(PREBUILT_STATIC_LIBRARY)
+
+#sqlite
+include $(CLEAR_VARS)
+STACK_LIBS_PATH := libs/op/libs/build/android/sqlite
+LOCAL_MODULE := libsqlite_android
+LOCAL_SRC_FILES := \
+    $(STACK_LIBS_PATH)/libsqlite_android.a
+include $(PREBUILT_STATIC_LIBRARY)
+
+#easysqlite
+include $(CLEAR_VARS)
+STACK_LIBS_PATH := libs/op/libs/build/android/easysqlite
+LOCAL_MODULE := libeasysqlite_android
+LOCAL_SRC_FILES := \
+    $(STACK_LIBS_PATH)/libeasysqlite_android.a
 include $(PREBUILT_STATIC_LIBRARY)
 
 #hfstack
@@ -447,12 +373,12 @@ include $(PREBUILT_STATIC_LIBRARY)
 
 include $(CLEAR_VARS)
 LOCAL_ARM_MODE := arm
+LOCAL_CLANG := true
 
 LOCAL_CFLAGS	:= -Wall \
 -W \
 -Wno-unused-parameter \
 -Wno-reorder \
--std=gnu++11 \
 -O2 \
 -pipe \
 -fPIC \
@@ -460,26 +386,30 @@ LOCAL_CFLAGS	:= -Wall \
 -fexceptions \
 -D_ANDROID \
 
+LOCAL_CPPFLAGS += -std=c++11
+
 LOCAL_MODULE    := openpeer
 
 LOCAL_C_INCLUDES:= $(LOCAL_PATH)/libs/op/libs/ortc-lib/libs \
 $(LOCAL_PATH)/libs/op/libs/op-stack-cpp/ \
 $(LOCAL_PATH)/libs/op/libs/op-core-cpp/ \
+$(LOCAL_PATH)/libs/op/libs/easysqlite/easySQLite/easySQLite/ \
+$(LOCAL_PATH)/libs/op/libs/sqlite/build/ \
 $(LOCAL_PATH)/libs/op/libs/ortc-lib/libs/op-services-cpp \
-$(LOCAL_PATH)/libs/op/libs/ortc-lib/libs/punycode \
 $(LOCAL_PATH)/libs/op/libs/ortc-lib/libs/build/android/curl/include \
-$(LOCAL_PATH)/libs/op/libs/ortc-lib/libs/build/android/boost/include/boost-1_53 \
 $(LOCAL_PATH)/libs/op/libs/ortc-lib/libs/zsLib \
+$(LOCAL_PATH)/libs/op/libs/ortc-lib/libs/zsLib/zsLib/extras \
 $(LOCAL_PATH)/libs/op/libs/ortc-lib/libs \
 $(LOCAL_PATH)/libs/op/libs/ortc-lib/libs/build/android/cryptopp/include \
+$(LOCAL_PATH)/libs/op/libs/ortc-lib/libs/idnkit/idnkit/include \
 $(LOCAL_PATH)/libs/op/libs/ortc-lib/libs/webrtc/webrtc/voice_engine/include \
 $(LOCAL_PATH)/libs/op/libs/ortc-lib/libs/webrtc \
 $(LOCAL_PATH)/libs/op/libs/ortc-lib/libs/webrtc/webrtc \
 $(LOCAL_PATH)/libs/op/libs/ortc-lib/libs/webrtc/webrtc/video_engine/include \
 $(LOCAL_PATH)/libs/op/libs/ortc-lib/libs/webrtc/webrtc/modules/video_capture/include \
-$(ANDROIDNDK_PATH)/sources/cxx-stl/gnu-libstdc++/4.7/include \
-$(ANDROIDNDK_PATH)/sources/cxx-stl/gnu-libstdc++/4.7/libs/armeabi/include \
-$(ANDROIDNDK_PATH)/platforms/android-9/arch-arm/usr/include \
+$(ANDROIDNDK_PATH)/sources/android/support/include \
+$(ANDROIDNDK_PATH)/sources/cxx-stl/llvm-libc++/libcxx/include \
+$(ANDROIDNDK_PATH)/platforms/android-19/arch-arm/usr/include \
 
 LOCAL_SRC_FILES := \
 		OpenPeerNativeSampleApp/jni/OpenPeerCoreManager.cpp \
@@ -538,8 +468,7 @@ LOCAL_SRC_FILES := \
 		OpenPeerNativeSampleApp/jni/com_openpeer_javaapi_OPPresenceResources.cpp \
 		
 
-
-LOCAL_LDLIBS += $(ANDROIDNDK_PATH)/sources/cxx-stl/gnu-libstdc++/4.7/libs/armeabi/libgnustl_static.a
+#LOCAL_LDLIBS += $(ANDROIDNDK_PATH)/sources/cxx-stl/llvm-libc++/libs/armeabi/libc++_static.a
 LOCAL_LDLIBS += -llog -lGLESv2 -lOpenSLES \
 
 LOCAL_WHOLE_STATIC_LIBRARIES := \
@@ -589,29 +518,20 @@ libwebrtc_vp8 \
 libyuv \
 libyuv_neon \
 libortc_android \
-libcryptopp \
+libcryptopp_android \
 libudns_android \
-libboost_atomic-gcc-mt-1_53 \
-libboost_chrono-gcc-mt-1_53 \
-libboost_date_time-gcc-mt-1_53 \
-libboost_filesystem-gcc-mt-1_53 \
-libboost_graph-gcc-mt-1_53 \
-libboost_iostreams-gcc-mt-1_53 \
-libboost_program_options-gcc-mt-1_53 \
-libboost_random-gcc-mt-1_53 \
-libboost_regex-gcc-mt-1_53 \
-libboost_signals-gcc-mt-1_53 \
-libboost_system-gcc-mt-1_53 \
-libboost_thread-gcc-mt-1_53 \
+libidnkit_android \
 libcurl \
-libssl \
-libcrypto \
 libzslib_android \
-libpunycode_android \
 libhfservices_android \
+libsqlite_android \
+libeasysqlite_android \
 libhfstack_android \
 libhfcore_android \ 
 
+
+LOCAL_STATIC_LIBRARIES := \
+$(ANDROIDNDK_PATH)/sources/cxx-stl/llvm-libc++/libs/armeabi/libc++_static.a \
 
 LOCAL_SHARED_LIBRARIES := \
 z_shared \

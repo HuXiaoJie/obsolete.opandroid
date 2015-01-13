@@ -27,6 +27,6 @@ public:
 	virtual ~PushPresenceDelegateWrapper();
 };
 
-typedef boost::shared_ptr<PushPresenceDelegateWrapper> PushPresenceDelegateWrapperPtr;
+typedef std::shared_ptr<PushPresenceDelegateWrapper> PushPresenceDelegateWrapperPtr;
 
 #endif //_PUSH_PRESENCE_DELEGATE_WRAPPER_H_

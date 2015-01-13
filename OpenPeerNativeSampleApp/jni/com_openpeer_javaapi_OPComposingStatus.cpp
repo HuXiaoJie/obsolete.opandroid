@@ -63,7 +63,7 @@ JNIEXPORT jobject JNICALL Java_com_openpeer_javaapi_OPComposingStatus_create
 
 	if(composingStatusPtr)
 	{
-		ComposingStatusPtr* ptrToComposingStatus = new boost::shared_ptr<ComposingStatus>(composingStatusPtr);
+		ComposingStatusPtr* ptrToComposingStatus = new std::shared_ptr<ComposingStatus>(composingStatusPtr);
 		cls = findClass("com/openpeer/javaapi/OPComposingStatus");
 		method = jni_env->GetMethodID(cls, "<init>", "()V");
 		object = jni_env->NewObject(cls, method);
@@ -109,7 +109,7 @@ JNIEXPORT jobject JNICALL Java_com_openpeer_javaapi_OPComposingStatus_extract
 		method = jni_env->GetMethodID(cls, "<init>", "()V");
 		object = jni_env->NewObject(cls, method);
 
-		ComposingStatusPtr* ptrToComposingStatus = new boost::shared_ptr<ComposingStatus>(statusPtr);
+		ComposingStatusPtr* ptrToComposingStatus = new std::shared_ptr<ComposingStatus>(statusPtr);
 		jfieldID fid = jni_env->GetFieldID(cls, "nativeClassPointer", "J");
 		jlong status = (jlong) ptrToComposingStatus;
 		jni_env->SetLongField(object, fid, status);
@@ -220,7 +220,7 @@ JNIEXPORT jobject JNICALL Java_com_openpeer_javaapi_OPComposingStatus_toDebug
 	if (coreComposingStatusPtr)
 	{
 		ElementPtr coreEl = coreComposingStatusPtr->get()->toDebug();
-		ElementPtr* ptrToElement = new boost::shared_ptr<Element>(coreEl);
+		ElementPtr* ptrToElement = new std::shared_ptr<Element>(coreEl);
 		cls = findClass("com/openpeer/javaapi/OPElement");
 		method = jni_env->GetMethodID(cls, "<init>", "()V");
 		object = jni_env->NewObject(cls, method);

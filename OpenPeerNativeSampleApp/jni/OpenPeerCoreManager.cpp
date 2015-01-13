@@ -66,6 +66,49 @@ String OpenPeerCoreManager::getObjectClassName (jobject delegate)
 	return ret;
 }
 
+zsLib::Time OpenPeerCoreManager::convertTimeFromJava(jobject timeObject)
+{
+	JNIEnv* jni_env = getEnv();
+    jclass timeCls = findClass("android/text/format/Time");
+    jmethodID timeMethodID = jni_env->GetMethodID(timeCls, "toMillis","(Z)J");
+    jlong longValue = jni_env->CallLongMethod(timeObject, timeMethodID, false);
+
+    Time t = std::chrono::time_point<std::chrono::system_clock>(std::chrono::milliseconds(longValue));
+    return t;
+}
+
+jobject OpenPeerCoreManager::convertTimeFromCore(zsLib::Time coreTime)
+{
+	JNIEnv* jni_env = getEnv();
+	//Convert and set time from C++ to Android; Fetch methods needed to accomplish this
+	jclass timeCls = findClass("android/text/format/Time");
+	jmethodID timeMethodID = jni_env->GetMethodID(timeCls, "<init>", "()V");
+	jmethodID timeSetMillisMethodID   = jni_env->GetMethodID(timeCls, "set", "(J)V");
+
+	//calculate and set java time
+	long milliseconds_since_epoch = coreTime.time_since_epoch() / std::chrono::milliseconds(1);
+	jobject object = jni_env->NewObject(timeCls, timeMethodID);
+	jni_env->CallVoidMethod(object, timeSetMillisMethodID, milliseconds_since_epoch);
+
+	return object;
+}
+
+jobject OpenPeerCoreManager::convertSecondsFromCore(zsLib::Seconds coreSeconds)
+{
+	JNIEnv* jni_env = getEnv();
+	//Convert and set time from C++ to Android; Fetch methods needed to accomplish this
+	jclass timeCls = findClass("android/text/format/Time");
+	jmethodID timeMethodID = jni_env->GetMethodID(timeCls, "<init>", "()V");
+	jmethodID timeSetMillisMethodID   = jni_env->GetMethodID(timeCls, "set", "(J)V");
+
+	//calculate and set java time
+	std::chrono::milliseconds ms = std::chrono::duration_cast<std::chrono::milliseconds> (coreSeconds);
+	jobject object = jni_env->NewObject(timeCls, timeMethodID);
+	jni_env->CallVoidMethod(object, timeSetMillisMethodID, ms.count());
+
+	return object;
+}
+
 void OpenPeerCoreManager::fillJavaTokenFromCoreObject(jobject javaToken, IIdentity::Token coreToken)
 {
 	JNIEnv *jni_env = 0;
@@ -88,15 +131,7 @@ void OpenPeerCoreManager::fillJavaTokenFromCoreObject(jobject javaToken, IIdenti
 	//TIME
 	jfieldID fExpires = jni_env->GetFieldID(cls, "mExpires", "Landroid/text/format/Time;");
 	//Convert and set time from C++ to Android; Fetch methods needed to accomplish this
-	Time time_t_epoch = boost::posix_time::time_from_string("1970-01-01 00:00:00.000");
-	jclass timeCls = findClass("android/text/format/Time");
-	jmethodID timeMethodID = jni_env->GetMethodID(timeCls, "<init>", "()V");
-	jmethodID timeSetMillisMethodID   = jni_env->GetMethodID(timeCls, "set", "(J)V");
-	//calculate and set Ring Time
-	zsLib::Duration ringTimeDuration = coreToken.mExpires - time_t_epoch;
-	jobject object = jni_env->NewObject(timeCls, timeMethodID);
-	jni_env->CallVoidMethod(object, timeSetMillisMethodID, ringTimeDuration.total_milliseconds());
-	jni_env->SetObjectField(javaToken, fExpires, object);
+	jni_env->SetObjectField(javaToken, fExpires, OpenPeerCoreManager::convertTimeFromCore(coreToken.mExpires));
 
 	jfieldID fProof = jni_env->GetFieldID(cls, "mProof", "Ljava/lang/String;");
 	jstring proof = jni_env->NewStringUTF(coreToken.mProof.c_str());
@@ -216,7 +251,7 @@ jobject OpenPeerCoreManager::pushInfoToJava(IPushMessaging::PushInfo corePushInf
 
 		//mValues
 		ElementPtr coreEl = corePushInfo.mValues;
-		ElementPtr* ptrToElement = new boost::shared_ptr<Element>(coreEl);
+		ElementPtr* ptrToElement = new std::shared_ptr<Element>(coreEl);
 		jclass elementCls = findClass("com/openpeer/javaapi/OPElement");
 		jmethodID elementMethod = jni_env->GetMethodID(elementCls, "<init>", "()V");
 		jobject elementValuesObject = jni_env->NewObject(elementCls, elementMethod);
@@ -230,7 +265,7 @@ jobject OpenPeerCoreManager::pushInfoToJava(IPushMessaging::PushInfo corePushInf
 
 		//mCustom
 		ElementPtr coreCustomEl = corePushInfo.mCustom;
-		ElementPtr* ptrToCustomElement = new boost::shared_ptr<Element>(coreCustomEl);
+		ElementPtr* ptrToCustomElement = new std::shared_ptr<Element>(coreCustomEl);
 		jobject elementCustomObject = jni_env->NewObject(elementCls, elementMethod);
 		jlong elementCustom = (jlong) ptrToCustomElement;
 		jni_env->SetLongField(elementCustomObject, fid, elementCustom);
@@ -362,7 +397,7 @@ jobject OpenPeerCoreManager::pushStateContactDetailToJava(IPushMessaging::PushSt
 
 		//mRemotePeer
 		IContactPtr coreRemotePeer = corePushStateContactDetail.mRemotePeer;
-		IContactPtr* ptrToRemotePeer = new boost::shared_ptr<IContact>(coreRemotePeer);
+		IContactPtr* ptrToRemotePeer = new std::shared_ptr<IContact>(coreRemotePeer);
 		jclass contactCls = findClass("com/openpeer/javaapi/OPContact");
 		jmethodID contactMethod = jni_env->GetMethodID(contactCls, "<init>", "()V");
 		jobject remotePeerObject = jni_env->NewObject(contactCls, contactMethod);
@@ -621,16 +656,12 @@ IPushMessaging::PushMessage OpenPeerCoreManager::pushMessageToCore(jobject javaP
 		//mSent
 		jmethodID getSentMethodID = jni_env->GetMethodID( javaItemClass, "getSent", "()Landroid/text/format/Time;" );
 		jobject sent = jni_env->CallObjectMethod(javaPushMessage, getSentMethodID);
-		jclass timeClass = findClass("android/text/format/Time");
-		jmethodID timeMethodID   = jni_env->GetMethodID(timeClass, "toMillis", "(Z)J");
-		jlong longValue = jni_env->CallLongMethod(sent, timeMethodID, false);
-		returnObject.mSent = boost::posix_time::from_time_t(longValue/1000) + boost::posix_time::millisec(longValue % 1000);
+		returnObject.mSent = OpenPeerCoreManager::convertTimeFromJava(sent);
 
 		//mExpires
 		jmethodID getExpiresMethodID = jni_env->GetMethodID( javaItemClass, "getExpires", "()Landroid/text/format/Time;" );
 		jobject expires = jni_env->CallObjectMethod(javaPushMessage, getExpiresMethodID);
-		jlong longExpiresValue = jni_env->CallLongMethod(expires, timeMethodID, false);
-		returnObject.mExpires = boost::posix_time::from_time_t(longExpiresValue/1000) + boost::posix_time::millisec(longExpiresValue % 1000);
+		returnObject.mExpires = OpenPeerCoreManager::convertTimeFromJava(expires);
 
 		//mFrom
 		jmethodID getFromMethodID = jni_env->GetMethodID( javaItemClass, "getFrom", "()Lcom/openpeer/javaapi/OPContact;" );
@@ -698,28 +729,15 @@ jobject OpenPeerCoreManager::pushMessageToJava(IPushMessaging::PushMessage coreP
 
 		//mSent
 		jmethodID setSentMethodID = jni_env->GetMethodID( javaItemClass, "setSent", "(Landroid/text/format/Time;)V" );
-		//Convert and set time from C++ to Android; Fetch methods needed to accomplish this
-		Time time_t_epoch = boost::posix_time::time_from_string("1970-01-01 00:00:00.000");
-		jclass timeCls = findClass("android/text/format/Time");
-		jmethodID timeMethodID = jni_env->GetMethodID(timeCls, "<init>", "()V");
-		jmethodID timeSetMillisMethodID   = jni_env->GetMethodID(timeCls, "set", "(J)V");
-		//calculate and set Ring Time
-		zsLib::Duration sentDuration = corePushMessage.mSent - time_t_epoch;
-		jobject sentObject = jni_env->NewObject(timeCls, timeMethodID);
-		jni_env->CallVoidMethod(sentObject, timeSetMillisMethodID, sentDuration.total_milliseconds());
-		jni_env->CallVoidMethod(returnObject, setSentMethodID, sentObject);
+		jni_env->CallVoidMethod(returnObject, setSentMethodID, OpenPeerCoreManager::convertTimeFromCore(corePushMessage.mSent));
 
 		//mExpires
 		jmethodID setExpiresMethodID = jni_env->GetMethodID( javaItemClass, "setExpires", "(Landroid/text/format/Time;)V" );
-		//calculate and set Ring Time
-		zsLib::Duration expiresDuration = corePushMessage.mExpires - time_t_epoch;
-		jobject expiresObject = jni_env->NewObject(timeCls, timeMethodID);
-		jni_env->CallVoidMethod(expiresObject, timeSetMillisMethodID, expiresDuration.total_milliseconds());
-		jni_env->CallVoidMethod(returnObject, setExpiresMethodID, expiresObject);
+		jni_env->CallVoidMethod(returnObject, setExpiresMethodID, OpenPeerCoreManager::convertTimeFromCore(corePushMessage.mExpires));
 
 		//mFrom
 		IContactPtr coreFrom = corePushMessage.mFrom;
-		IContactPtr* ptrToFrom = new boost::shared_ptr<IContact>(coreFrom);
+		IContactPtr* ptrToFrom = new std::shared_ptr<IContact>(coreFrom);
 		jclass contactCls = findClass("com/openpeer/javaapi/OPContact");
 		jmethodID contactMethod = jni_env->GetMethodID(contactCls, "<init>", "()V");
 		jobject fromObject = jni_env->NewObject(contactCls, contactMethod);
@@ -738,7 +756,7 @@ jobject OpenPeerCoreManager::pushMessageToJava(IPushMessaging::PushMessage coreP
 
 		//nativeClassPointer
 		IPushMessaging::PushMessagePtr corePushMessagePtr = IPushMessaging::PushMessagePtr(&corePushMessage);
-		IPushMessaging::PushMessagePtr* ptrToPushMessage = new boost::shared_ptr<IPushMessaging::PushMessage>(corePushMessagePtr);
+		IPushMessaging::PushMessagePtr* ptrToPushMessage = new std::shared_ptr<IPushMessaging::PushMessage>(corePushMessagePtr);
 
 		jfieldID nativePtrFid = jni_env->GetFieldID(javaItemClass, "nativeClassPointer", "J");
 		jlong pushMessage = (jlong) ptrToPushMessage;
@@ -1131,7 +1149,7 @@ jobject OpenPeerCoreManager::presenceStatusToJava(PresenceStatusPtr statusPtr)
 	method = jni_env->GetMethodID(cls, "<init>", "()V");
 	object = jni_env->NewObject(cls, method);
 
-	PresenceStatusPtr* ptrToPresenceStatus = new boost::shared_ptr<PresenceStatus>(statusPtr);
+	PresenceStatusPtr* ptrToPresenceStatus = new std::shared_ptr<PresenceStatus>(statusPtr);
 	jfieldID fid = jni_env->GetFieldID(cls, "nativeClassPointer", "J");
 	jlong status = (jlong) ptrToPresenceStatus;
 	jni_env->SetLongField(object, fid, status);
@@ -1164,19 +1182,13 @@ jobject OpenPeerCoreManager::presenceTimeZoneLocationToJava(PresenceTimeZoneLoca
 	method = jni_env->GetMethodID(cls, "<init>", "()V");
 	object = jni_env->NewObject(cls, method);
 
-	PresenceTimeZoneLocationPtr* ptrToPresenceLocation = new boost::shared_ptr<PresenceTimeZoneLocation>(locationPtr);
+	PresenceTimeZoneLocationPtr* ptrToPresenceLocation = new std::shared_ptr<PresenceTimeZoneLocation>(locationPtr);
 	jfieldID fid = jni_env->GetFieldID(cls, "nativeClassPointer", "J");
 	jlong location = (jlong) ptrToPresenceLocation;
 	jni_env->SetLongField(object, fid, location);
 
-	jclass timeCls = findClass("android/text/format/Time");
-	jmethodID timeMethodID = jni_env->GetMethodID(timeCls, "<init>", "()V");
-	jmethodID timeSetMillisMethodID   = jni_env->GetMethodID(timeCls, "set", "(J)V");
-	jobject timeObject = jni_env->NewObject(timeCls, timeMethodID);
-	jni_env->CallVoidMethod(timeObject, timeSetMillisMethodID, locationPtr.get()->mOffset.total_milliseconds());
-
 	jfieldID offsetFid = jni_env->GetFieldID(cls, "mOffset", "Landroid/text/format/Time;");
-	jni_env->SetObjectField(object, offsetFid, timeObject);
+	jni_env->SetObjectField(object, offsetFid, OpenPeerCoreManager::convertSecondsFromCore(locationPtr.get()->mOffset));
 
 	jfieldID abbrevationFid = jni_env->GetFieldID(cls, "mAbbreviation", "Ljava/lang/String;");
 	jni_env->SetObjectField(object, abbrevationFid, jni_env->NewStringUTF(locationPtr.get()->mAbbreviation));
@@ -1206,7 +1218,7 @@ jobject OpenPeerCoreManager::presenceGeographicLocationToJava(PresenceGeographic
 	method = jni_env->GetMethodID(cls, "<init>", "()V");
 	object = jni_env->NewObject(cls, method);
 
-	PresenceGeographicLocationPtr* ptrToPresenceLocation = new boost::shared_ptr<PresenceGeographicLocation>(locationPtr);
+	PresenceGeographicLocationPtr* ptrToPresenceLocation = new std::shared_ptr<PresenceGeographicLocation>(locationPtr);
 	jfieldID fid = jni_env->GetFieldID(cls, "nativeClassPointer", "J");
 	jlong location = (jlong) ptrToPresenceLocation;
 	jni_env->SetLongField(object, fid, location);
@@ -1248,7 +1260,7 @@ jobject OpenPeerCoreManager::presenceStreetLocationToJava(PresenceStreetLocation
 	method = jni_env->GetMethodID(cls, "<init>", "()V");
 	object = jni_env->NewObject(cls, method);
 
-	PresenceStreetLocationPtr* ptrToPresenceLocation = new boost::shared_ptr<PresenceStreetLocation>(locationPtr);
+	PresenceStreetLocationPtr* ptrToPresenceLocation = new std::shared_ptr<PresenceStreetLocation>(locationPtr);
 	jfieldID fid = jni_env->GetFieldID(cls, "nativeClassPointer", "J");
 	jlong location = (jlong) ptrToPresenceLocation;
 	jni_env->SetLongField(object, fid, location);
@@ -1338,14 +1350,8 @@ jobject OpenPeerCoreManager::presenceResourceToJava(PresenceResources::Resource 
 	fid = jni_env->GetFieldID(cls, "mHeight", "I");
 	jni_env->SetIntField(object, fid, (jint)resource.mHeight);
 
-	jclass timeCls = findClass("android/text/format/Time");
-	jmethodID timeMethodID = jni_env->GetMethodID(timeCls, "<init>", "()V");
-	jmethodID timeSetMillisMethodID   = jni_env->GetMethodID(timeCls, "set", "(J)V");
-	jobject timeObject = jni_env->NewObject(timeCls, timeMethodID);
-	jni_env->CallVoidMethod(timeObject, timeSetMillisMethodID, resource.mLength.total_milliseconds());
-
 	fid = jni_env->GetFieldID(cls, "mLength", "Landroid/text/format/Time;");
-	jni_env->SetObjectField(object, fid, timeObject);
+	jni_env->SetObjectField(object, fid, OpenPeerCoreManager::convertSecondsFromCore(resource.mLength));
 
 	fid = jni_env->GetFieldID(cls, "mExternalLinkURL", "Ljava/lang/String;");
 	jni_env->SetObjectField(object, fid, jni_env->NewStringUTF(resource.mExternalLinkURL));
@@ -1401,7 +1407,7 @@ jobject OpenPeerCoreManager::presenceResourcesToJava(PresenceResourcesPtr resour
 	method = jni_env->GetMethodID(cls, "<init>", "()V");
 	object = jni_env->NewObject(cls, method);
 
-	PresenceResourcesPtr* ptrToPresenceResources = new boost::shared_ptr<PresenceResources>(resourcesPtr);
+	PresenceResourcesPtr* ptrToPresenceResources = new std::shared_ptr<PresenceResources>(resourcesPtr);
 	jfieldID fid = jni_env->GetFieldID(cls, "nativeClassPointer", "J");
 	jlong resources = (jlong) ptrToPresenceResources;
 	jni_env->SetLongField(object, fid, resources);

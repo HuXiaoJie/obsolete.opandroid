@@ -52,7 +52,7 @@ JNIEXPORT jobject JNICALL Java_com_openpeer_javaapi_OPEncryptor_create
 			method = jni_env->GetMethodID(cls, "<init>", "()V");
 			object = jni_env->NewObject(cls, method);
 
-			IEncryptorPtr* ptrToEncryptor = new boost::shared_ptr<IEncryptor>(encryptorPtr);
+			IEncryptorPtr* ptrToEncryptor = new std::shared_ptr<IEncryptor>(encryptorPtr);
 			jfieldID fid = jni_env->GetFieldID(cls, "nativeClassPointer", "J");
 			jlong encryptor = (jlong) ptrToEncryptor;
 			jni_env->SetLongField(object, fid, encryptor);

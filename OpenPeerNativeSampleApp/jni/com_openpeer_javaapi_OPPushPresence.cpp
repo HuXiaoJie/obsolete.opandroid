@@ -56,18 +56,18 @@ JNIEXPORT jobject JNICALL Java_com_openpeer_javaapi_OPPushPresence_create
 			method = jni_env->GetMethodID(cls, "<init>", "()V");
 			object = jni_env->NewObject(cls, method);
 
-			IPushPresencePtr* ptrToPresence = new boost::shared_ptr<IPushPresence>(presencePtr);
+			IPushPresencePtr* ptrToPresence = new std::shared_ptr<IPushPresence>(presencePtr);
 			jfieldID fid = jni_env->GetFieldID(cls, "nativeClassPointer", "J");
 			jlong messaging = (jlong) ptrToPresence;
 			jni_env->SetLongField(object, fid, messaging);
 
 
-			PushPresenceDelegateWrapperPtr* ptrToPushPresenceDelegateWrapperPtr= new boost::shared_ptr<PushPresenceDelegateWrapper>(presenceDelegatePtr);
+			PushPresenceDelegateWrapperPtr* ptrToPushPresenceDelegateWrapperPtr= new std::shared_ptr<PushPresenceDelegateWrapper>(presenceDelegatePtr);
 			jfieldID delegateFid = jni_env->GetFieldID(cls, "nativeDelegatePointer", "J");
 			jlong delegate = (jlong) ptrToPushPresenceDelegateWrapperPtr;
 			jni_env->SetLongField(object, delegateFid, delegate);
 
-			//			PushMessagingDatabaseAbstractionDelegateWrapperPtr* ptrToPushMessagingDBAbstractionDelegateWrapperPtr= new boost::shared_ptr<PushMessagingDatabaseAbstractionDelegateWrapper>(messagingDBAbstractionDelegatePtr);
+			//			PushMessagingDatabaseAbstractionDelegateWrapperPtr* ptrToPushMessagingDBAbstractionDelegateWrapperPtr= new std::shared_ptr<PushMessagingDatabaseAbstractionDelegateWrapper>(messagingDBAbstractionDelegatePtr);
 			//			jfieldID dbDelegateFid = jni_env->GetFieldID(cls, "nativeDatabaseAbstractionDelegatePointer", "J");
 			//			jlong dbDelegate = (jlong) ptrToPushMessagingDBAbstractionDelegateWrapperPtr;
 			//			jni_env->SetLongField(object, dbDelegateFid, dbDelegate);
@@ -295,13 +295,13 @@ JNIEXPORT jobject JNICALL Java_com_openpeer_javaapi_OPPushPresence_registerDevic
 			method = jni_env->GetMethodID(queryCls, "<init>", "()V");
 			object = jni_env->NewObject(queryCls, method);
 
-			IPushPresenceRegisterQueryPtr* ptrToQuery = new boost::shared_ptr<IPushPresenceRegisterQuery>(queryPtr);
+			IPushPresenceRegisterQueryPtr* ptrToQuery = new std::shared_ptr<IPushPresenceRegisterQuery>(queryPtr);
 			jfieldID queryFid = jni_env->GetFieldID(queryCls, "nativeClassPointer", "J");
 			jlong query = (jlong) ptrToQuery;
 			jni_env->SetLongField(object, queryFid, query);
 
 
-			PushPresenceRegisterQueryDelegateWrapperPtr* ptrToQueryDelegateWrapperPtr= new boost::shared_ptr<PushPresenceRegisterQueryDelegateWrapper>(registerQueryDelegatePtr);
+			PushPresenceRegisterQueryDelegateWrapperPtr* ptrToQueryDelegateWrapperPtr= new std::shared_ptr<PushPresenceRegisterQueryDelegateWrapper>(registerQueryDelegatePtr);
 			jfieldID delegateFid = jni_env->GetFieldID(queryCls, "nativeDelegatePointer", "J");
 			jlong delegate = (jlong) ptrToQueryDelegateWrapperPtr;
 			jni_env->SetLongField(object, delegateFid, delegate);
@@ -463,7 +463,7 @@ JNIEXPORT jobject JNICALL Java_com_openpeer_javaapi_OPPushPresence_createValues
 
 	jni_env = getEnv();
 	ElementPtr coreEl = IPushPresence::createValues(OpenPeerCoreManager::presenceNameValueMapToCore(javaNameValueMap));
-	ElementPtr* ptrToElement = new boost::shared_ptr<Element>(coreEl);
+	ElementPtr* ptrToElement = new std::shared_ptr<Element>(coreEl);
 	cls = findClass("com/openpeer/javaapi/OPElement");
 	method = jni_env->GetMethodID(cls, "<init>", "()V");
 	object = jni_env->NewObject(cls, method);

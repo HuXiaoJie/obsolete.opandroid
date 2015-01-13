@@ -72,7 +72,7 @@ JNIEXPORT jobject JNICALL Java_com_openpeer_javaapi_OPToken_toDebug
 	if (coreTokenPtr)
 	{
 		ElementPtr coreEl = coreTokenPtr->get()->toDebug();
-		ElementPtr* ptrToElement = new boost::shared_ptr<Element>(coreEl);
+		ElementPtr* ptrToElement = new std::shared_ptr<Element>(coreEl);
 		cls = findClass("com/openpeer/javaapi/OPElement");
 		method = jni_env->GetMethodID(cls, "<init>", "()V");
 		object = jni_env->NewObject(cls, method);
@@ -175,7 +175,7 @@ JNIEXPORT jobject JNICALL Java_com_openpeer_javaapi_OPToken_create__Ljava_lang_S
 	if(coreToken->hasData())
 	{
 		UseTokenPtr coreTokenPtr = UseTokenPtr(coreToken);
-		UseTokenPtr* ptrToToken = new boost::shared_ptr<IIdentity::Token>(coreTokenPtr);
+		UseTokenPtr* ptrToToken = new std::shared_ptr<IIdentity::Token>(coreTokenPtr);
 		cls = findClass("com/openpeer/javaapi/OPToken");
 		method = jni_env->GetMethodID(cls, "<init>", "()V");
 		object = jni_env->NewObject(cls, method);
@@ -221,7 +221,7 @@ JNIEXPORT jobject JNICALL Java_com_openpeer_javaapi_OPToken_create__Lcom_openpee
 	if(coreToken->hasData())
 	{
 		UseTokenPtr coreTokenPtr = UseTokenPtr(coreToken);
-		UseTokenPtr* ptrToToken = new boost::shared_ptr<IIdentity::Token>(coreTokenPtr);
+		UseTokenPtr* ptrToToken = new std::shared_ptr<IIdentity::Token>(coreTokenPtr);
 		cls = findClass("com/openpeer/javaapi/OPToken");
 		method = jni_env->GetMethodID(cls, "<init>", "()V");
 		object = jni_env->NewObject(cls, method);
@@ -285,7 +285,7 @@ JNIEXPORT jobject JNICALL Java_com_openpeer_javaapi_OPToken_createProof
 		if(coreToken->hasData())
 		{
 			UseTokenPtr coreTokenPtr = UseTokenPtr(coreToken);
-			UseTokenPtr* ptrToToken = new boost::shared_ptr<IIdentity::Token>(coreTokenPtr);
+			UseTokenPtr* ptrToToken = new std::shared_ptr<IIdentity::Token>(coreTokenPtr);
 			cls = findClass("com/openpeer/javaapi/OPToken");
 			method = jni_env->GetMethodID(cls, "<init>", "()V");
 			object = jni_env->NewObject(cls, method);
@@ -332,7 +332,7 @@ JNIEXPORT jobject JNICALL Java_com_openpeer_javaapi_OPToken_createElement
 	UseTokenPtr* coreTokenPtr = (UseTokenPtr*)pointerValue;
 	if(coreTokenPtr) {
 		ElementPtr coreEl = coreTokenPtr->get()->createElement();
-		ElementPtr* ptrToElement = new boost::shared_ptr<Element>(coreEl);
+		ElementPtr* ptrToElement = new std::shared_ptr<Element>(coreEl);
 		cls = findClass("com/openpeer/javaapi/OPElement");
 		method = jni_env->GetMethodID(cls, "<init>", "()V");
 		object = jni_env->NewObject(cls, method);

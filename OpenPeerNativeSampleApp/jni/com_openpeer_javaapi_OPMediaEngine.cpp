@@ -73,7 +73,7 @@ JNIEXPORT jobject JNICALL Java_com_openpeer_javaapi_OPMediaEngine_singleton
 
 
 #endif
-		IMediaEnginePtr* ptrToMediaEngine = new boost::shared_ptr<IMediaEngine>(IMediaEngine::singleton());
+		IMediaEnginePtr* ptrToMediaEngine = new std::shared_ptr<IMediaEngine>(IMediaEngine::singleton());
 		jfieldID fid = jni_env->GetFieldID(cls, "nativeClassPointer", "J");
 		jlong engine = (jlong) ptrToMediaEngine;
 		jni_env->SetLongField(object, fid, engine);

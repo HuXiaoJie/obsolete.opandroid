@@ -30,7 +30,7 @@ JNIEXPORT jobject JNICALL Java_com_openpeer_javaapi_OPPushPresenceStatus_createE
 	ElementPtr statusEl = IPushPresence::Status::createEmptyPresence();
 	if(statusEl)
 	{
-		ElementPtr* ptrToElement = new boost::shared_ptr<Element>(statusEl);
+		ElementPtr* ptrToElement = new std::shared_ptr<Element>(statusEl);
 		cls = findClass("com/openpeer/javaapi/OPElement");
 		method = jni_env->GetMethodID(cls, "<init>", "()V");
 		object = jni_env->NewObject(cls, method);
@@ -107,7 +107,7 @@ JNIEXPORT jobject JNICALL Java_com_openpeer_javaapi_OPPushPresenceStatus_toDebug
 	if (coreStatusPtr)
 	{
 		ElementPtr coreEl = coreStatusPtr->get()->toDebug();
-		ElementPtr* ptrToElement = new boost::shared_ptr<Element>(coreEl);
+		ElementPtr* ptrToElement = new std::shared_ptr<Element>(coreEl);
 		cls = findClass("com/openpeer/javaapi/OPElement");
 		method = jni_env->GetMethodID(cls, "<init>", "()V");
 		object = jni_env->NewObject(cls, method);

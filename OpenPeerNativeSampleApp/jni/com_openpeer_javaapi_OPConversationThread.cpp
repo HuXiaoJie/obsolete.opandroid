@@ -256,7 +256,7 @@ JNIEXPORT jobject JNICALL Java_com_openpeer_javaapi_OPConversationThread_create
 			method = jni_env->GetMethodID(cls, "<init>", "()V");
 			object = jni_env->NewObject(cls, method);
 
-			IConversationThreadPtr* ptrToConversationThread = new boost::shared_ptr<IConversationThread>(conversationThreadPtr);
+			IConversationThreadPtr* ptrToConversationThread = new std::shared_ptr<IConversationThread>(conversationThreadPtr);
 			jfieldID fid = jni_env->GetFieldID(cls, "nativeClassPointer", "J");
 			jlong convThread = (jlong) ptrToConversationThread;
 			jni_env->SetLongField(object, fid, convThread);
@@ -324,7 +324,7 @@ JNIEXPORT jobject JNICALL Java_com_openpeer_javaapi_OPConversationThread_getConv
 			jmethodID conversationThreadConstructorMethodID = jni_env->GetMethodID(conversationThreadClass, "<init>", "()V");
 			jobject conversationThreadObject = jni_env->NewObject(conversationThreadClass, conversationThreadConstructorMethodID);
 
-			IConversationThreadPtr* ptrToConversationThread = new boost::shared_ptr<IConversationThread>(*coreListIter);
+			IConversationThreadPtr* ptrToConversationThread = new std::shared_ptr<IConversationThread>(*coreListIter);
 			jfieldID fid = jni_env->GetFieldID(conversationThreadClass, "nativeClassPointer", "J");
 			jlong convThread = (jlong) ptrToConversationThread;
 			jni_env->SetLongField(conversationThreadObject, fid, convThread);
@@ -387,7 +387,7 @@ JNIEXPORT jobject JNICALL Java_com_openpeer_javaapi_OPConversationThread_getConv
 			method = jni_env->GetMethodID(cls, "<init>", "()V");
 			object = jni_env->NewObject(cls, method);
 
-			IConversationThreadPtr* ptrToConversationThread = new boost::shared_ptr<IConversationThread>(conversationThreadPtr);
+			IConversationThreadPtr* ptrToConversationThread = new std::shared_ptr<IConversationThread>(conversationThreadPtr);
 			jfieldID fid = jni_env->GetFieldID(cls, "nativeClassPointer", "J");
 			jlong convThread = (jlong) ptrToConversationThread;
 			jni_env->SetLongField(object, fid, convThread);
@@ -518,7 +518,7 @@ JNIEXPORT jobject JNICALL Java_com_openpeer_javaapi_OPConversationThread_getAsso
 			jmethodID accountMethod = jni_env->GetMethodID(accountClass, "<init>", "()V");
 			accountObject = jni_env->NewObject(accountClass, accountMethod);
 
-			IAccountPtr* ptrToAccount = new boost::shared_ptr<IAccount>(accountPtr);
+			IAccountPtr* ptrToAccount = new std::shared_ptr<IAccount>(accountPtr);
 			jfieldID fid = jni_env->GetFieldID(accountClass, "nativeClassPointer", "J");
 			jlong acc = (jlong) ptrToAccount;
 			jni_env->SetLongField(accountObject, fid, acc);
@@ -585,7 +585,7 @@ JNIEXPORT jobject JNICALL Java_com_openpeer_javaapi_OPConversationThread_getCont
 			jmethodID contactConstructorMethodID = jni_env->GetMethodID(contactClass, "<init>", "()V");
 			jobject contactObject = jni_env->NewObject(contactClass, contactConstructorMethodID);
 
-			IContactPtr* ptrToContact = new boost::shared_ptr<IContact>(*coreListIter);
+			IContactPtr* ptrToContact = new std::shared_ptr<IContact>(*coreListIter);
 			jfieldID fid = jni_env->GetFieldID(contactClass, "nativeClassPointer", "J");
 			jlong contact = (jlong) ptrToContact;
 			jni_env->SetLongField(contactObject, fid, contact);
@@ -1016,7 +1016,7 @@ JNIEXPORT jobject JNICALL Java_com_openpeer_javaapi_OPConversationThread_createE
 	jni_env = getEnv();
 
 	ElementPtr coreEl = IConversationThread::createEmptyStatus();
-	ElementPtr* ptrToElement = new boost::shared_ptr<Element>(coreEl);
+	ElementPtr* ptrToElement = new std::shared_ptr<Element>(coreEl);
 	cls = findClass("com/openpeer/javaapi/OPElement");
 	method = jni_env->GetMethodID(cls, "<init>", "()V");
 	object = jni_env->NewObject(cls, method);
@@ -1057,7 +1057,7 @@ JNIEXPORT jobject JNICALL Java_com_openpeer_javaapi_OPConversationThread_getCont
 	if (coreConversationThreadPtr &&coreContactPtr)
 	{
 		ElementPtr coreEl = coreConversationThreadPtr->get()->getContactStatus(*coreContactPtr);
-		ElementPtr* ptrToElement = new boost::shared_ptr<Element>(coreEl);
+		ElementPtr* ptrToElement = new std::shared_ptr<Element>(coreEl);
 		cls = findClass("com/openpeer/javaapi/OPElement");
 		method = jni_env->GetMethodID(cls, "<init>", "()V");
 		object = jni_env->NewObject(cls, method);
@@ -1220,7 +1220,7 @@ JNIEXPORT jobject JNICALL Java_com_openpeer_javaapi_OPConversationThread_getMess
 				jmethodID contactConstructorMethodID = jni_env->GetMethodID(contactClass, "<init>", "()V");
 				jobject from = jni_env->NewObject(contactClass, contactConstructorMethodID);
 
-				IContactPtr* ptrToContact = new boost::shared_ptr<IContact>(outFrom);
+				IContactPtr* ptrToContact = new std::shared_ptr<IContact>(outFrom);
 				jfieldID fid = jni_env->GetFieldID(contactClass, "nativeClassPointer", "J");
 				jlong contact = (jlong) ptrToContact;
 				jni_env->SetLongField(from, fid, contact);

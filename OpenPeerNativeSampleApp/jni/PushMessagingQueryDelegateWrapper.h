@@ -21,6 +21,6 @@ public:
 	virtual ~PushMessagingQueryDelegateWrapper();
 };
 
-typedef boost::shared_ptr<PushMessagingQueryDelegateWrapper> PushMessagingQueryDelegateWrapperPtr;
+typedef std::shared_ptr<PushMessagingQueryDelegateWrapper> PushMessagingQueryDelegateWrapperPtr;
 
 #endif //_PUSH_MESSAGING_QUERY_DELEGATE_WRAPPER_H_

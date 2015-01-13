@@ -45,7 +45,7 @@ void PushMessagingRegisterQueryDelegateWrapper::onPushMessagingRegisterQueryComp
 		jobject pushMessagingRegisterQueryObject = jni_env->NewObject(cls, method);
 
 		//fill new field with pointer to core pointer
-		IPushMessagingRegisterQueryPtr* ptrToPushMessagingRegisterQuery = new boost::shared_ptr<IPushMessagingRegisterQuery>(query);
+		IPushMessagingRegisterQueryPtr* ptrToPushMessagingRegisterQuery = new std::shared_ptr<IPushMessagingRegisterQuery>(query);
 		jfieldID fid = jni_env->GetFieldID(cls, "nativeClassPointer", "J");
 		jni_env->SetLongField(pushMessagingRegisterQueryObject, fid, (jlong)ptrToPushMessagingRegisterQuery);
 

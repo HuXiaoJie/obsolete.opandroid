@@ -176,7 +176,7 @@ JNIEXPORT jobject JNICALL Java_com_openpeer_javaapi_OPPresenceResources_toDebug
 	if (corePresenceResourcesPtr)
 	{
 		ElementPtr coreEl = corePresenceResourcesPtr->get()->toDebug();
-		ElementPtr* ptrToElement = new boost::shared_ptr<Element>(coreEl);
+		ElementPtr* ptrToElement = new std::shared_ptr<Element>(coreEl);
 		cls = findClass("com/openpeer/javaapi/OPElement");
 		method = jni_env->GetMethodID(cls, "<init>", "()V");
 		object = jni_env->NewObject(cls, method);

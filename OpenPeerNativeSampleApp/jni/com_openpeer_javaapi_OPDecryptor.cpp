@@ -50,7 +50,7 @@ JNIEXPORT jobject JNICALL Java_com_openpeer_javaapi_OPDecryptor_create
 			method = jni_env->GetMethodID(cls, "<init>", "()V");
 			object = jni_env->NewObject(cls, method);
 
-			IDecryptorPtr* ptrToDecryptor = new boost::shared_ptr<IDecryptor>(decryptorPtr);
+			IDecryptorPtr* ptrToDecryptor = new std::shared_ptr<IDecryptor>(decryptorPtr);
 			jfieldID fid = jni_env->GetFieldID(cls, "nativeClassPointer", "J");
 			jlong decryptor = (jlong) ptrToDecryptor;
 			jni_env->SetLongField(object, fid, decryptor);

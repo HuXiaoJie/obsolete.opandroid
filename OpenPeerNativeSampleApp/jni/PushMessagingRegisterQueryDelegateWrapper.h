@@ -20,6 +20,6 @@ public:
 	virtual ~PushMessagingRegisterQueryDelegateWrapper();
 };
 
-typedef boost::shared_ptr<PushMessagingRegisterQueryDelegateWrapper> PushMessagingRegisterQueryDelegateWrapperPtr;
+typedef std::shared_ptr<PushMessagingRegisterQueryDelegateWrapper> PushMessagingRegisterQueryDelegateWrapperPtr;
 
 #endif //_PUSH_MESSAGING_REGISTER_QUERY_DELEGATE_WRAPPER_H_

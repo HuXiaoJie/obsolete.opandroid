@@ -44,6 +44,6 @@ public:
 	virtual ~ConversationThreadDelegateWrapper();
 };
 
-typedef boost::shared_ptr<ConversationThreadDelegateWrapper> ConversationThreadDelegateWrapperPtr;
+typedef std::shared_ptr<ConversationThreadDelegateWrapper> ConversationThreadDelegateWrapperPtr;
 
 #endif //_CONVERSATION_THREAD_DELEGATE_WRAPPER_H_

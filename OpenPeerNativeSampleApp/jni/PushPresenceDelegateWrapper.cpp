@@ -45,7 +45,7 @@ void PushPresenceDelegateWrapper::onPushPresenceStateChanged(IPushPresencePtr pr
 		jobject pushPresenceObject = jni_env->NewObject(cls, method);
 
 		//fill new field with pointer to core pointer
-		IPushPresencePtr* ptrToPushPresence = new boost::shared_ptr<IPushPresence>(presence);
+		IPushPresencePtr* ptrToPushPresence = new std::shared_ptr<IPushPresence>(presence);
 		jfieldID fid = jni_env->GetFieldID(cls, "nativeClassPointer", "J");
 		jni_env->SetLongField(pushPresenceObject, fid, (jlong)ptrToPushPresence);
 
@@ -104,7 +104,7 @@ void PushPresenceDelegateWrapper::onPushPresenceNewStatus(IPushPresencePtr prese
 		jobject pushPresenceObject = jni_env->NewObject(cls, method);
 
 		//fill new field with pointer to core pointer
-		IPushPresencePtr* ptrToPushPresence = new boost::shared_ptr<IPushPresence>(presence);
+		IPushPresencePtr* ptrToPushPresence = new std::shared_ptr<IPushPresence>(presence);
 		jfieldID fid = jni_env->GetFieldID(cls, "nativeClassPointer", "J");
 		jni_env->SetLongField(pushPresenceObject, fid, (jlong)ptrToPushPresence);
 
@@ -113,7 +113,7 @@ void PushPresenceDelegateWrapper::onPushPresenceNewStatus(IPushPresencePtr prese
 		jobject pushPresenceStatusObject = jni_env->NewObject(statusClass, statusMethod);
 
 		//fill new field with pointer to core pointer
-		IPushPresence::StatusPtr* ptrToPushPresenceStatus = new boost::shared_ptr<IPushPresence::Status>(status);
+		IPushPresence::StatusPtr* ptrToPushPresenceStatus = new std::shared_ptr<IPushPresence::Status>(status);
 		jfieldID statusFid = jni_env->GetFieldID(statusClass, "nativeClassPointer", "J");
 		jni_env->SetLongField(pushPresenceStatusObject, statusFid, (jlong)ptrToPushPresenceStatus);
 

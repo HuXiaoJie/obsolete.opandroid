@@ -20,6 +20,6 @@ public:
 	virtual ~StackDelegateWrapper();
 };
 
-typedef boost::shared_ptr<StackDelegateWrapper> StackDelegateWrapperPtr;
+typedef std::shared_ptr<StackDelegateWrapper> StackDelegateWrapperPtr;
 
 #endif //_STACK_DELEGATE_WRAPPER_H_

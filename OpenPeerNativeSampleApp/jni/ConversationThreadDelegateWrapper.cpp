@@ -41,7 +41,7 @@ void ConversationThreadDelegateWrapper::onConversationThreadNew(IConversationThr
 		method = jni_env->GetMethodID(cls, "<init>", "()V");
 		object = jni_env->NewObject(cls, method);
 
-		IConversationThreadPtr* ptrToConversationThread = new boost::shared_ptr<IConversationThread>(conversationThread);
+		IConversationThreadPtr* ptrToConversationThread = new std::shared_ptr<IConversationThread>(conversationThread);
 		jfieldID fid = jni_env->GetFieldID(cls, "nativeClassPointer", "J");
 		jlong convThread = (jlong) ptrToConversationThread;
 		jni_env->SetLongField(object, fid, convThread);
@@ -96,7 +96,7 @@ void ConversationThreadDelegateWrapper::onConversationThreadContactsChanged(ICon
 		method = jni_env->GetMethodID(cls, "<init>", "()V");
 		object = jni_env->NewObject(cls, method);
 
-		IConversationThreadPtr* ptrToConversationThread = new boost::shared_ptr<IConversationThread>(conversationThread);
+		IConversationThreadPtr* ptrToConversationThread = new std::shared_ptr<IConversationThread>(conversationThread);
 		jfieldID fid = jni_env->GetFieldID(cls, "nativeClassPointer", "J");
 		jlong convThread = (jlong) ptrToConversationThread;
 		jni_env->SetLongField(object, fid, convThread);
@@ -154,7 +154,7 @@ void ConversationThreadDelegateWrapper::onConversationThreadContactConnectionSta
 		jmethodID ctmethod = jni_env->GetMethodID(conversationThreadClass, "<init>", "()V");
 		convThreadObject = jni_env->NewObject(conversationThreadClass, ctmethod);
 
-		IConversationThreadPtr* ptrToConversationThread = new boost::shared_ptr<IConversationThread>(conversationThread);
+		IConversationThreadPtr* ptrToConversationThread = new std::shared_ptr<IConversationThread>(conversationThread);
 		jfieldID ctfid = jni_env->GetFieldID(conversationThreadClass, "nativeClassPointer", "J");
 		jlong convThread = (jlong) ptrToConversationThread;
 		jni_env->SetLongField(convThreadObject, ctfid, convThread);
@@ -164,7 +164,7 @@ void ConversationThreadDelegateWrapper::onConversationThreadContactConnectionSta
 		jmethodID contactConstructor = jni_env->GetMethodID(contactClass, "<init>", "()V");
 		contactObject = jni_env->NewObject(contactClass, contactConstructor);
 
-		IContactPtr* ptrToContact = new boost::shared_ptr<IContact>(contact);
+		IContactPtr* ptrToContact = new std::shared_ptr<IContact>(contact);
 		jfieldID fid = jni_env->GetFieldID(contactClass, "nativeClassPointer", "J");
 		jlong ptrforJava = (jlong) ptrToContact;
 		jni_env->SetLongField(contactObject, fid, ptrforJava);
@@ -214,7 +214,7 @@ void ConversationThreadDelegateWrapper::onConversationThreadContactStatusChanged
 		jmethodID ctmethod = jni_env->GetMethodID(conversationThreadClass, "<init>", "()V");
 		convThreadObject = jni_env->NewObject(conversationThreadClass, ctmethod);
 
-		IConversationThreadPtr* ptrToConversationThread = new boost::shared_ptr<IConversationThread>(conversationThread);
+		IConversationThreadPtr* ptrToConversationThread = new std::shared_ptr<IConversationThread>(conversationThread);
 		jfieldID ctfid = jni_env->GetFieldID(conversationThreadClass, "nativeClassPointer", "J");
 		jlong convThread = (jlong) ptrToConversationThread;
 		jni_env->SetLongField(convThreadObject, ctfid, convThread);
@@ -224,7 +224,7 @@ void ConversationThreadDelegateWrapper::onConversationThreadContactStatusChanged
 		jmethodID contactConstructor = jni_env->GetMethodID(contactClass, "<init>", "()V");
 		contactObject = jni_env->NewObject(contactClass, contactConstructor);
 
-		IContactPtr* ptrToContact = new boost::shared_ptr<IContact>(contact);
+		IContactPtr* ptrToContact = new std::shared_ptr<IContact>(contact);
 		jfieldID fid = jni_env->GetFieldID(contactClass, "nativeClassPointer", "J");
 		jlong ptrforJava = (jlong) ptrToContact;
 		jni_env->SetLongField(contactObject, fid, ptrforJava);
@@ -282,7 +282,7 @@ void ConversationThreadDelegateWrapper::onConversationThreadMessage(
 		jmethodID ctmethod = jni_env->GetMethodID(Ctcls, "<init>", "()V");
 		jobject convThreadObject = jni_env->NewObject(Ctcls, ctmethod);
 
-		IConversationThreadPtr* ptrToConversationThread = new boost::shared_ptr<IConversationThread>(conversationThread);
+		IConversationThreadPtr* ptrToConversationThread = new std::shared_ptr<IConversationThread>(conversationThread);
 		jfieldID ctfid = jni_env->GetFieldID(Ctcls, "nativeClassPointer", "J");
 		jlong convThread = (jlong) ptrToConversationThread;
 		jni_env->SetLongField(convThreadObject, ctfid, convThread);
@@ -343,7 +343,7 @@ void ConversationThreadDelegateWrapper::onConversationThreadMessageDeliveryState
 		method = jni_env->GetMethodID(cls, "<init>", "()V");
 		object = jni_env->NewObject(cls, method);
 
-		IConversationThreadPtr* ptrToConversationThread = new boost::shared_ptr<IConversationThread>(conversationThread);
+		IConversationThreadPtr* ptrToConversationThread = new std::shared_ptr<IConversationThread>(conversationThread);
 		jfieldID fid = jni_env->GetFieldID(cls, "nativeClassPointer", "J");
 		jlong convThread = (jlong) ptrToConversationThread;
 		jni_env->SetLongField(object, fid, convThread);
@@ -406,7 +406,7 @@ void ConversationThreadDelegateWrapper::onConversationThreadPushMessage(
 		jmethodID ctmethod = jni_env->GetMethodID(Ctcls, "<init>", "()V");
 		convThreadObject = jni_env->NewObject(Ctcls, ctmethod);
 
-		IConversationThreadPtr* ptrToConversationThread = new boost::shared_ptr<IConversationThread>(conversationThread);
+		IConversationThreadPtr* ptrToConversationThread = new std::shared_ptr<IConversationThread>(conversationThread);
 		jfieldID ctfid = jni_env->GetFieldID(Ctcls, "nativeClassPointer", "J");
 		jlong convThread = (jlong) ptrToConversationThread;
 		jni_env->SetLongField(convThreadObject, ctfid, convThread);
@@ -416,7 +416,7 @@ void ConversationThreadDelegateWrapper::onConversationThreadPushMessage(
 		jmethodID contactConstructor = jni_env->GetMethodID(contactCls, "<init>", "()V");
 		contactObject = jni_env->NewObject(contactCls, contactConstructor);
 
-		IContactPtr* ptrToContact = new boost::shared_ptr<IContact>(contactPtr);
+		IContactPtr* ptrToContact = new std::shared_ptr<IContact>(contactPtr);
 		jfieldID fid = jni_env->GetFieldID(contactCls, "nativeClassPointer", "J");
 		jlong contact = (jlong) ptrToContact;
 		jni_env->SetLongField(contactObject, fid, contact);

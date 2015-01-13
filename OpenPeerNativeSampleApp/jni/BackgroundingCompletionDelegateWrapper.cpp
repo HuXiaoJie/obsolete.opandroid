@@ -48,7 +48,7 @@ void BackgroundingCompletionDelegateWrapper::onBackgroundingReady(IBackgrounding
 		jobject queryObject = jni_env->NewObject(cls, method);
 
 		//fill new field with pointer to core pointer
-		IBackgroundingQueryPtr* ptrToQuery = new boost::shared_ptr<IBackgroundingQuery>(query);
+		IBackgroundingQueryPtr* ptrToQuery = new std::shared_ptr<IBackgroundingQuery>(query);
 		jfieldID fid = jni_env->GetFieldID(cls, "nativeClassPointer", "J");
 		jni_env->SetLongField(queryObject, fid, (jlong)ptrToQuery);
 

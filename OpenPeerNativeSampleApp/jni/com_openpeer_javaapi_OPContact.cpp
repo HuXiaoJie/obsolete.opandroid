@@ -69,7 +69,7 @@ JNIEXPORT jobject JNICALL Java_com_openpeer_javaapi_OPContact_createFromPeerFile
 			method = jni_env->GetMethodID(cls, "<init>", "()V");
 			object = jni_env->NewObject(cls, method);
 
-			IContactPtr* ptrToContact = new boost::shared_ptr<IContact>(contactPtr);
+			IContactPtr* ptrToContact = new std::shared_ptr<IContact>(contactPtr);
 			jfieldID fid = jni_env->GetFieldID(cls, "nativeClassPointer", "J");
 			jlong contact = (jlong) ptrToContact;
 			jni_env->SetLongField(object, fid, contact);
@@ -127,7 +127,7 @@ JNIEXPORT jobject JNICALL Java_com_openpeer_javaapi_OPContact_getForSelf
 			method = jni_env->GetMethodID(cls, "<init>", "()V");
 			object = jni_env->NewObject(cls, method);
 
-			IContactPtr* ptrToContact = new boost::shared_ptr<IContact>(contactPtr);
+			IContactPtr* ptrToContact = new std::shared_ptr<IContact>(contactPtr);
 			jfieldID fid = jni_env->GetFieldID(cls, "nativeClassPointer", "J");
 			jlong contact = (jlong) ptrToContact;
 			jni_env->SetLongField(object, fid, contact);
@@ -304,7 +304,7 @@ JNIEXPORT jobject JNICALL Java_com_openpeer_javaapi_OPContact_getAssociatedAccou
 			jmethodID accountMethod = jni_env->GetMethodID(accountClass, "<init>", "()V");
 			accountObject = jni_env->NewObject(accountClass, accountMethod);
 
-			IAccountPtr* ptrToAccount = new boost::shared_ptr<IAccount>(accountPtr);
+			IAccountPtr* ptrToAccount = new std::shared_ptr<IAccount>(accountPtr);
 			jfieldID fid = jni_env->GetFieldID(accountClass, "nativeClassPointer", "J");
 			jlong acc = (jlong) ptrToAccount;
 			jni_env->SetLongField(accountObject, fid, acc);

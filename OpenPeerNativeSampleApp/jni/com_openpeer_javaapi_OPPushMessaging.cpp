@@ -56,18 +56,18 @@ JNIEXPORT jobject JNICALL Java_com_openpeer_javaapi_OPPushMessaging_create
 			method = jni_env->GetMethodID(cls, "<init>", "()V");
 			object = jni_env->NewObject(cls, method);
 
-			IPushMessagingPtr* ptrToMessaging = new boost::shared_ptr<IPushMessaging>(messagingPtr);
+			IPushMessagingPtr* ptrToMessaging = new std::shared_ptr<IPushMessaging>(messagingPtr);
 			jfieldID fid = jni_env->GetFieldID(cls, "nativeClassPointer", "J");
 			jlong messaging = (jlong) ptrToMessaging;
 			jni_env->SetLongField(object, fid, messaging);
 
 
-			PushMessagingDelegateWrapperPtr* ptrToPushMessagingDelegateWrapperPtr= new boost::shared_ptr<PushMessagingDelegateWrapper>(messagingDelegatePtr);
+			PushMessagingDelegateWrapperPtr* ptrToPushMessagingDelegateWrapperPtr= new std::shared_ptr<PushMessagingDelegateWrapper>(messagingDelegatePtr);
 			jfieldID delegateFid = jni_env->GetFieldID(cls, "nativeDelegatePointer", "J");
 			jlong delegate = (jlong) ptrToPushMessagingDelegateWrapperPtr;
 			jni_env->SetLongField(object, delegateFid, delegate);
 
-//			PushMessagingDatabaseAbstractionDelegateWrapperPtr* ptrToPushMessagingDBAbstractionDelegateWrapperPtr= new boost::shared_ptr<PushMessagingDatabaseAbstractionDelegateWrapper>(messagingDBAbstractionDelegatePtr);
+//			PushMessagingDatabaseAbstractionDelegateWrapperPtr* ptrToPushMessagingDBAbstractionDelegateWrapperPtr= new std::shared_ptr<PushMessagingDatabaseAbstractionDelegateWrapper>(messagingDBAbstractionDelegatePtr);
 //			jfieldID dbDelegateFid = jni_env->GetFieldID(cls, "nativeDatabaseAbstractionDelegatePointer", "J");
 //			jlong dbDelegate = (jlong) ptrToPushMessagingDBAbstractionDelegateWrapperPtr;
 //			jni_env->SetLongField(object, dbDelegateFid, dbDelegate);
@@ -295,13 +295,13 @@ JNIEXPORT jobject JNICALL Java_com_openpeer_javaapi_OPPushMessaging_registerDevi
 			method = jni_env->GetMethodID(queryCls, "<init>", "()V");
 			object = jni_env->NewObject(queryCls, method);
 
-			IPushMessagingRegisterQueryPtr* ptrToQuery = new boost::shared_ptr<IPushMessagingRegisterQuery>(queryPtr);
+			IPushMessagingRegisterQueryPtr* ptrToQuery = new std::shared_ptr<IPushMessagingRegisterQuery>(queryPtr);
 			jfieldID queryFid = jni_env->GetFieldID(queryCls, "nativeClassPointer", "J");
 			jlong query = (jlong) ptrToQuery;
 			jni_env->SetLongField(object, queryFid, query);
 
 
-			PushMessagingRegisterQueryDelegateWrapperPtr* ptrToQueryDelegateWrapperPtr= new boost::shared_ptr<PushMessagingRegisterQueryDelegateWrapper>(registerQueryDelegatePtr);
+			PushMessagingRegisterQueryDelegateWrapperPtr* ptrToQueryDelegateWrapperPtr= new std::shared_ptr<PushMessagingRegisterQueryDelegateWrapper>(registerQueryDelegatePtr);
 			jfieldID delegateFid = jni_env->GetFieldID(queryCls, "nativeDelegatePointer", "J");
 			jlong delegate = (jlong) ptrToQueryDelegateWrapperPtr;
 			jni_env->SetLongField(object, delegateFid, delegate);
@@ -404,13 +404,13 @@ JNIEXPORT jobject JNICALL Java_com_openpeer_javaapi_OPPushMessaging_push
 			method = jni_env->GetMethodID(queryCls, "<init>", "()V");
 			object = jni_env->NewObject(queryCls, method);
 
-			IPushMessagingQueryPtr* ptrToQuery = new boost::shared_ptr<IPushMessagingQuery>(queryPtr);
+			IPushMessagingQueryPtr* ptrToQuery = new std::shared_ptr<IPushMessagingQuery>(queryPtr);
 			jfieldID queryFid = jni_env->GetFieldID(queryCls, "nativeClassPointer", "J");
 			jlong query = (jlong) ptrToQuery;
 			jni_env->SetLongField(object, queryFid, query);
 
 
-			PushMessagingQueryDelegateWrapperPtr* ptrToQueryDelegateWrapperPtr= new boost::shared_ptr<PushMessagingQueryDelegateWrapper>(queryDelegatePtr);
+			PushMessagingQueryDelegateWrapperPtr* ptrToQueryDelegateWrapperPtr= new std::shared_ptr<PushMessagingQueryDelegateWrapper>(queryDelegatePtr);
 			jfieldID delegateFid = jni_env->GetFieldID(queryCls, "nativeDelegatePointer", "J");
 			jlong delegate = (jlong) ptrToQueryDelegateWrapperPtr;
 			jni_env->SetLongField(object, delegateFid, delegate);
@@ -532,7 +532,7 @@ JNIEXPORT jobject JNICALL Java_com_openpeer_javaapi_OPPushMessaging_createValues
 
 	jni_env = getEnv();
 	ElementPtr coreEl = IPushMessaging::createValues(OpenPeerCoreManager::nameValueMapToCore(javaNameValueMap));
-	ElementPtr* ptrToElement = new boost::shared_ptr<Element>(coreEl);
+	ElementPtr* ptrToElement = new std::shared_ptr<Element>(coreEl);
 	cls = findClass("com/openpeer/javaapi/OPElement");
 	method = jni_env->GetMethodID(cls, "<init>", "()V");
 	object = jni_env->NewObject(cls, method);
