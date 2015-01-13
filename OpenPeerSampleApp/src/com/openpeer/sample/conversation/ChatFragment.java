@@ -838,17 +838,21 @@ public class ChatFragment extends BaseFragment implements
     }
 
     void getNewContactsBasedConversation() {
+        mSession.unregisterListener(this);
         mType = GroupChatMode.contact.name();
         mSession = ConversationManager.getInstance().
             getConversation(GroupChatMode.contact, mParticipantInfo, null, true);
         mConversationId = mSession.getConversationId();
+        mSession.registerListener(this);
     }
 
     void getNewThreadBasedConversation() {
+        mSession.unregisterListener(this);
         mSession = ConversationManager.getInstance().
             getConversation(GroupChatMode.thread, mParticipantInfo, null, true);
         mConversationId = mSession.getConversationId();
         mType = GroupChatMode.thread.toString();
+        mSession.registerListener(this);
 
     }
 
