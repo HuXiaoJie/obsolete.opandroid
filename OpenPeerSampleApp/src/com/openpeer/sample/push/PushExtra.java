@@ -1,7 +1,47 @@
 package com.openpeer.sample.push;
 
 import com.openpeer.sdk.model.GsonFactory;
+
+import org.json.JSONException;
+import org.json.JSONObject;
+
 public class PushExtra {
+    public String getPeerURI() {
+        return peerURI;
+    }
+
+    public String getPeerURIs() {
+        return peerURIs;
+    }
+
+    public String getLocation() {
+        return location;
+    }
+
+    public String getMessageType() {
+        return messageType;
+    }
+
+    public String getMessageId() {
+        return messageId;
+    }
+
+    public String getReplacesMessageId() {
+        return replacesMessageId;
+    }
+
+    public String getDate() {
+        return date;
+    }
+
+    public String getConversationId() {
+        return conversationId;
+    }
+
+    public String getConversationType() {
+        return conversationType;
+    }
+
     String peerURI;
     String peerURIs;
     String location;
@@ -16,9 +56,9 @@ public class PushExtra {
     PushExtra() {
     }
 
-    PushExtra(String peerUri, String peerUris, String messageType, String messageId,
-              String replacesMessageId, String conversationType, String conversationId,
-              String location, String timeInMillis) {
+    public PushExtra(String peerUri, String peerUris, String messageType, String messageId,
+                     String replacesMessageId, String conversationType, String conversationId,
+                     String location, String timeInMillis) {
         this.peerURI = peerUri;
         this.peerURIs = peerUris;
         this.messageType = messageType;
@@ -29,7 +69,20 @@ public class PushExtra {
         this.date = timeInMillis;
         this.location = location;
     }
-    public String toJsonBlob(){
+
+    public static PushExtra fromString(String jsonBlob) {
+        return GsonFactory.getGson().fromJson(jsonBlob, PushExtra.class);
+    }
+
+    public String toJsonBlob() {
         return GsonFactory.getGson().toJson(this);
+    }
+
+    public JSONObject toJsonObject() {
+        try {
+            return new JSONObject(toJsonBlob());
+        } catch(JSONException e) {
+            return null;
+        }
     }
 }

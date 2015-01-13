@@ -2,16 +2,16 @@
  *
  *  Copyright (c) 2014 , Hookflash Inc.
  *  All rights reserved.
- *  
+ *
  *  Redistribution and use in source and binary forms, with or without
  *  modification, are permitted provided that the following conditions are met:
- *  
+ *
  *  1. Redistributions of source code must retain the above copyright notice, this
  *  list of conditions and the following disclaimer.
  *  2. Redistributions in binary form must reproduce the above copyright notice,
  *  this list of conditions and the following disclaimer in the documentation
  *  and/or other materials provided with the distribution.
- *  
+ *
  *  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
  *  ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
  *  WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
@@ -22,7 +22,7 @@
  *  ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
  *  (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  *  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- *  
+ *
  *  The views and conclusions contained in the software and documentation are those
  *  of the authors and should not be interpreted as representing official policies,
  *  either expressed or implied, of the FreeBSD Project.
@@ -55,6 +55,8 @@ public class SettingsHelper {
     public static final String KEY_OUT_LOG_SERVER = "defaultOutgoingTelnetServer";
     public static final String KEY_FILE_LOGGER_PATH = "log_file";
     public static final String KEY_TELENT_LOGGER = "local_telnet_logger";
+    public static final String KEY_PARSE_PUSH="application/parse-push-enabled";
+    public static final String KEY_UA_PUSH="application/ua-push-enabled";
 
     SharedPreferences mPreferences = PreferenceManager
             .getDefaultSharedPreferences(OPApplication.getInstance());
@@ -103,6 +105,13 @@ public class SettingsHelper {
         return Uri.parse(ringtoneStr);
     }
 
+    public boolean isParsePushEnabled(){
+        return OPHelper.getSettingsDelegate().getBool(KEY_PARSE_PUSH);
+    }
+    public boolean isUAPushEnabled(){
+        return OPHelper.getSettingsDelegate().getBool(KEY_UA_PUSH);
+    }
+
     public void initLoggers() {
         if (isLogEnabled()) {
             toggleLogger(true);
@@ -120,7 +129,7 @@ public class SettingsHelper {
     }
 
     /**
-     * 
+     *
      */
     public static boolean isLogEnabled() {
         return OPHelper.getSettingsDelegate().getBool(KEY_LOG_SWITCH);

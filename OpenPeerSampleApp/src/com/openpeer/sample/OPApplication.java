@@ -40,9 +40,11 @@ import com.openpeer.sample.push.OPPushManager;
 import com.openpeer.sample.push.OPPushNotificationBuilder;
 import com.openpeer.sample.push.PushIntentReceiver;
 import com.openpeer.sample.push.UAPushService;
+import com.openpeer.sample.push.parsepush.PFPushService;
 import com.openpeer.sample.util.SettingsHelper;
 import com.openpeer.sdk.app.OPHelper;
 import com.openpeer.sdk.model.ConversationManager;
+import com.parse.Parse;
 import com.urbanairship.AirshipConfigOptions;
 import com.urbanairship.Logger;
 import com.urbanairship.UAirship;
@@ -97,27 +99,34 @@ public class OPApplication extends Application {
     }
 
     public void signout() {
-
-        OPPushManager.onSignOut();
+        if (SettingsHelper.getInstance().isUAPushEnabled()) {
+            OPPushManager.onSignOut();
+        }
         CookieManager.getInstance().removeAllCookie();
         OPNotificationBuilder.cancelAllUponSignout();
         OPHelper.getInstance().onSignOut();
     }
 
     private void init() {
-        AirshipConfigOptions options = AirshipConfigOptions
-                .loadDefaultOptions(this);
-        UAirship.takeOff(this, options);
-        Logger.logLevel = Log.VERBOSE;
-
-        PushManager.shared().setNotificationBuilder(
-                new OPPushNotificationBuilder());
-        PushManager.shared().setIntentReceiver(PushIntentReceiver.class);
-        ConversationManager.getInstance().registerPushService(UAPushService.getInstance());
-
         OPHelper.getInstance().init(this);
-        // OPHelper.getInstance().setChatGroupMode(OPHelper.MODE_CONTACTS_BASED);
-//        OPSessionManager.getInstance().init();
+
         SettingsHelper.getInstance().initLoggers();
+        if (SettingsHelper.getInstance().isParsePushEnabled()) {
+            Parse.initialize(OPApplication.getInstance(),
+                             "2QqtFCehrwxAX6nRr7ZIkHTGY75NhKjfsR1obDsl",
+                             "ZkrGQ4afScH2T5h3DOZBaEn88YY6sdu9Ekix45Ae");
+            PFPushService.getInstance().init();
+            ConversationManager.getInstance().registerPushService(PFPushService.getInstance());
+        } else if (SettingsHelper.getInstance().isUAPushEnabled()) {
+            AirshipConfigOptions options = AirshipConfigOptions
+                .loadDefaultOptions(this);
+            UAirship.takeOff(this, options);
+            PushManager.shared().setNotificationBuilder(
+                new OPPushNotificationBuilder());
+            PushManager.shared().setIntentReceiver(PushIntentReceiver.class);
+            ConversationManager.getInstance().registerPushService(UAPushService.getInstance());
+            Logger.logLevel = Log.VERBOSE;
+        }
+
     }
 }

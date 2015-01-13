@@ -52,7 +52,6 @@ import java.util.Map;
 
 public class OPPushNotificationBuilder implements PushNotificationBuilder {
     static final String TAG = OPPushNotificationBuilder.class.getSimpleName();
-    public static final String KEY_MESSAGE_ID_KEY = "_uamid";
 
     static final String KEY_PEER_URI = "peerURI";
     static final String KEY_MESSAGE_TYPE = "messageType";
