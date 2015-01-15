@@ -139,11 +139,8 @@ JNIEXPORT jstring JNICALL Java_com_openpeer_javaapi_OPStack_createAuthorizedAppl
 	if (applicationIDSharedSecretString == NULL) {
 		return authorizedApplicationID;
 	}
-	jni_env = getEnv();
-	cls = findClass("android/text/format/Time");
-	jmethodID timeMethodID   = env->GetMethodID(cls, "toMillis", "(Z)J");
-	jlong longValue = env->CallLongMethod(expires, timeMethodID, false);
-	Time t = boost::posix_time::from_time_t(longValue/1000) + boost::posix_time::millisec(longValue % 1000);
+
+	Time t = OpenPeerCoreManager::convertTimeFromJava(expires);
 
 	authorizedApplicationID =  env->NewStringUTF(IStack::createAuthorizedApplicationID(applicationIDString, applicationIDSharedSecretString, t).c_str());
 
@@ -173,22 +170,7 @@ JNIEXPORT jobject JNICALL Java_com_openpeer_javaapi_OPStack_getAuthorizedApplica
 
 	Time expiryTime = IStack::getAuthorizedApplicationIDExpiry(authorizedApplicationIDString);
 
-	jni_env = getEnv();
-
-	if (jni_env)
-	{
-		//Convert and set time from C++ to Android; Fetch methods needed to accomplish this
-		Time time_t_epoch = boost::posix_time::time_from_string("1970-01-01 00:00:00.000");
-		jclass timeCls = findClass("android/text/format/Time");
-		jmethodID timeMethodID = jni_env->GetMethodID(timeCls, "<init>", "()V");
-		jmethodID timeSetMillisMethodID   = jni_env->GetMethodID(timeCls, "set", "(J)V");
-
-		//calculate and set expiry time
-		zsLib::Duration expiryTimeDuration = expiryTime - time_t_epoch;
-		object = jni_env->NewObject(timeCls, timeMethodID);
-		jni_env->CallVoidMethod(object, timeSetMillisMethodID, expiryTimeDuration.total_milliseconds());
-	}
-	return object;
+	return OpenPeerCoreManager::convertTimeFromCore(expiryTime);
 }
 
 /*
@@ -213,9 +195,7 @@ JNIEXPORT jboolean JNICALL Java_com_openpeer_javaapi_OPStack_isAuthorizedApplica
 		return ret;
 	}
 
-	Duration duration = Seconds(1);
-
-	ret = IStack::isAuthorizedApplicationIDExpiryWindowStillValid(authorizedApplicationIDString, duration);
+	ret = IStack::isAuthorizedApplicationIDExpiryWindowStillValid(authorizedApplicationIDString, Seconds(1));
 }
 
 /*

@@ -158,19 +158,7 @@ JNIEXPORT jobject JNICALL Java_com_openpeer_javaapi_OPToken_create__Ljava_lang_S
 		return object;
 	}
 
-	//Time t;
-	Duration d;
-
-	cls = findClass("android/text/format/Time");
-	if(jni_env->IsInstanceOf(validDuration, cls) == JNI_TRUE)
-	{
-		jmethodID timeMethodID   = jni_env->GetMethodID(cls, "toMillis", "(Z)J");
-		jlong longValue = jni_env->CallLongMethod(validDuration, timeMethodID, false);
-		//t = boost::posix_time::from_time_t(longValue/1000) + boost::posix_time::millisec(longValue % 1000);
-		d = Duration(boost::posix_time::millisec(longValue));
-	}
-
-	IIdentity::Token tempToken = IIdentity::Token::create(masterSecretStr, associatedIDStr, d);
+	IIdentity::Token tempToken = IIdentity::Token::create(masterSecretStr, associatedIDStr, OpenPeerCoreManager::convertSecondsFromJava(validDuration));
 	IIdentity::Token* coreToken = &tempToken;
 	if(coreToken->hasData())
 	{
@@ -262,25 +250,13 @@ JNIEXPORT jobject JNICALL Java_com_openpeer_javaapi_OPToken_createProof
 		return object;
 	}
 
-	//Time t;
-	Duration d;
-
-	cls = findClass("android/text/format/Time");
-	if(jni_env->IsInstanceOf(validDuration, cls) == JNI_TRUE)
-	{
-		jmethodID timeMethodID   = jni_env->GetMethodID(cls, "toMillis", "(Z)J");
-		jlong longValue = jni_env->CallLongMethod(validDuration, timeMethodID, false);
-		//t = boost::posix_time::from_time_t(longValue/1000) + boost::posix_time::millisec(longValue % 1000);
-		d = Duration(boost::posix_time::millisec(longValue));
-	}
-
 	cls = findClass("com/openpeer/javaapi/OPToken");
 	jfieldID fid = jni_env->GetFieldID(cls, "nativeClassPointer", "J");
 	jlong pointerValue = jni_env->GetLongField(owner, fid);
 
 	UseTokenPtr* coreTokenPtr = (UseTokenPtr*)pointerValue;
 	if(coreTokenPtr) {
-		IIdentity::Token tempToken = coreTokenPtr->get()->createProof(resourceStr, d);
+		IIdentity::Token tempToken = coreTokenPtr->get()->createProof(resourceStr, OpenPeerCoreManager::convertSecondsFromJava(validDuration));
 		IIdentity::Token* coreToken = &tempToken;
 		if(coreToken->hasData())
 		{

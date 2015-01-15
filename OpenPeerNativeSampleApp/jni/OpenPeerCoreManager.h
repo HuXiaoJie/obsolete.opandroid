@@ -28,6 +28,7 @@ public:
 	static zsLib::Time convertTimeFromJava(jobject timeObject);
 	static jobject convertTimeFromCore(zsLib::Time coreTime);
 	static jobject convertSecondsFromCore(zsLib::Seconds coreSeconds);
+	static zsLib::Seconds convertSecondsFromJava(jobject timeObject);
 
 	//push messaging helper methods
 

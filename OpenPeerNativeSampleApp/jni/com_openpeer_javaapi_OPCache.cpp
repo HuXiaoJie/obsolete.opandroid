@@ -3,6 +3,7 @@
 #include <android/log.h>
 
 #include "globals.h"
+#include "OpenPeerCoreManager.h"
 
 using namespace openpeer::core;
 
@@ -65,24 +66,13 @@ JNIEXPORT void JNICALL Java_com_openpeer_javaapi_OPCache_store
 		return;
 	}
 
-	Time t;
-	jni_env = getEnv();
-
-	cls = findClass("android/text/format/Time");
-	if(jni_env->IsInstanceOf(expires, cls) == JNI_TRUE)
-	{
-		jmethodID timeMethodID   = jni_env->GetMethodID(cls, "toMillis", "(Z)J");
-		jlong longValue = jni_env->CallLongMethod(expires, timeMethodID, false);
-		t = boost::posix_time::from_time_t(longValue/1000) + boost::posix_time::millisec(longValue % 1000);
-	}
-
 	String strString;
 	strString = env->GetStringUTFChars(str, NULL);
 	if (strString == NULL) {
 		return;
 	}
 
-	ICache::store(cookieNamePathString, t, strString);
+	ICache::store(cookieNamePathString, OpenPeerCoreManager::convertTimeFromJava(expires), strString);
 }
 
 /*

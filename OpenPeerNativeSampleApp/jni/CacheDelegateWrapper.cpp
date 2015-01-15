@@ -105,20 +105,6 @@ void CacheDelegateWrapper::store(const char *cookieNamePath,
 	cookieJavaString =  jni_env->NewStringUTF(cookieNamePath);
 	storeStr =  jni_env->NewStringUTF(str);
 
-
-	jclass timeCls = findClass("android/text/format/Time");
-	jmethodID timeMethodID = jni_env->GetMethodID(timeCls, "<init>", "()V");
-	object = jni_env->NewObject(timeCls, timeMethodID);
-	if (Time() != expires)
-	{
-		jmethodID timeSetMillisMethodID   = jni_env->GetMethodID(timeCls, "set", "(J)V");
-
-		//Convert and set time from C++ to Android; Fetch methods needed to accomplish this
-		Time time_t_epoch = boost::posix_time::time_from_string("1970-01-01 00:00:00.000");
-		//calculate and set Expires Time
-		zsLib::Duration closedTimeDuration = expires - time_t_epoch;
-		jni_env->CallVoidMethod(object, timeSetMillisMethodID, closedTimeDuration.total_milliseconds());
-	}
 	if (javaDelegate != NULL)
 	{
 
@@ -127,7 +113,7 @@ void CacheDelegateWrapper::store(const char *cookieNamePath,
 
 		jclass callbackClass = findClass(className.c_str());
 		method = jni_env->GetMethodID(callbackClass, "store", "(Ljava/lang/String;Landroid/text/format/Time;Ljava/lang/String;)V");
-		jni_env->CallVoidMethod(javaDelegate, method, cookieJavaString, object, storeStr);
+		jni_env->CallVoidMethod(javaDelegate, method, cookieJavaString, OpenPeerCoreManager::convertTimeFromCore(expires), storeStr);
 	}
 	else
 	{

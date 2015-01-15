@@ -218,18 +218,7 @@ JNIEXPORT jobject JNICALL Java_com_openpeer_javaapi_OPConversationThread_create
 				coreIdentityContact.mWeight = weight;
 
 				//Add last updated to IdentityContact structure
-				jclass timeCls = findClass("android/text/format/Time");
-				jmethodID timeMethodID   = jni_env->GetMethodID(timeCls, "toMillis", "(Z)J");
-				jlong longValue = jni_env->CallLongMethod(lastUpdated, timeMethodID, false);
-				Time t = boost::posix_time::from_time_t(longValue/1000) + boost::posix_time::millisec(longValue % 1000);
-				coreIdentityContact.mLastUpdated = t;
-
-				//Add expires to IdentityContact structure
-				//jclass timeCls = findClass("android/text/format/Time");
-				//jmethodID timeMethodID   = jni_env->GetMethodID(timeCls, "toMillis", "(Z)J");
-				longValue = jni_env->CallLongMethod(expires, timeMethodID, false);
-				t = boost::posix_time::from_time_t(longValue/1000) + boost::posix_time::millisec(longValue % 1000);
-				coreIdentityContact.mExpires = t;
+				coreIdentityContact.mExpires = OpenPeerCoreManager::convertTimeFromJava(expires);
 
 				//				__android_log_print(ANDROID_LOG_INFO, "com.openpeer.jni", "mIdentityProvider %s ", coreIdentityContact.mIdentityProvider.c_str());
 				//				__android_log_print(ANDROID_LOG_INFO, "com.openpeer.jni", "mIdentityProofBundleEl %s ", IHelper::convertToString(coreIdentityContact.mIdentityProofBundleEl).c_str());
@@ -685,27 +674,13 @@ JNIEXPORT jobject JNICALL Java_com_openpeer_javaapi_OPConversationThread_getIden
 			method = jni_env->GetMethodID(cls, "setWeight", "(I)V");
 			jni_env->CallVoidMethod(object, method, (int)coreContact.mWeight);
 
-			//Convert and set time from C++ to Android; Fetch methods needed to accomplish this
-			Time time_t_epoch = boost::posix_time::time_from_string("1970-01-01 00:00:00.000");
-			jclass timeCls = findClass("android/text/format/Time");
-			jmethodID timeMethodID = jni_env->GetMethodID(timeCls, "<init>", "()V");
-			jmethodID timeSetMillisMethodID   = jni_env->GetMethodID(timeCls, "set", "(J)V");
-
-			//calculate and set Last Updated
-			zsLib::Duration lastUpdated = coreContact.mLastUpdated - time_t_epoch;
-			jobject timeLastUpdatedObject = jni_env->NewObject(timeCls, timeMethodID);
-			jni_env->CallVoidMethod(timeLastUpdatedObject, timeSetMillisMethodID, lastUpdated.total_milliseconds());
 			//Time has been converted, now call OPIdentityContact setter
 			method = jni_env->GetMethodID(cls, "setLastUpdated", "(Landroid/text/format/Time;)V");
-			jni_env->CallVoidMethod(object, method, timeLastUpdatedObject);
+			jni_env->CallVoidMethod(object, method, OpenPeerCoreManager::convertTimeFromCore(coreContact.mLastUpdated));
 
-			//calculate and set Expires
-			zsLib::Duration expires = coreContact.mExpires - time_t_epoch;
-			jobject timeExpiresObject = jni_env->NewObject(timeCls, timeMethodID);
-			jni_env->CallVoidMethod(timeExpiresObject, timeSetMillisMethodID, expires.total_milliseconds());
 			//Time has been converted, now call OPIdentityContact setter
 			method = jni_env->GetMethodID(cls, "setExpires", "(Landroid/text/format/Time;)V");
-			jni_env->CallVoidMethod(object, method, timeExpiresObject);
+			jni_env->CallVoidMethod(object, method, OpenPeerCoreManager::convertTimeFromCore(coreContact.mExpires));
 
 
 			///////////////////////////////////////////////////////////////
@@ -1242,21 +1217,8 @@ JNIEXPORT jobject JNICALL Java_com_openpeer_javaapi_OPConversationThread_getMess
 				jstring message = jni_env->NewStringUTF(outMessage.c_str());
 				jni_env->CallVoidMethod( messageObject, setMessageMethodID, message );
 
-
-				//Convert parameter and call setTime method on return object
-				//Convert and set time from C++ to Android; Fetch methods needed to accomplish this
-				Time time_t_epoch = boost::posix_time::time_from_string("1970-01-01 00:00:00.000");
-				jclass timeCls = findClass("android/text/format/Time");
-				jmethodID timeMethodID = jni_env->GetMethodID(timeCls, "<init>", "()V");
-				jmethodID timeSetMillisMethodID   = jni_env->GetMethodID(timeCls, "set", "(J)V");
-
-				//calculate and set time
-				zsLib::Duration timeDuration = outTime - time_t_epoch;
-				jobject timeObject = jni_env->NewObject(timeCls, timeMethodID);
-				jni_env->CallVoidMethod(timeObject, timeSetMillisMethodID, timeDuration.total_milliseconds());
-
 				//set time to OPMessage
-				jni_env->CallVoidMethod( messageObject, setTimeMethodID, timeObject );
+				jni_env->CallVoidMethod( messageObject, setTimeMethodID, OpenPeerCoreManager::convertTimeFromCore(outTime));
 
 				//setValidated to OPMessage
 				jni_env->CallVoidMethod( messageObject, setValidatedMethodID, outValidated );

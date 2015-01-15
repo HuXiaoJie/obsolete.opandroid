@@ -46,7 +46,7 @@ JNIEXPORT jobject JNICALL Java_com_openpeer_javaapi_OPPushMessaging_create
 	//TODO: Remove line bellow as soon as DB abstraction delegate is implemented
 	//PushMessagingDatabaseAbstractionDelegateWrapperPtr messagingDBAbstractionDelegatePtr = PushMessagingDatabaseAbstractionDelegateWrapperPtr(new PushMessagingDatabaseAbstractionDelegateWrapper(javaDatabaseDelegate));
 	//IPushMessagingPtr messagingPtr = IPushMessaging::create(messagingDelegatePtr, messagingDBAbstractionDelegatePtr, *coreAccountPtr);
-	IPushMessagingPtr messagingPtr = IPushMessaging::create(messagingDelegatePtr,IPushMessagingDatabaseAbstractionDelegatePtr() , *coreAccountPtr);
+	IPushMessagingPtr messagingPtr = IPushMessaging::create(messagingDelegatePtr,IPushMessagingTransferDelegatePtr() , *coreAccountPtr);
 
 	if(messagingPtr)
 	{
@@ -67,10 +67,10 @@ JNIEXPORT jobject JNICALL Java_com_openpeer_javaapi_OPPushMessaging_create
 			jlong delegate = (jlong) ptrToPushMessagingDelegateWrapperPtr;
 			jni_env->SetLongField(object, delegateFid, delegate);
 
-//			PushMessagingDatabaseAbstractionDelegateWrapperPtr* ptrToPushMessagingDBAbstractionDelegateWrapperPtr= new std::shared_ptr<PushMessagingDatabaseAbstractionDelegateWrapper>(messagingDBAbstractionDelegatePtr);
-//			jfieldID dbDelegateFid = jni_env->GetFieldID(cls, "nativeDatabaseAbstractionDelegatePointer", "J");
-//			jlong dbDelegate = (jlong) ptrToPushMessagingDBAbstractionDelegateWrapperPtr;
-//			jni_env->SetLongField(object, dbDelegateFid, dbDelegate);
+			//			PushMessagingDatabaseAbstractionDelegateWrapperPtr* ptrToPushMessagingDBAbstractionDelegateWrapperPtr= new std::shared_ptr<PushMessagingDatabaseAbstractionDelegateWrapper>(messagingDBAbstractionDelegatePtr);
+			//			jfieldID dbDelegateFid = jni_env->GetFieldID(cls, "nativeDatabaseAbstractionDelegatePointer", "J");
+			//			jlong dbDelegate = (jlong) ptrToPushMessagingDBAbstractionDelegateWrapperPtr;
+			//			jni_env->SetLongField(object, dbDelegateFid, dbDelegate);
 
 
 		}
@@ -262,33 +262,27 @@ JNIEXPORT jobject JNICALL Java_com_openpeer_javaapi_OPPushMessaging_registerDevi
 
 	IPushMessagingPtr* coreMessagingPtr = (IPushMessagingPtr*)pointerValue;
 
-	//convert time from java to c++
-	Time t;
-	jclass timeCls = findClass("android/text/format/Time");
-	if(jni_env->IsInstanceOf(inExpires, timeCls) == JNI_TRUE)
-	{
-		jmethodID timeMethodID   = jni_env->GetMethodID(cls, "toMillis", "(Z)J");
-		jlong longValue = jni_env->CallLongMethod(inExpires, timeMethodID, false);
-		t = boost::posix_time::from_time_t(longValue/1000) + boost::posix_time::millisec(longValue % 1000);
-	}
-
 	//create core delegate
 	PushMessagingRegisterQueryDelegateWrapperPtr registerQueryDelegatePtr = PushMessagingRegisterQueryDelegateWrapperPtr(new PushMessagingRegisterQueryDelegateWrapper(inDelegate));
 
 	if (coreMessagingPtr)
 	{
+		//		IPushMessagingRegisterQueryPtr queryPtr =
+		//				coreMessagingPtr->get()->registerDevice(
+		//						registerQueryDelegatePtr,
+		//						(char const*)inDeviceTokenStr,
+		//						OpenPeerCoreManager::convertTimeFromJava(inExpires),
+		//						(char const*)inMappedTypeStr,
+		//						(bool) inUnreadBadge,
+		//						(char const*)inSoundStr,
+		//						(char const*)inActionStr,
+		//						(char const*)inLaunchImageStr,
+		//						(int) inPriority,
+		//						OpenPeerCoreManager::valueNameListToCore(inValueNames));
+		IPushMessaging::RegisterDeviceInfo regInfo;
 		IPushMessagingRegisterQueryPtr queryPtr =
 				coreMessagingPtr->get()->registerDevice(
-						registerQueryDelegatePtr,
-						(char const*)inDeviceTokenStr,
-						t,
-						(char const*)inMappedTypeStr,
-						(bool) inUnreadBadge,
-						(char const*)inSoundStr,
-						(char const*)inActionStr,
-						(char const*)inLaunchImageStr,
-						(int) inPriority,
-						OpenPeerCoreManager::valueNameListToCore(inValueNames));
+						registerQueryDelegatePtr, regInfo );
 		if(queryPtr)
 		{
 			jclass queryCls = findClass("com/openpeer/javaapi/OPPushMessagingRegisterQuery");

@@ -46,7 +46,7 @@ JNIEXPORT jobject JNICALL Java_com_openpeer_javaapi_OPPushPresence_create
 	//TODO: Remove line bellow as soon as DB abstraction delegate is implemented
 	//PushMessagingDatabaseAbstractionDelegateWrapperPtr messagingDBAbstractionDelegatePtr = PushMessagingDatabaseAbstractionDelegateWrapperPtr(new PushMessagingDatabaseAbstractionDelegateWrapper(javaDatabaseDelegate));
 	//IPushMessagingPtr messagingPtr = IPushMessaging::create(messagingDelegatePtr, messagingDBAbstractionDelegatePtr, *coreAccountPtr);
-	IPushPresencePtr presencePtr = IPushPresence::create(presenceDelegatePtr,IPushPresenceDatabaseAbstractionDelegatePtr() , *coreAccountPtr);
+	IPushPresencePtr presencePtr = IPushPresence::create(presenceDelegatePtr,IPushPresenceTransferDelegatePtr() , *coreAccountPtr);
 
 	if(presencePtr)
 	{
@@ -262,33 +262,27 @@ JNIEXPORT jobject JNICALL Java_com_openpeer_javaapi_OPPushPresence_registerDevic
 
 	IPushPresencePtr* corePresencePtr = (IPushPresencePtr*)pointerValue;
 
-	//convert time from java to c++
-	Time t;
-	jclass timeCls = findClass("android/text/format/Time");
-	if(jni_env->IsInstanceOf(inExpires, timeCls) == JNI_TRUE)
-	{
-		jmethodID timeMethodID   = jni_env->GetMethodID(cls, "toMillis", "(Z)J");
-		jlong longValue = jni_env->CallLongMethod(inExpires, timeMethodID, false);
-		t = boost::posix_time::from_time_t(longValue/1000) + boost::posix_time::millisec(longValue % 1000);
-	}
-
 	//create core delegate
 	PushPresenceRegisterQueryDelegateWrapperPtr registerQueryDelegatePtr = PushPresenceRegisterQueryDelegateWrapperPtr(new PushPresenceRegisterQueryDelegateWrapper(inDelegate));
 
 	if (corePresencePtr)
 	{
+		//		IPushPresenceRegisterQueryPtr queryPtr =
+		//				corePresencePtr->get()->registerDevice(
+		//						registerQueryDelegatePtr,
+		//						(char const*)inDeviceTokenStr,
+		//						OpenPeerCoreManager::convertSecondsFromJava(inExpires),
+		//						(char const*)inMappedTypeStr,
+		//						(bool) inUnreadBadge,
+		//						(char const*)inSoundStr,
+		//						(char const*)inActionStr,
+		//						(char const*)inLaunchImageStr,
+		//						(int) inPriority,
+		//						OpenPeerCoreManager::presenceValueNameListToCore(inValueNames));
+		IPushPresence::RegisterDeviceInfo regInfo;
 		IPushPresenceRegisterQueryPtr queryPtr =
 				corePresencePtr->get()->registerDevice(
-						registerQueryDelegatePtr,
-						(char const*)inDeviceTokenStr,
-						t,
-						(char const*)inMappedTypeStr,
-						(bool) inUnreadBadge,
-						(char const*)inSoundStr,
-						(char const*)inActionStr,
-						(char const*)inLaunchImageStr,
-						(int) inPriority,
-						OpenPeerCoreManager::presenceValueNameListToCore(inValueNames));
+						registerQueryDelegatePtr,regInfo);
 		if(queryPtr)
 		{
 			jclass queryCls = findClass("com/openpeer/javaapi/OPPushPresenceRegisterQuery");
@@ -390,8 +384,8 @@ JNIEXPORT void JNICALL Java_com_openpeer_javaapi_OPPushPresence_send
 	if (corePresencePtr)
 	{
 		corePresencePtr->get()->send(
-						coreContacts,
-						*coreStatusPtr->get());
+				coreContacts,
+				*coreStatusPtr->get());
 	}
 	else
 	{

@@ -450,26 +450,12 @@ JNIEXPORT jobject JNICALL Java_com_openpeer_javaapi_OPCall_getCreationTime
 	{
 		creationTime = coreCallPtr->get()->getcreationTime();
 
-		jni_env = getEnv();
-		if(jni_env)
-		{
-			//Convert and set time from C++ to Android; Fetch methods needed to accomplish this
-			Time time_t_epoch = boost::posix_time::time_from_string("1970-01-01 00:00:00.000");
-			jclass timeCls = findClass("android/text/format/Time");
-			jmethodID timeMethodID = jni_env->GetMethodID(timeCls, "<init>", "()V");
-			jmethodID timeSetMillisMethodID   = jni_env->GetMethodID(timeCls, "set", "(J)V");
-
-			//calculate and set Ring time
-			zsLib::Duration creationTimeDuration = creationTime - time_t_epoch;
-			object = jni_env->NewObject(timeCls, timeMethodID);
-			jni_env->CallVoidMethod(object, timeSetMillisMethodID, creationTimeDuration.total_milliseconds());
-		}
 	}
 	else
 	{
 		__android_log_print(ANDROID_LOG_ERROR, "com.openpeer.jni", "OPCall native getCreationTime core pointer is NULL!!!");
 	}
-	return object;
+	return OpenPeerCoreManager::convertTimeFromCore(creationTime);
 }
 
 /*
@@ -498,27 +484,12 @@ JNIEXPORT jobject JNICALL Java_com_openpeer_javaapi_OPCall_getRingTime
 	if (coreCallPtr)
 	{
 		ringTime = coreCallPtr->get()->getRingTime();
-
-		jni_env = getEnv();
-		if(jni_env)
-		{
-			//Convert and set time from C++ to Android; Fetch methods needed to accomplish this
-			Time time_t_epoch = boost::posix_time::time_from_string("1970-01-01 00:00:00.000");
-			jclass timeCls = findClass("android/text/format/Time");
-			jmethodID timeMethodID = jni_env->GetMethodID(timeCls, "<init>", "()V");
-			jmethodID timeSetMillisMethodID   = jni_env->GetMethodID(timeCls, "set", "(J)V");
-
-			//calculate and set Ring Time
-			zsLib::Duration ringTimeDuration = ringTime - time_t_epoch;
-			object = jni_env->NewObject(timeCls, timeMethodID);
-			jni_env->CallVoidMethod(object, timeSetMillisMethodID, ringTimeDuration.total_milliseconds());
-		}
 	}
 	else
 	{
 		__android_log_print(ANDROID_LOG_ERROR, "com.openpeer.jni", "OPCall native getRingTime core pointer is NULL!!!");
 	}
-	return object;
+	return OpenPeerCoreManager::convertTimeFromCore(ringTime);
 }
 
 /*
@@ -547,27 +518,12 @@ JNIEXPORT jobject JNICALL Java_com_openpeer_javaapi_OPCall_getAnswerTime
 	if (coreCallPtr)
 	{
 		answerTime = coreCallPtr->get()->getAnswerTime();
-
-		jni_env = getEnv();
-		if(jni_env)
-		{
-			//Convert and set time from C++ to Android; Fetch methods needed to accomplish this
-			Time time_t_epoch = boost::posix_time::time_from_string("1970-01-01 00:00:00.000");
-			jclass timeCls = findClass("android/text/format/Time");
-			jmethodID timeMethodID = jni_env->GetMethodID(timeCls, "<init>", "()V");
-			jmethodID timeSetMillisMethodID   = jni_env->GetMethodID(timeCls, "set", "(J)V");
-
-			//calculate and set Answer Time
-			zsLib::Duration answerTimeDuration = answerTime - time_t_epoch;
-			object = jni_env->NewObject(timeCls, timeMethodID);
-			jni_env->CallVoidMethod(object, timeSetMillisMethodID, answerTimeDuration.total_milliseconds());
-		}
 	}
 	else
 	{
 		__android_log_print(ANDROID_LOG_ERROR, "com.openpeer.jni", "OPCall native getAnswerTime core pointer is NULL!!!");
 	}
-	return object;
+	return OpenPeerCoreManager::convertTimeFromCore(answerTime);
 }
 
 /*
@@ -597,27 +553,12 @@ JNIEXPORT jobject JNICALL Java_com_openpeer_javaapi_OPCall_getClosedTime
 	if (coreCallPtr)
 	{
 		closedTime = coreCallPtr->get()->getClosedTime();
-
-		jni_env = getEnv();
-		if(jni_env)
-		{
-			//Convert and set time from C++ to Android; Fetch methods needed to accomplish this
-			Time time_t_epoch = boost::posix_time::time_from_string("1970-01-01 00:00:00.000");
-			jclass timeCls = findClass("android/text/format/Time");
-			jmethodID timeMethodID = jni_env->GetMethodID(timeCls, "<init>", "()V");
-			jmethodID timeSetMillisMethodID   = jni_env->GetMethodID(timeCls, "set", "(J)V");
-
-			//calculate and set Answer Time
-			zsLib::Duration closedTimeDuration = closedTime - time_t_epoch;
-			object = jni_env->NewObject(timeCls, timeMethodID);
-			jni_env->CallVoidMethod(object, timeSetMillisMethodID, closedTimeDuration.total_milliseconds());
-		}
 	}
 	else
 	{
 		__android_log_print(ANDROID_LOG_ERROR, "com.openpeer.jni", "OPCall native getClosedTime core pointer is NULL!!!");
 	}
-	return object;
+	return OpenPeerCoreManager::convertTimeFromCore(closedTime);
 }
 
 /*

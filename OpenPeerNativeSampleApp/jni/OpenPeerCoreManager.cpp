@@ -109,6 +109,17 @@ jobject OpenPeerCoreManager::convertSecondsFromCore(zsLib::Seconds coreSeconds)
 	return object;
 }
 
+zsLib::Seconds OpenPeerCoreManager::convertSecondsFromJava(jobject timeObject)
+{
+	JNIEnv* jni_env = getEnv();
+    jclass timeCls = findClass("android/text/format/Time");
+    jmethodID timeMethodID = jni_env->GetMethodID(timeCls, "toMillis","(Z)J");
+    jlong longValue = jni_env->CallLongMethod(timeObject, timeMethodID, false);
+
+    Seconds s = std::chrono::duration_cast<std::chrono::seconds> (std::chrono::milliseconds(longValue));
+    return s;
+}
+
 void OpenPeerCoreManager::fillJavaTokenFromCoreObject(jobject javaToken, IIdentity::Token coreToken)
 {
 	JNIEnv *jni_env = 0;

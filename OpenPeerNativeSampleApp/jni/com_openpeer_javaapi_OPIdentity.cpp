@@ -558,27 +558,13 @@ JNIEXPORT jobject JNICALL Java_com_openpeer_javaapi_OPIdentity_getSelfIdentityCo
 		method = jni_env->GetMethodID(cls, "setWeight", "(I)V");
 		jni_env->CallVoidMethod(object, method, (int)coreContact.mWeight);
 
-		//Convert and set time from C++ to Android; Fetch methods needed to accomplish this
-		Time time_t_epoch = boost::posix_time::time_from_string("1970-01-01 00:00:00.000");
-		jclass timeCls = findClass("android/text/format/Time");
-		jmethodID timeMethodID = jni_env->GetMethodID(timeCls, "<init>", "()V");
-		jmethodID timeSetMillisMethodID   = jni_env->GetMethodID(timeCls, "set", "(J)V");
-
-		//calculate and set Last Updated
-		zsLib::Duration lastUpdated = coreContact.mLastUpdated - time_t_epoch;
-		jobject timeLastUpdatedObject = jni_env->NewObject(timeCls, timeMethodID);
-		jni_env->CallVoidMethod(timeLastUpdatedObject, timeSetMillisMethodID, lastUpdated.total_milliseconds());
 		//Time has been converted, now call OPIdentityContact setter
 		method = jni_env->GetMethodID(cls, "setLastUpdated", "(Landroid/text/format/Time;)V");
-		jni_env->CallVoidMethod(object, method, timeLastUpdatedObject);
+		jni_env->CallVoidMethod(object, method, OpenPeerCoreManager::convertTimeFromCore(coreContact.mLastUpdated));
 
-		//calculate and set Expires
-		zsLib::Duration expires = coreContact.mExpires - time_t_epoch;
-		jobject timeExpiresObject = jni_env->NewObject(timeCls, timeMethodID);
-		jni_env->CallVoidMethod(timeExpiresObject, timeSetMillisMethodID, expires.total_milliseconds());
 		//Time has been converted, now call OPIdentityContact setter
 		method = jni_env->GetMethodID(cls, "setExpires", "(Landroid/text/format/Time;)V");
-		jni_env->CallVoidMethod(object, method, timeExpiresObject);
+		jni_env->CallVoidMethod(object, method, OpenPeerCoreManager::convertTimeFromCore(coreContact.mExpires));
 
 
 		///////////////////////////////////////////////////////////////
