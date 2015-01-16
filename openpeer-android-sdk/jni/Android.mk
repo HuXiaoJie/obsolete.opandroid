@@ -1,6 +1,5 @@
 LOCAL_PATH := $(call my-dir)/../..
 WEBRTC_LIBS_PATH := libs/op/libs/ortc-lib/libs/build/android/webrtc
-BOOST_LIBS_PATH := libs/op/libs/ortc-lib/libs/build/android/boost/lib
 ANDROIDNDK_PATH := /usr/ndk/x86_64/android-ndk-r8e
 
 #zLib shared library
@@ -436,7 +435,6 @@ LOCAL_SRC_FILES := \
 		openpeer-android-sdk/jni/com_openpeer_javaapi_OPStackMessageQueue.cpp \
 		openpeer-android-sdk/jni/com_openpeer_javaapi_OPStack.cpp \
 		openpeer-android-sdk/jni/com_openpeer_javaapi_OPAccount.cpp \
-		openpeer-android-sdk/jni/com_openpeer_javaapi_OPIdentity.cpp \
 		openpeer-android-sdk/jni/com_openpeer_javaapi_OPIdentityLookup.cpp \
 		openpeer-android-sdk/jni/com_openpeer_javaapi_OPMediaEngine.cpp \
 		openpeer-android-sdk/jni/com_openpeer_javaapi_OPLogger.cpp \
@@ -449,8 +447,9 @@ LOCAL_SRC_FILES := \
 		openpeer-android-sdk/jni/com_openpeer_javaapi_OPSystemMessage.cpp \
 		openpeer-android-sdk/jni/com_openpeer_javaapi_OPCallSystemMessage.cpp \
 		openpeer-android-sdk/jni/com_openpeer_javaapi_OPElement.cpp \
+		openpeer-android-sdk/jni/com_openpeer_javaapi_OPIdentity.cpp \
 
-LOCAL_LDLIBS += $(ANDROIDNDK_PATH)/sources/cxx-stl/llvm-libc++/libs/armeabi/libc++_static.a
+#LOCAL_LDLIBS += $(ANDROIDNDK_PATH)/sources/cxx-stl/llvm-libc++/libs/armeabi/libc++_static.a
 LOCAL_LDLIBS += -llog -lGLESv2 -lOpenSLES \
 
 LOCAL_WHOLE_STATIC_LIBRARIES := \
@@ -511,6 +510,9 @@ libeasysqlite_android \
 libhfstack_android \
 libhfcore_android \ 
 
+
+LOCAL_STATIC_LIBRARIES := \
+$(ANDROIDNDK_PATH)/sources/cxx-stl/llvm-libc++/libs/armeabi/libc++_static.a \
 
 LOCAL_SHARED_LIBRARIES := \
 z_shared \

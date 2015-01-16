@@ -729,6 +729,11 @@ void SettingsDelegateWrapper::clear(const char *key)
 	}
 }
 
+void SettingsDelegateWrapper::clearAll()
+{
+
+}
+
 SettingsDelegateWrapper::~SettingsDelegateWrapper()
 {
 	JNIEnv *jni_env = getEnv();

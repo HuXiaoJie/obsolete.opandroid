@@ -76,6 +76,8 @@ public:
 
 	virtual void clear(const char *key);
 
+	virtual void clearAll();
+
 	virtual ~SettingsDelegateWrapper();
 };
 

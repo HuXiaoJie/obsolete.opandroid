@@ -5,9 +5,9 @@ ANDROIDNDK_PATH := /usr/ndk/x86_64/android-ndk-r10c
 #zLib shared library
 include $(CLEAR_VARS)
 ZLIB_LIB_PATH := ./openpeer-android-sdk/jni
-LOCAL_MODULE := z_shared
+LOCAL_MODULE := z
 LOCAL_SRC_FILES := \
-    $(ZLIB_LIB_PATH)/libz_shared.so
+    $(ZLIB_LIB_PATH)/libz.so
 include $(PREBUILT_SHARED_LIBRARY)
 
 #curl lib
@@ -316,7 +316,7 @@ include $(PREBUILT_STATIC_LIBRARY)
 #idnkit
 include $(CLEAR_VARS)
 ZSLIB_LIBS_PATH := libs/op/libs/ortc-lib/libs/build/android/idnkit
-LOCAL_MODULE := libidnkitandroid
+LOCAL_MODULE := libidnkit_android
 LOCAL_SRC_FILES := \
     $(ZSLIB_LIBS_PATH)/libidnkit_android.a
 include $(PREBUILT_STATIC_LIBRARY)
@@ -469,7 +469,7 @@ LOCAL_SRC_FILES := \
 		
 
 #LOCAL_LDLIBS += $(ANDROIDNDK_PATH)/sources/cxx-stl/llvm-libc++/libs/armeabi/libc++_static.a
-LOCAL_LDLIBS += -llog -lGLESv2 -lOpenSLES \
+LOCAL_LDLIBS += -llog -lGLESv2 -lOpenSLES -latomic\
 
 LOCAL_WHOLE_STATIC_LIBRARIES := \
 libvoice_engine \
@@ -534,7 +534,7 @@ LOCAL_STATIC_LIBRARIES := \
 $(ANDROIDNDK_PATH)/sources/cxx-stl/llvm-libc++/libs/armeabi/libc++_static.a \
 
 LOCAL_SHARED_LIBRARIES := \
-z_shared \
+z \
 
 include $(BUILD_SHARED_LIBRARY)
 #include $(BUILD_STATIC_LIBRARY)
