@@ -8,21 +8,23 @@ import org.json.JSONObject;
 
 public class PFPushMessage {
     String alert;
-    PushExtra extras;
+    String to;
+    String extras;
 
     public PFPushMessage() {
     }
 
-    public PFPushMessage(String alert, PushExtra extras) {
+    public PFPushMessage(String alert, String extras, String toPeerUri) {
         this.alert = alert;
         this.extras = extras;
+        this.to = toPeerUri;
     }
 
     public String getAlert() {
         return alert;
     }
 
-    public PushExtra getExtras() {
+    public String getExtras() {
         return extras;
     }
 
@@ -33,7 +35,8 @@ public class PFPushMessage {
     public static PFPushMessage fromJson(String jsonBlob) {
         return GsonFactory.getGson().fromJson(jsonBlob, PFPushMessage.class);
     }
-    public JSONObject toJsonObject(){
+
+    public JSONObject toJsonObject() {
         try {
             return new JSONObject(toJsonBlob());
         } catch(JSONException e) {

@@ -44,7 +44,9 @@ import com.openpeer.sdk.app.OPDataManager;
 import com.openpeer.sdk.model.OPConversation;
 import com.openpeer.sdk.model.OPUser;
 import com.openpeer.sdk.model.PushServiceInterface;
+import com.parse.FunctionCallback;
 import com.parse.Parse;
+import com.parse.ParseCloud;
 import com.parse.ParseException;
 import com.parse.ParseInstallation;
 import com.parse.ParseObject;
@@ -52,6 +54,7 @@ import com.parse.ParsePush;
 import com.parse.ParseQuery;
 import com.parse.SendCallback;
 
+import java.util.HashMap;
 import java.util.List;
 
 public class PFPushService implements PushServiceInterface {
@@ -119,27 +122,31 @@ public class PFPushService implements PushServiceInterface {
              conversation.getConversationId(),
              OPDataManager.getInstance().getSharedAccount().getLocationID(),
              message.getTime().toMillis(false) / 1000 + "");
-        PFPushMessage pushMessage = new PFPushMessage(message.getMessage(), pushExtra);
-        ParsePush parsePush = new ParsePush();
-        ParseQuery parseQuery = ParseInstallation.getCurrentInstallation().getQuery();
-        parseQuery.whereEqualTo(KEY_PEER_URI, contact.getPeerUri());
-        parsePush.setQuery(parseQuery);
-        parsePush.setExpirationTimeInterval(PUSH_EXPIRATION_DEFAULT);
-        parsePush.setData(pushMessage.toJsonObject());
-        Log.d("PFPushService", pushExtra.toJsonBlob());
+//        PFPushMessage pushMessage = new PFPushMessage(message.getMessage(), getMessage,
+// contact.getPeerUri());
+        HashMap<String, Object> params = new HashMap<String, Object>();
+        params.put("to", contact.getPeerUri());
+        params.put("alert", message.getMessage());
+        params.put("extras",pushExtra.toJsonBlob());
+        ParseCloud.callFunctionInBackground(
+            "sendPushToUser",
+            params,
+            new FunctionCallback<Object>() {
+                public void done(Object success, ParseException e) {
+                    if (e == null) {
+                        Log.d("ParsePush", "success " + success);
+                        // Push sent successfully
+                        OPDataManager.getInstance()
+                            .updateMessageDeliveryStatus(
+                                message.getMessageId(),
+                                conversation.getConversationId(),
+                                MessageDeliveryStates.MessageDeliveryState_Sent);
 
-        parsePush.sendInBackground(new SendCallback() {
-            @Override
-            public void done(ParseException e) {
-                if (e == null) {
-                    OPDataManager.getInstance().updateMessageDeliveryStatus(
-                        message.getMessageId(),
-                        conversation.getConversationId(),
-                        MessageDeliveryStates.MessageDeliveryState_Sent);
-                } else {
-                    e.printStackTrace();
+                    } else {
+                        //TODO: proper error handling
+                        e.printStackTrace();
+                    }
                 }
-            }
-        });
+            });
     }
 }

@@ -54,7 +54,7 @@ public class PFPushReceiver extends ParsePushBroadcastReceiver {
         String data = extras.getString(KEY_PUSH_DATA);
         Log.d(TAG, "getNotification " + data);
         PFPushMessage pushMessage = PFPushMessage.fromJson(data);
-        PushExtra pushExtra = pushMessage.getExtras();
+        PushExtra pushExtra = PushExtra.fromString(pushMessage.getExtras());
         String alert = pushMessage.getAlert();
         String senderUri = pushExtra.getPeerURI();
         String messageId = pushExtra.getMessageId();
@@ -101,7 +101,7 @@ public class PFPushReceiver extends ParsePushBroadcastReceiver {
         //Make sure conversation is saved in db.
         OPConversation conversation = ConversationManager.getInstance().getConversation
             (GroupChatMode.valueOf(conversationType), participantInfo, conversationId, true);
-        OPDataManager.getInstance().saveMessage(message, conversationId, participantInfo);
+        OPDataManager.getInstance().saveMessage(message, conversation.getConversationId(), participantInfo);
         return OPNotificationBuilder.buildNotificationForMessage(
             OPModelUtils.getUserIds(participantInfo.getParticipants()),
             message,

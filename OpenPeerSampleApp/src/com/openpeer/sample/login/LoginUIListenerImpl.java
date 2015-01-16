@@ -47,6 +47,8 @@ import com.openpeer.sample.BaseActivity;
 import com.openpeer.sample.R;
 import com.openpeer.sample.push.HackApiService;
 import com.openpeer.sample.push.OPPushManager;
+import com.openpeer.sample.push.parsepush.PFPushService;
+import com.openpeer.sample.util.SettingsHelper;
 import com.openpeer.sdk.app.LoginUIListener;
 import com.openpeer.sdk.app.OPDataManager;
 import com.openpeer.sdk.app.OPIdentityLoginWebViewClient;
@@ -138,29 +140,34 @@ public class LoginUIListenerImpl implements LoginUIListener {
         Toast.makeText(mActivity, R.string.msg_account_login_completed,
                 Toast.LENGTH_LONG)
                 .show();
-        PushManager.enablePush();
+        if(SettingsHelper.getInstance().isParsePushEnabled() && !PFPushService.getInstance().isInitialized()){
+            PFPushService.getInstance().init();
+        }
+        if(SettingsHelper.getInstance().isUAPushEnabled()) {
+            PushManager.enablePush();
 
-        // TODO: move it to proper place after login refactoring.
-        String apid = PushManager.shared().getAPID();
-        if (!TextUtils.isEmpty(apid)) {
-            OPPushManager.getInstance()
+            // TODO: move it to proper place after login refactoring.
+            String apid = PushManager.shared().getAPID();
+            if (!TextUtils.isEmpty(apid)) {
+                OPPushManager.getInstance()
                     .associateDeviceToken(
-                            OPDataManager.getInstance().getSharedAccount()
-                                    .getPeerUri(),
-                            PushManager.shared().getAPID(),
-                            new Callback<HackApiService.HackAssociateResult>() {
-                                @Override
-                                public void success(
-                                        HackApiService.HackAssociateResult hackAssociateResult,
-                                        Response response) {
+                        OPDataManager.getInstance().getSharedAccount()
+                            .getPeerUri(),
+                        PushManager.shared().getAPID(),
+                        new Callback<HackApiService.HackAssociateResult>() {
+                            @Override
+                            public void success(
+                                HackApiService.HackAssociateResult hackAssociateResult,
+                                Response response) {
 
-                                }
-
-                                @Override
-                                public void failure(RetrofitError error) {
-                                }
                             }
+
+                            @Override
+                            public void failure(RetrofitError error) {
+                            }
+                        }
                     );
+            }
         }
     }
 
