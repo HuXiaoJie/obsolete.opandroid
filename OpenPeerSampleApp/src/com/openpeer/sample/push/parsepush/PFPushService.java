@@ -78,10 +78,10 @@ public class PFPushService implements PushServiceInterface {
     public boolean init() {
         OPUser currentUser = OPDataManager.getInstance().getCurrentUser();
         if (currentUser != null) {
-
             ParseInstallation.getCurrentInstallation().put(KEY_PEER_URI, currentUser.getPeerUri());
             ParseInstallation.getCurrentInstallation().saveInBackground();
             mInitialized = true;
+            PFPushReceiver.downloadMessages();
             return true;
         }
         return false;
@@ -122,12 +122,11 @@ public class PFPushService implements PushServiceInterface {
              conversation.getConversationId(),
              OPDataManager.getInstance().getSharedAccount().getLocationID(),
              message.getTime().toMillis(false) / 1000 + "");
-//        PFPushMessage pushMessage = new PFPushMessage(message.getMessage(), getMessage,
-// contact.getPeerUri());
+
         HashMap<String, Object> params = new HashMap<String, Object>();
         params.put("to", contact.getPeerUri());
         params.put("alert", message.getMessage());
-        params.put("extras",pushExtra.toJsonBlob());
+        params.put("extras", pushExtra.toJsonBlob());
         ParseCloud.callFunctionInBackground(
             "sendPushToUser",
             params,

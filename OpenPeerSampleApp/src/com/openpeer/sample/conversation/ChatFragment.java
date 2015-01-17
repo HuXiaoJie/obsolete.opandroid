@@ -334,7 +334,7 @@ public class ChatFragment extends BaseFragment implements
                 }
                 if (!mTyping) {
                     mTyping = true;
-
+                    if(mSession!=null)
                     mSession.setComposingStatus(ComposingStates.ComposingState_Composing);
                 }
             }

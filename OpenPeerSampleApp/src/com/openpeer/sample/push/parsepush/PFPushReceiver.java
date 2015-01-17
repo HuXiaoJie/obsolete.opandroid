@@ -20,17 +20,25 @@ import com.openpeer.sdk.model.OPConversation;
 import com.openpeer.sdk.model.OPUser;
 import com.openpeer.sdk.model.ParticipantInfo;
 import com.openpeer.sdk.utils.OPModelUtils;
+import com.parse.DeleteCallback;
+import com.parse.FindCallback;
+import com.parse.ParseException;
+import com.parse.ParseObject;
 import com.parse.ParsePushBroadcastReceiver;
+import com.parse.ParseQuery;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class PFPushReceiver extends ParsePushBroadcastReceiver {
     static final String TAG = PFPushReceiver.class.getSimpleName();
-
+    public static final String KEY_ALERT = "alert";
+    public static final String KEY_TO = "to";
+    public static final String KEY_EXTRAS = "extras";
     @Override
     protected void onPushReceive(Context context, Intent intent) {
         super.onPushReceive(context, intent);
+        downloadMessages();
     }
 
     @Override
@@ -101,7 +109,10 @@ public class PFPushReceiver extends ParsePushBroadcastReceiver {
         //Make sure conversation is saved in db.
         OPConversation conversation = ConversationManager.getInstance().getConversation
             (GroupChatMode.valueOf(conversationType), participantInfo, conversationId, true);
-        OPDataManager.getInstance().saveMessage(message, conversation.getConversationId(), participantInfo);
+        OPDataManager.getInstance().saveMessage(message,
+                                                conversation.getConversationId(),
+                                                conversation.getParticipantInfo());
+
         return OPNotificationBuilder.buildNotificationForMessage(
             OPModelUtils.getUserIds(participantInfo.getParticipants()),
             message,
@@ -113,4 +124,68 @@ public class PFPushReceiver extends ParsePushBroadcastReceiver {
     protected Class<? extends Activity> getActivity(Context context, Intent intent) {
         return ConversationActivity.class;
     }
+
+    public static void downloadMessages() {
+        ParseQuery parseQuery = new ParseQuery("OPPushMessage");
+        parseQuery.whereEqualTo("to", OPDataManager.getInstance().getCurrentUser().getPeerUri());
+        parseQuery.findInBackground(new FindCallback<ParseObject>() {
+            @Override
+            public void done(final List<ParseObject> list, ParseException e) {
+                for (ParseObject object : list) {
+                    //save messages
+                    PushExtra extras = PushExtra.fromString(object.getString(KEY_EXTRAS));
+                    String senderUri = extras.getPeerURI();
+                    OPUser sender = OPDataManager.getInstance().getUserByPeerUri(senderUri);
+                    if (sender == null) {
+                        Log.e("test", "Couldn't find user for peer " + senderUri);
+                        continue;
+                    }
+                    String peerURIsString = extras.getPeerURIs();
+                    List<OPUser> users = new ArrayList<>();
+                    users.add(sender);
+                    if (!TextUtils.isEmpty(peerURIsString)) {
+                        String peerURIs[] = TextUtils.split(peerURIsString, ",");
+                        for (String uri : peerURIs) {
+                            OPUser user = OPDataManager.getInstance().getUserByPeerUri(uri);
+                            if (user == null) {
+                                //TODO: error handling
+                                Log.e(TAG, "peerUri user not found " + uri);
+                                continue;
+                            } else {
+                                users.add(user);
+                            }
+                        }
+                    }
+                    ParticipantInfo participantInfo = new ParticipantInfo(OPModelUtils
+                                                                              .getWindowId(users),
+                                                                          users);
+                    OPMessage message = new OPMessage(sender.getUserId(), extras.getMessageType(),
+                                                      object.getString(KEY_ALERT),
+                                                      Long.parseLong(extras.getDate()),
+                                                      extras.getMessageId());
+                    OPConversation conversation = ConversationManager.getInstance().getConversation(
+                        GroupChatMode.valueOf(extras.getConversationType()),
+                        participantInfo,
+                        extras.getConversationId(),
+                        true
+                    );
+                    OPDataManager.getInstance().saveMessage(message,
+                                                            conversation.getConversationId(),
+                                                            participantInfo);
+                }
+                ParseObject.deleteAllInBackground(list,new DeleteCallback() {
+                    @Override
+                    public void done(ParseException e) {
+                        if(e==null){
+                            Log.d("ParsePush","downloadMessages deleted "+list.size()+" messages");
+
+                        } else {
+                            e.printStackTrace();
+                        }
+                    }
+                });
+            }
+        });
+    }
+
 }
