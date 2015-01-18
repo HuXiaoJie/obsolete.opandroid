@@ -33,6 +33,7 @@
 package com.openpeer.sample.push.parsepush;
 
 import android.nfc.Tag;
+import android.os.Build;
 import android.text.TextUtils;
 import android.util.Log;
 
@@ -52,6 +53,7 @@ import com.parse.ParseInstallation;
 import com.parse.ParseObject;
 import com.parse.ParsePush;
 import com.parse.ParseQuery;
+import com.parse.SaveCallback;
 import com.parse.SendCallback;
 
 import java.util.HashMap;
@@ -59,6 +61,7 @@ import java.util.List;
 
 public class PFPushService implements PushServiceInterface {
     static final String KEY_PEER_URI = "peerUri";
+    static final String KEY_OS_VERSION = "osVersion";
     private static PFPushService instance;
     static long PUSH_EXPIRATION_DEFAULT = 30 * 24 * 60 * 60;
 
@@ -79,9 +82,16 @@ public class PFPushService implements PushServiceInterface {
         OPUser currentUser = OPDataManager.getInstance().getCurrentUser();
         if (currentUser != null) {
             ParseInstallation.getCurrentInstallation().put(KEY_PEER_URI, currentUser.getPeerUri());
-            ParseInstallation.getCurrentInstallation().saveInBackground();
-            mInitialized = true;
-            PFPushReceiver.downloadMessages();
+            ParseInstallation.getCurrentInstallation().put(KEY_OS_VERSION,
+                                                           "" + Build.VERSION.SDK_INT);
+            ParseInstallation.getCurrentInstallation().saveInBackground(new SaveCallback() {
+                @Override
+                public void done(ParseException e) {
+                    mInitialized = true;
+                    PFPushReceiver.downloadMessages();
+                }
+            });
+
             return true;
         }
         return false;

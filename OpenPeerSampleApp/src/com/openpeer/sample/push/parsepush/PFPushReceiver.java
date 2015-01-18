@@ -8,6 +8,8 @@ import android.os.Bundle;
 import android.text.TextUtils;
 import android.util.Log;
 
+import com.openpeer.javaapi.OPLogLevel;
+import com.openpeer.javaapi.OPLogger;
 import com.openpeer.javaapi.OPMessage;
 import com.openpeer.sample.OPNotificationBuilder;
 import com.openpeer.sample.conversation.ConversationActivity;
@@ -23,6 +25,7 @@ import com.openpeer.sdk.utils.OPModelUtils;
 import com.parse.DeleteCallback;
 import com.parse.FindCallback;
 import com.parse.ParseException;
+import com.parse.ParseInstallation;
 import com.parse.ParseObject;
 import com.parse.ParsePushBroadcastReceiver;
 import com.parse.ParseQuery;
@@ -33,8 +36,9 @@ import java.util.List;
 public class PFPushReceiver extends ParsePushBroadcastReceiver {
     static final String TAG = PFPushReceiver.class.getSimpleName();
     public static final String KEY_ALERT = "alert";
-    public static final String KEY_TO = "to";
     public static final String KEY_EXTRAS = "extras";
+    public static final String KEY_BADGE = "badge";
+
     @Override
     protected void onPushReceive(Context context, Intent intent) {
         super.onPushReceive(context, intent);
@@ -56,11 +60,15 @@ public class PFPushReceiver extends ParsePushBroadcastReceiver {
 
         Bundle extras = intent.getExtras();
 
-        if (extras == null) {
+        if (extras == null || extras.size() == 0) {
+            OPLogger.error(OPLogLevel.LogLevel_Basic, "PFPushReceiver received empty extras");
             return null;
         }
         String data = extras.getString(KEY_PUSH_DATA);
-        Log.d(TAG, "getNotification " + data);
+        if (TextUtils.isEmpty(data)) {
+            OPLogger.error(OPLogLevel.LogLevel_Basic, "PFPushReceiver received empty data");
+            return null;
+        }
         PFPushMessage pushMessage = PFPushMessage.fromJson(data);
         PushExtra pushExtra = PushExtra.fromString(pushMessage.getExtras());
         String alert = pushMessage.getAlert();
@@ -131,6 +139,14 @@ public class PFPushReceiver extends ParsePushBroadcastReceiver {
         parseQuery.findInBackground(new FindCallback<ParseObject>() {
             @Override
             public void done(final List<ParseObject> list, ParseException e) {
+                if (e != null) {
+                    OPLogger.error(OPLogLevel.LogLevel_Debug,
+                                   "downloadMessages failed " + e.getMessage());
+                    return;
+                } else if (list == null || list.size() == 0) {
+                    OPLogger.debug(OPLogLevel.LogLevel_Debug, "downloadMessages empty ");
+                    return;
+                }
                 for (ParseObject object : list) {
                     //save messages
                     PushExtra extras = PushExtra.fromString(object.getString(KEY_EXTRAS));
@@ -173,15 +189,17 @@ public class PFPushReceiver extends ParsePushBroadcastReceiver {
                                                             conversation.getConversationId(),
                                                             participantInfo);
                 }
-                ParseObject.deleteAllInBackground(list,new DeleteCallback() {
+                ParseObject.deleteAllInBackground(list, new DeleteCallback() {
                     @Override
                     public void done(ParseException e) {
-                        if(e==null){
-                            Log.d("ParsePush","downloadMessages deleted "+list.size()+" messages");
-
+                        if (e == null) {
+                            Log.d("ParsePush", "downloadMessages deleted " + list.size() + " " +
+                                "messages");
                         } else {
                             e.printStackTrace();
                         }
+                        ParseInstallation.getCurrentInstallation().put(KEY_BADGE, 0);
+                        ParseInstallation.getCurrentInstallation().saveEventually();
                     }
                 });
             }
