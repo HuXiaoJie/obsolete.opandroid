@@ -85,7 +85,7 @@ public class ConversationManager extends OPConversationThreadDelegate {
     }
 
     OPConversation getConversation(OPConversationThread thread, boolean createNew) {
-        OPConversationThread t = getCachedThread(thread);
+        OPConversationThread t = getCachedThread(thread.getThreadID());
         thread = t == null ? thread : t;
         OPConversation conversation = getConversation(thread.getConverationType(),
                                                       thread.getParticipantInfo(),
@@ -207,9 +207,9 @@ public class ConversationManager extends OPConversationThreadDelegate {
         mThreads.put(thread.getThreadID(), thread);
     }
 
-    OPConversationThread getCachedThread(OPConversationThread thread) {
+    OPConversationThread getCachedThread(String threadId) {
         if (mThreads != null) {
-            return mThreads.get(thread.getThreadID());
+            return mThreads.get(threadId);
         } else {
             OPLogger.error(OPLogLevel.LogLevel_Basic, "getCachedThread Weird! thread not cached");
             return null;
@@ -221,7 +221,7 @@ public class ConversationManager extends OPConversationThreadDelegate {
         if (!OPDataManager.getInstance().isAccountReady()) {
             return null;
         }
-        OPConversationThread thread = null;
+        OPConversationThread thread = getCachedThread(conversationId);
         String metaData = ThreadMetaData.newMetaData(conversationType.toString()).toJsonBlob();
         if (thread == null && createNew) {
             thread = OPConversationThread.create(
@@ -262,7 +262,7 @@ public class ConversationManager extends OPConversationThreadDelegate {
             saveParticipants(thread.getParticipantInfo().getCbcId(),
                              thread.getParticipantInfo().getParticipants());
 
-        OPConversationThread oldThread = getCachedThread(thread);
+        OPConversationThread oldThread = getCachedThread(thread.getThreadID());
         if (oldThread != null) {
             long oldCbcId = oldThread.getParticipantInfo().getCbcId();
             OPConversation conversation = ConversationManager.getInstance().
