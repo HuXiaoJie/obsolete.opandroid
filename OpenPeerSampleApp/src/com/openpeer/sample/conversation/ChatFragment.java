@@ -176,7 +176,7 @@ public class ChatFragment extends BaseFragment implements
     public void onResume() {
         super.onResume();
 
-        if (!OPDataManager.getInstance().isAccountReady()) {
+        if (!OPDataManager.getInstance().isAccountReady() || mSession == null) {
             return;
         }
         // All following stuff can only be done if the account is in ready state
@@ -206,7 +206,9 @@ public class ChatFragment extends BaseFragment implements
         if (!OPDataManager.getInstance().isAccountReady()) {
             return;
         }
-        mSession.setComposingStatus(ComposingStates.ComposingState_Inactive);
+        if (mSession != null) {
+            mSession.setComposingStatus(ComposingStates.ComposingState_Inactive);
+        }
     }
 
     void updateUsersView() {
@@ -332,7 +334,7 @@ public class ChatFragment extends BaseFragment implements
                 }
                 if (!mTyping) {
                     mTyping = true;
-
+                    if(mSession!=null)
                     mSession.setComposingStatus(ComposingStates.ComposingState_Composing);
                 }
             }
@@ -820,7 +822,9 @@ public class ChatFragment extends BaseFragment implements
     public void onLoadFinished(Loader<Cursor> loader, Cursor cursor) {
         Log.d("test", "ChatFragment onLoadFinished" + cursor);
         mAdapter.changeCursor(cursor);
-        mSession.markAllMessagesRead();
+        if (mSession != null) {
+            mSession.markAllMessagesRead();
+        }
     }
 
     @Override

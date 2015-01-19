@@ -50,7 +50,6 @@ import com.openpeer.javaapi.OPCall;
 import com.openpeer.javaapi.OPCaptureCapability;
 import com.openpeer.javaapi.OPMediaEngine;
 import com.openpeer.javaapi.VideoOrientations;
-import com.openpeer.sample.AppConfig;
 import com.openpeer.sample.BaseFragment;
 import com.openpeer.sample.IntentData;
 import com.openpeer.sample.OPNotificationBuilder;

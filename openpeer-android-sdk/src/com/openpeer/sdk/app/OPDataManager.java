@@ -269,6 +269,14 @@ public class OPDataManager {
         mContentUriProvider = provider;
     }
 
+    public OPUser getCurrentUser() {
+        if (getCurrentUserId() != 0) {
+
+            return getUserById(getCurrentUserId());
+        }
+        return null;
+    }
+
     public long getCurrentUserId() {
         if (mCurrentUserId == 0) {
 

@@ -92,7 +92,8 @@ public class UAPushService implements PushServiceInterface {
                     }
                     UAPushMessage uaPushMessage = UAPushMessage.fromOPMessage(
                         new PushExtra
-                            (OPDataManager.getInstance().getSharedAccount().getPeerUri(),
+                            (OPDataManager.getInstance().getCurrentUser().getPeerUri(),
+                             OPDataManager.getInstance().getCurrentUser().getName(),
                              peerURIs,
                              message.getMessageType(),
                              message.getMessageId(),
