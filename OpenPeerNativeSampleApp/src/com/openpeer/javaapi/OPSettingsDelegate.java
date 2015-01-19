@@ -40,4 +40,6 @@ public abstract class OPSettingsDelegate {
 			);
 
 	public abstract void clear(String key);
+	
+	public abstract void clearAll();
 }

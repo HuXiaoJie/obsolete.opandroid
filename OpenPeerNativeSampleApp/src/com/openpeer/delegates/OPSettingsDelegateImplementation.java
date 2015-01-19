@@ -89,5 +89,11 @@ public class OPSettingsDelegateImplementation extends OPSettingsDelegate {
 		// TODO Auto-generated method stub
 		Log.d("output","OPSettingsDelegateImplementation getString key = " + key);
 	}
+	
+	@Override
+	public void clearAll() {
+		// TODO Auto-generated method stub
+		Log.d("output","OPSettingsDelegateImplementation clearAll called");
+	}
 
 }
