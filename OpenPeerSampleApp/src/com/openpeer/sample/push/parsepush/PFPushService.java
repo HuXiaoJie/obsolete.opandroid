@@ -32,8 +32,11 @@
 
 package com.openpeer.sample.push.parsepush;
 
+import android.content.pm.ApplicationInfo;
+import android.content.pm.PackageManager;
 import android.nfc.Tag;
 import android.os.Build;
+import android.os.Bundle;
 import android.text.TextUtils;
 import android.util.Log;
 
@@ -60,6 +63,9 @@ import java.util.HashMap;
 import java.util.List;
 
 public class PFPushService implements PushServiceInterface {
+    public static final String TAG=PFPushService.class.getSimpleName();
+    public static final String KEY_PARSE_APP_ID="parseAppId";
+    public static final String KEY_PARSE_CLIENT_KEY="parseClientKey";
     static final String KEY_PEER_URI = "peerUri";
     static final String KEY_OS_VERSION = "osVersion";
     private static PFPushService instance;
@@ -71,9 +77,21 @@ public class PFPushService implements PushServiceInterface {
 
     private boolean mInitialized;
 
-    public static PFPushService getInstance() {
+    public static PFPushService getInstance() throws RuntimeException{
         if (instance == null) {
+
             instance = new PFPushService();
+            String parseAppId = OPApplication.getMetaInfo(KEY_PARSE_APP_ID);
+            String parseClientKey = OPApplication.getMetaInfo(KEY_PARSE_CLIENT_KEY);
+            if(TextUtils.isEmpty(parseAppId)){
+                throw new RuntimeException("Parse application id is not defined");
+            } else if(TextUtils.isEmpty(parseClientKey)){
+                throw new RuntimeException("Parse client key is not defined");
+            }
+
+            Parse.initialize(OPApplication.getInstance(),
+                             parseAppId,
+                             parseClientKey);
         }
         return instance;
     }
@@ -124,6 +142,7 @@ public class PFPushService implements PushServiceInterface {
 
         PushExtra pushExtra = new PushExtra
             (OPDataManager.getInstance().getCurrentUser().getPeerUri(),
+             OPDataManager.getInstance().getCurrentUser().getName(),
              peerURIs,
              message.getMessageType(),
              message.getMessageId(),
@@ -157,5 +176,10 @@ public class PFPushService implements PushServiceInterface {
                     }
                 }
             });
+    }
+
+    public void onSignout(){
+        ParseInstallation.getCurrentInstallation().put(KEY_PEER_URI,"");
+        ParseInstallation.getCurrentInstallation().saveInBackground();
     }
 }

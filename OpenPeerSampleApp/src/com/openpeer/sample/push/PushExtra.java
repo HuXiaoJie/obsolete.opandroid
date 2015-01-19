@@ -43,6 +43,7 @@ public class PushExtra {
     }
 
     String peerURI;
+    String senderName;
     String peerURIs;
     String location;
     String messageType;
@@ -56,10 +57,11 @@ public class PushExtra {
     PushExtra() {
     }
 
-    public PushExtra(String peerUri, String peerUris, String messageType, String messageId,
+    public PushExtra(String peerUri, String senderName,String peerUris, String messageType, String messageId,
                      String replacesMessageId, String conversationType, String conversationId,
                      String location, String timeInMillis) {
         this.peerURI = peerUri;
+        this.senderName=senderName;
         this.peerURIs = peerUris;
         this.messageType = messageType;
         this.messageId = messageId;

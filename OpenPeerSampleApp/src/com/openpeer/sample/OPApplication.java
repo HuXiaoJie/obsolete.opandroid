@@ -30,8 +30,12 @@
 package com.openpeer.sample;
 
 import android.app.Application;
+import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.pm.ApplicationInfo;
+import android.content.pm.PackageManager;
+import android.os.Bundle;
 import android.os.StrictMode;
 import android.util.Log;
 import android.webkit.CookieManager;
@@ -49,6 +53,8 @@ import com.urbanairship.AirshipConfigOptions;
 import com.urbanairship.Logger;
 import com.urbanairship.UAirship;
 import com.urbanairship.push.PushManager;
+
+import java.util.List;
 
 public class OPApplication extends Application {
     private static final String TAG = OPApplication.class.getSimpleName();
@@ -101,6 +107,8 @@ public class OPApplication extends Application {
     public void signout() {
         if (SettingsHelper.getInstance().isUAPushEnabled()) {
             OPPushManager.onSignOut();
+        } else if(SettingsHelper.getInstance().isParsePushEnabled()){
+            PFPushService.getInstance().onSignout();
         }
         CookieManager.getInstance().removeAllCookie();
         OPNotificationBuilder.cancelAllUponSignout();
@@ -112,9 +120,7 @@ public class OPApplication extends Application {
 
         SettingsHelper.getInstance().initLoggers();
         if (SettingsHelper.getInstance().isParsePushEnabled()) {
-            Parse.initialize(OPApplication.getInstance(),
-                             "2QqtFCehrwxAX6nRr7ZIkHTGY75NhKjfsR1obDsl",
-                             "ZkrGQ4afScH2T5h3DOZBaEn88YY6sdu9Ekix45Ae");
+
             PFPushService.getInstance().init();
             ConversationManager.getInstance().registerPushService(PFPushService.getInstance());
         } else if (SettingsHelper.getInstance().isUAPushEnabled()) {
@@ -128,5 +134,31 @@ public class OPApplication extends Application {
             Logger.logLevel = Log.VERBOSE;
         }
 
+    }
+
+    public static boolean isServiceAvailable(Class serviceClass) {
+        final PackageManager packageManager = instance.getPackageManager();
+        final Intent intent = new Intent(instance, serviceClass);
+        List resolveInfo =
+            packageManager.queryIntentServices(intent,
+                                               PackageManager.MATCH_DEFAULT_ONLY);
+        if (resolveInfo.size() > 0) {
+            return true;
+        }
+        return false;
+    }
+
+    public static String getMetaInfo(String key) {
+        try {
+            ApplicationInfo ai = instance.getPackageManager().getApplicationInfo(instance
+                                                                                     .getPackageName(), PackageManager.GET_META_DATA);
+            Bundle bundle = ai.metaData;
+            return bundle.getString(key);
+        } catch(PackageManager.NameNotFoundException e) {
+            Log.e(TAG, "Failed to load meta-data, NameNotFound: " + e.getMessage());
+        } catch(NullPointerException e) {
+            Log.e(TAG, "Failed to load meta-data, NullPointer: " + e.getMessage());
+        }
+        return null;
     }
 }

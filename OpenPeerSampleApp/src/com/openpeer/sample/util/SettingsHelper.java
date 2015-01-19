@@ -36,12 +36,17 @@ import com.openpeer.sample.OPApplication;
 import com.openpeer.sample.R;
 import com.openpeer.sdk.app.OPHelper;
 
+import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 import android.media.Ringtone;
 import android.media.RingtoneManager;
 import android.net.Uri;
 import android.preference.ListPreference;
 import android.preference.PreferenceManager;
+
+import java.util.List;
 
 public class SettingsHelper {
 
@@ -55,11 +60,11 @@ public class SettingsHelper {
     public static final String KEY_OUT_LOG_SERVER = "defaultOutgoingTelnetServer";
     public static final String KEY_FILE_LOGGER_PATH = "log_file";
     public static final String KEY_TELENT_LOGGER = "local_telnet_logger";
-    public static final String KEY_PARSE_PUSH="application/parse-push-enabled";
-    public static final String KEY_UA_PUSH="application/ua-push-enabled";
+    public static final String KEY_PARSE_PUSH = "application/parse-push-enabled";
+    public static final String KEY_UA_PUSH = "application/ua-push-enabled";
 
     SharedPreferences mPreferences = PreferenceManager
-            .getDefaultSharedPreferences(OPApplication.getInstance());
+        .getDefaultSharedPreferences(OPApplication.getInstance());
 
     static SettingsHelper instance;
 
@@ -72,44 +77,45 @@ public class SettingsHelper {
 
     public static Ringtone getRingtone() {
         SharedPreferences mPreferences = PreferenceManager
-                .getDefaultSharedPreferences(OPApplication.getInstance());
+            .getDefaultSharedPreferences(OPApplication.getInstance());
 
         String ringtoneStr = mPreferences.getString(KEY_RINGTONE, null);
         if (ringtoneStr == null) {
             ringtoneStr = RingtoneManager.getDefaultUri(
-                    RingtoneManager.TYPE_RINGTONE).toString();
+                RingtoneManager.TYPE_RINGTONE).toString();
             SharedPreferences.Editor editor = mPreferences.edit();
             editor.putString(KEY_RINGTONE, ringtoneStr);
             editor.apply();
         }
         return RingtoneManager.getRingtone(OPApplication.getInstance(),
-                Uri.parse(ringtoneStr));
+                                           Uri.parse(ringtoneStr));
     }
 
     public static boolean isSoundNotificationOnForNewMessage() {
         SharedPreferences mPreferences = PreferenceManager
-                .getDefaultSharedPreferences(OPApplication.getInstance());
+            .getDefaultSharedPreferences(OPApplication.getInstance());
 
         return mPreferences.getBoolean(KEY_NOTIFICATION_SOUND_SWITCH, true);
     }
 
     public static Uri getNotificationSound() {
         SharedPreferences mPreferences = PreferenceManager
-                .getDefaultSharedPreferences(OPApplication.getInstance());
+            .getDefaultSharedPreferences(OPApplication.getInstance());
 
         String ringtoneStr = mPreferences.getString(
-                KEY_NOTIFICATION_SOUND_SELECT, null);
+            KEY_NOTIFICATION_SOUND_SELECT, null);
         if (ringtoneStr == null) {
             return null;
         }
         return Uri.parse(ringtoneStr);
     }
 
-    public boolean isParsePushEnabled(){
-        return OPHelper.getSettingsDelegate().getBool(KEY_PARSE_PUSH);
+    public boolean isParsePushEnabled() {
+        return OPApplication.isServiceAvailable(com.parse.PushService.class);
     }
-    public boolean isUAPushEnabled(){
-        return OPHelper.getSettingsDelegate().getBool(KEY_UA_PUSH);
+
+    public boolean isUAPushEnabled() {
+        return OPApplication.isServiceAvailable(com.urbanairship.push.PushService.class);
     }
 
     public void initLoggers() {
@@ -117,7 +123,7 @@ public class SettingsHelper {
             toggleLogger(true);
             if (isOutgoingLoggerOn()) {
                 OPHelper.getInstance().toggleOutgoingTelnetLogging(true,
-                        getLogServer());
+                                                                   getLogServer());
             }
             if (isTelnetLoggerOn()) {
                 OPHelper.getInstance().toggleTelnetLogging(true, 59999);
@@ -162,7 +168,7 @@ public class SettingsHelper {
 
     public static String getString(String key, String defaultValue) {
         SharedPreferences mPreferences = PreferenceManager
-                .getDefaultSharedPreferences(OPApplication.getInstance());
+            .getDefaultSharedPreferences(OPApplication.getInstance());
         return mPreferences.getString(key, defaultValue);
     }
 
@@ -171,9 +177,9 @@ public class SettingsHelper {
      */
     private static void toggleLogger(Boolean newValue) {
         final String loggerKeys[] = OPApplication.getInstance().getResources()
-                .getStringArray(R.array.logKeys);
+            .getStringArray(R.array.logKeys);
         String loggerDefaults[] = OPApplication.getInstance().getResources()
-                .getStringArray(R.array.logLevelDefaults);
+            .getStringArray(R.array.logLevelDefaults);
 
         if (newValue) {
             for (int i = 0; i < loggerKeys.length; i++) {
@@ -195,4 +201,5 @@ public class SettingsHelper {
     public static void setLogServer(String newValue) {
         OPSettings.setString(KEY_OUT_LOG_SERVER, newValue);
     }
+
 }
