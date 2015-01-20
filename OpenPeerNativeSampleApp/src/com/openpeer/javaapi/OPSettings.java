@@ -33,4 +33,10 @@ public class OPSettings {
 	public static native void clear(String key);
 	public static native boolean apply(String jsonSettings);
 	public static native void applyDefaults();
+	
+	public static native void clearAll();
+
+	public static native void verifySettingExists(String key);
+
+	public static native void verifyRequiredSettings();
 }

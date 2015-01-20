@@ -195,6 +195,63 @@ JNIEXPORT void JNICALL Java_com_openpeer_javaapi_OPSettings_applyDefaults
 	ISettings::applyDefaults();
 }
 
+/*
+ * Class:     com_openpeer_javaapi_OPSettings
+ * Method:    clearAll
+ * Signature: ()V
+ */
+JNIEXPORT void JNICALL Java_com_openpeer_javaapi_OPSettings_clearAll
+(JNIEnv *, jclass)
+{
+	__android_log_print(ANDROID_LOG_DEBUG, "com.openpeer.jni", "OPSettings native clearAll called");
+	ISettings::clearAll();
+}
+
+/*
+ * Class:     com_openpeer_javaapi_OPSettings
+ * Method:    verifySettingExists
+ * Signature: (Ljava/lang/String;)V
+ */
+JNIEXPORT void JNICALL Java_com_openpeer_javaapi_OPSettings_verifySettingExists
+(JNIEnv *env, jclass, jstring key)
+{
+	__android_log_print(ANDROID_LOG_DEBUG, "com.openpeer.jni", "OPSettings native verifySettingExists called");
+
+	const char *keyStr;
+	keyStr = env->GetStringUTFChars(key, NULL);
+	if (keyStr == NULL) {
+		return;
+	}
+	__android_log_print(ANDROID_LOG_VERBOSE, "com.openpeer.jni", "OPSettings native verifySettingExists key = %s", keyStr);
+	try
+	{
+		ISettings::verifySettingExists(keyStr);
+	}
+	catch (ISettings::InvalidUsage e)
+	{
+		__android_log_print(ANDROID_LOG_DEBUG, "com.openpeer.jni", "OPSettings native verifySettingExists Invalid Usage exception thrown");
+	}
+}
+
+/*
+ * Class:     com_openpeer_javaapi_OPSettings
+ * Method:    verifyRequiredSettings
+ * Signature: ()V
+ */
+JNIEXPORT void JNICALL Java_com_openpeer_javaapi_OPSettings_verifyRequiredSettings
+(JNIEnv *, jclass)
+{
+	__android_log_print(ANDROID_LOG_DEBUG, "com.openpeer.jni", "OPSettings native verifyRequiredSettings called");
+	try
+	{
+		ISettings::verifyRequiredSettings();
+	}
+	catch (ISettings::InvalidUsage e)
+	{
+		__android_log_print(ANDROID_LOG_DEBUG, "com.openpeer.jni", "OPSettings native verifyRequiredSettings Invalid Usage exception thrown");
+	}
+}
+
 #ifdef __cplusplus
 }
 #endif

@@ -87,6 +87,30 @@ JNIEXPORT jboolean JNICALL Java_com_openpeer_javaapi_OPSettings_apply
 JNIEXPORT void JNICALL Java_com_openpeer_javaapi_OPSettings_applyDefaults
   (JNIEnv *, jclass);
 
+/*
+ * Class:     com_openpeer_javaapi_OPSettings
+ * Method:    clearAll
+ * Signature: ()V
+ */
+JNIEXPORT void JNICALL Java_com_openpeer_javaapi_OPSettings_clearAll
+  (JNIEnv *, jclass);
+
+/*
+ * Class:     com_openpeer_javaapi_OPSettings
+ * Method:    verifySettingExists
+ * Signature: (Ljava/lang/String;)V
+ */
+JNIEXPORT void JNICALL Java_com_openpeer_javaapi_OPSettings_verifySettingExists
+  (JNIEnv *, jclass, jstring);
+
+/*
+ * Class:     com_openpeer_javaapi_OPSettings
+ * Method:    verifyRequiredSettings
+ * Signature: ()V
+ */
+JNIEXPORT void JNICALL Java_com_openpeer_javaapi_OPSettings_verifyRequiredSettings
+  (JNIEnv *, jclass);
+
 #ifdef __cplusplus
 }
 #endif
