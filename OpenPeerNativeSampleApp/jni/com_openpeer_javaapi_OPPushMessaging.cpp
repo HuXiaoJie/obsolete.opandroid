@@ -187,20 +187,10 @@ JNIEXPORT void JNICALL Java_com_openpeer_javaapi_OPPushMessaging_shutdown
 /*
  * Class:     com_openpeer_javaapi_OPPushMessaging
  * Method:    registerDevice
- * Signature: (Lcom/openpeer/javaapi/OPPushMessagingRegisterQueryDelegate;Ljava/lang/String;Landroid/text/format/Time;Ljava/lang/String;ZLjava/lang/String;Ljava/lang/String;Ljava/lang/String;ILjava/util/List;)Lcom/openpeer/javaapi/OPPushMessagingRegisterQuery;
+ * Signature: (Lcom/openpeer/javaapi/OPPushMessagingRegisterQueryDelegate;Lcom/openpeer/javaapi/OPRegisterDeviceInfo;)Lcom/openpeer/javaapi/OPPushMessagingRegisterQuery;
  */
 JNIEXPORT jobject JNICALL Java_com_openpeer_javaapi_OPPushMessaging_registerDevice
-(JNIEnv *, jobject owner,
-		jobject inDelegate,
-		jstring inDeviceToken,
-		jobject inExpires,
-		jstring inMappedType,
-		jboolean inUnreadBadge,
-		jstring inSound,
-		jstring inAction,
-		jstring inLaunchImage,
-		jint inPriority,
-		jobject inValueNames)
+(JNIEnv *, jobject owner, jobject inDelegate, jobject inDeviceInfo)
 {
 	jclass cls;
 	jmethodID method;
@@ -216,46 +206,6 @@ JNIEXPORT jobject JNICALL Java_com_openpeer_javaapi_OPPushMessaging_registerDevi
 		return object;
 	}
 
-	const char *inDeviceTokenStr;
-	inDeviceTokenStr = jni_env->GetStringUTFChars(inDeviceToken, NULL);
-	if (inDeviceTokenStr == NULL) {
-		return object;
-	}
-
-	if (inExpires == NULL)
-	{
-		return object;
-	}
-
-	const char *inMappedTypeStr;
-	inMappedTypeStr = jni_env->GetStringUTFChars(inMappedType, NULL);
-	if (inMappedTypeStr == NULL) {
-		return object;
-	}
-
-	const char *inSoundStr;
-	inSoundStr = jni_env->GetStringUTFChars(inSound, NULL);
-	if (inSoundStr == NULL) {
-		return object;
-	}
-
-	const char *inActionStr;
-	inActionStr = jni_env->GetStringUTFChars(inAction, NULL);
-	if (inActionStr == NULL) {
-		return object;
-	}
-
-	const char *inLaunchImageStr;
-	inLaunchImageStr = jni_env->GetStringUTFChars(inLaunchImage, NULL);
-	if (inLaunchImageStr == NULL) {
-		return object;
-	}
-
-	if (inValueNames == NULL)
-	{
-		return object;
-	}
-
 	jclass messagingClass = findClass("com/openpeer/javaapi/OPPushMessaging");
 	jfieldID messagingFid = jni_env->GetFieldID(messagingClass, "nativeClassPointer", "J");
 	jlong pointerValue = jni_env->GetLongField(owner, messagingFid);
@@ -267,22 +217,9 @@ JNIEXPORT jobject JNICALL Java_com_openpeer_javaapi_OPPushMessaging_registerDevi
 
 	if (coreMessagingPtr)
 	{
-		//		IPushMessagingRegisterQueryPtr queryPtr =
-		//				coreMessagingPtr->get()->registerDevice(
-		//						registerQueryDelegatePtr,
-		//						(char const*)inDeviceTokenStr,
-		//						OpenPeerCoreManager::convertTimeFromJava(inExpires),
-		//						(char const*)inMappedTypeStr,
-		//						(bool) inUnreadBadge,
-		//						(char const*)inSoundStr,
-		//						(char const*)inActionStr,
-		//						(char const*)inLaunchImageStr,
-		//						(int) inPriority,
-		//						OpenPeerCoreManager::valueNameListToCore(inValueNames));
-		IPushMessaging::RegisterDeviceInfo regInfo;
-		IPushMessagingRegisterQueryPtr queryPtr =
-				coreMessagingPtr->get()->registerDevice(
-						registerQueryDelegatePtr, regInfo );
+		IPushMessagingRegisterQueryPtr queryPtr = coreMessagingPtr->get()->registerDevice(
+				registerQueryDelegatePtr,
+				OpenPeerCoreManager::registerDeviceInfoToMessaging(inDeviceInfo));
 		if(queryPtr)
 		{
 			jclass queryCls = findClass("com/openpeer/javaapi/OPPushMessagingRegisterQuery");

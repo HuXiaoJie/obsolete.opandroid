@@ -70,7 +70,9 @@ public:
 	static jobject presenceResourceListToJava(PresenceResources::ResourceList resourceList);
 	static jobject presenceResourcesToJava(PresenceResourcesPtr resourcesPtr);
 
-
+	//registerDeviceInfo conversions
+	static IPushMessaging::RegisterDeviceInfo registerDeviceInfoToMessaging(jobject);
+	static IPushPresence::RegisterDeviceInfo registerDeviceInfoToPresence(jobject);
 
 public:
 	static IStackMessageQueuePtr queuePtr;

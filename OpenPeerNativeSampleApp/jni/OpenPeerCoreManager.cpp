@@ -1428,3 +1428,142 @@ jobject OpenPeerCoreManager::presenceResourcesToJava(PresenceResourcesPtr resour
 
 	return object;
 }
+
+IPushMessaging::RegisterDeviceInfo OpenPeerCoreManager::registerDeviceInfoToMessaging(jobject javaRegisterDeviceInfo)
+{
+	IPushMessaging::RegisterDeviceInfo returnObject;
+	JNIEnv *jni_env = 0;
+
+	__android_log_print(ANDROID_LOG_DEBUG, "com.openpeer.jni", "OpenPeerCoreManager registerDeviceInfoToMessaging called");
+
+	jni_env = getEnv();
+	if (jni_env)
+	{
+		jclass javaItemClass = findClass("com/openpeer/javaapi/OPRegisterDeviceInfo");
+
+		//mDeviceToken
+		jmethodID getDeviceTokenMethodID = jni_env->GetMethodID( javaItemClass, "getDeviceToken", "()Ljava/lang/String;" );
+		jstring deviceToken = (jstring)jni_env->CallObjectMethod(javaRegisterDeviceInfo, getDeviceTokenMethodID);
+		returnObject.mDeviceToken = String(jni_env->GetStringUTFChars(deviceToken, NULL));
+		jni_env->ReleaseStringUTFChars(deviceToken, returnObject.mDeviceToken);
+		jni_env->DeleteLocalRef(deviceToken);
+
+		//mExpires
+		jmethodID getExpiresMethodID = jni_env->GetMethodID( javaItemClass, "getExpires", "()Landroid/text/format/Time;" );
+		jobject expires = jni_env->CallObjectMethod(javaRegisterDeviceInfo, getExpiresMethodID);
+		returnObject.mExpires = OpenPeerCoreManager::convertTimeFromJava(expires);
+
+		//mMappedType
+		jmethodID getMappedTypeMethodID = jni_env->GetMethodID( javaItemClass, "getMappedType", "()Ljava/lang/String;" );
+		jstring mappedType = (jstring)jni_env->CallObjectMethod(javaRegisterDeviceInfo, getMappedTypeMethodID);
+		returnObject.mMappedType = String(jni_env->GetStringUTFChars(mappedType, NULL));
+		jni_env->ReleaseStringUTFChars(mappedType, returnObject.mMappedType);
+		jni_env->DeleteLocalRef(mappedType);
+
+		//mUnreadBadge
+		jmethodID getUnreadBadgeMethodID = jni_env->GetMethodID( javaItemClass, "getUnreadBadge", "()Z" );
+		returnObject.mUnreadBadge = (jboolean) jni_env->CallBooleanMethod(javaRegisterDeviceInfo, getUnreadBadgeMethodID);
+
+		//mSound
+		jmethodID getSoundMethodID = jni_env->GetMethodID( javaItemClass, "getSound", "()Ljava/lang/String;" );
+		jstring sound = (jstring)jni_env->CallObjectMethod(javaRegisterDeviceInfo, getSoundMethodID);
+		returnObject.mSound = String(jni_env->GetStringUTFChars(sound, NULL));
+		jni_env->ReleaseStringUTFChars(sound, returnObject.mSound);
+		jni_env->DeleteLocalRef(sound);
+
+		//mAction
+		jmethodID getActionMethodID = jni_env->GetMethodID( javaItemClass, "getAction", "()Ljava/lang/String;" );
+		jstring action = (jstring)jni_env->CallObjectMethod(javaRegisterDeviceInfo, getActionMethodID);
+		returnObject.mAction = String(jni_env->GetStringUTFChars(action, NULL));
+		jni_env->ReleaseStringUTFChars(action, returnObject.mAction);
+		jni_env->DeleteLocalRef(action);
+
+		//mLaunchImage
+		jmethodID getLaunchImageMethodID = jni_env->GetMethodID( javaItemClass, "getLaunchImage", "()Ljava/lang/String;" );
+		jstring launchImage = (jstring)jni_env->CallObjectMethod(javaRegisterDeviceInfo, getLaunchImageMethodID);
+		returnObject.mLaunchImage = String(jni_env->GetStringUTFChars(launchImage, NULL));
+		jni_env->ReleaseStringUTFChars(launchImage, returnObject.mLaunchImage);
+		jni_env->DeleteLocalRef(launchImage);
+
+		//mPriority
+		jmethodID getPriorityMethodID = jni_env->GetMethodID( javaItemClass, "getPriority", "()I" );
+		returnObject.mPriority = (jint) jni_env->CallIntMethod(javaRegisterDeviceInfo, getPriorityMethodID);
+
+		//mPushInfos
+		jmethodID getValueNamesMethodID = jni_env->GetMethodID( javaItemClass, "getValueNames", "()Ljava/util/List;" );
+		jobject valueNames = jni_env->CallObjectMethod(javaRegisterDeviceInfo, getValueNamesMethodID);
+		returnObject.mValueNames = OpenPeerCoreManager::valueNameListToCore(valueNames);
+
+	}
+
+	return returnObject;
+}
+IPushPresence::RegisterDeviceInfo OpenPeerCoreManager::registerDeviceInfoToPresence(jobject javaRegisterDeviceInfo)
+{
+	IPushPresence::RegisterDeviceInfo returnObject;
+	JNIEnv *jni_env = 0;
+
+	__android_log_print(ANDROID_LOG_DEBUG, "com.openpeer.jni", "OpenPeerCoreManager registerDeviceInfoToPresence called");
+
+	jni_env = getEnv();
+	if (jni_env)
+	{
+		jclass javaItemClass = findClass("com/openpeer/javaapi/OPRegisterDeviceInfo");
+
+		//mDeviceToken
+		jmethodID getDeviceTokenMethodID = jni_env->GetMethodID( javaItemClass, "getDeviceToken", "()Ljava/lang/String;" );
+		jstring deviceToken = (jstring)jni_env->CallObjectMethod(javaRegisterDeviceInfo, getDeviceTokenMethodID);
+		returnObject.mDeviceToken = String(jni_env->GetStringUTFChars(deviceToken, NULL));
+		jni_env->ReleaseStringUTFChars(deviceToken, returnObject.mDeviceToken);
+		jni_env->DeleteLocalRef(deviceToken);
+
+		//mExpires
+		jmethodID getExpiresMethodID = jni_env->GetMethodID( javaItemClass, "getExpires", "()Landroid/text/format/Time;" );
+		jobject expires = jni_env->CallObjectMethod(javaRegisterDeviceInfo, getExpiresMethodID);
+		returnObject.mExpires = OpenPeerCoreManager::convertTimeFromJava(expires);
+
+		//mMappedType
+		jmethodID getMappedTypeMethodID = jni_env->GetMethodID( javaItemClass, "getMappedType", "()Ljava/lang/String;" );
+		jstring mappedType = (jstring)jni_env->CallObjectMethod(javaRegisterDeviceInfo, getMappedTypeMethodID);
+		returnObject.mMappedType = String(jni_env->GetStringUTFChars(mappedType, NULL));
+		jni_env->ReleaseStringUTFChars(mappedType, returnObject.mMappedType);
+		jni_env->DeleteLocalRef(mappedType);
+
+		//mUnreadBadge
+		jmethodID getUnreadBadgeMethodID = jni_env->GetMethodID( javaItemClass, "getUnreadBadge", "()Z" );
+		returnObject.mUnreadBadge = (jboolean) jni_env->CallBooleanMethod(javaRegisterDeviceInfo, getUnreadBadgeMethodID);
+
+		//mSound
+		jmethodID getSoundMethodID = jni_env->GetMethodID( javaItemClass, "getSound", "()Ljava/lang/String;" );
+		jstring sound = (jstring)jni_env->CallObjectMethod(javaRegisterDeviceInfo, getSoundMethodID);
+		returnObject.mSound = String(jni_env->GetStringUTFChars(sound, NULL));
+		jni_env->ReleaseStringUTFChars(sound, returnObject.mSound);
+		jni_env->DeleteLocalRef(sound);
+
+		//mAction
+		jmethodID getActionMethodID = jni_env->GetMethodID( javaItemClass, "getAction", "()Ljava/lang/String;" );
+		jstring action = (jstring)jni_env->CallObjectMethod(javaRegisterDeviceInfo, getActionMethodID);
+		returnObject.mAction = String(jni_env->GetStringUTFChars(action, NULL));
+		jni_env->ReleaseStringUTFChars(action, returnObject.mAction);
+		jni_env->DeleteLocalRef(action);
+
+		//mLaunchImage
+		jmethodID getLaunchImageMethodID = jni_env->GetMethodID( javaItemClass, "getLaunchImage", "()Ljava/lang/String;" );
+		jstring launchImage = (jstring)jni_env->CallObjectMethod(javaRegisterDeviceInfo, getLaunchImageMethodID);
+		returnObject.mLaunchImage = String(jni_env->GetStringUTFChars(launchImage, NULL));
+		jni_env->ReleaseStringUTFChars(launchImage, returnObject.mLaunchImage);
+		jni_env->DeleteLocalRef(launchImage);
+
+		//mPriority
+		jmethodID getPriorityMethodID = jni_env->GetMethodID( javaItemClass, "getPriority", "()I" );
+		returnObject.mPriority = (jint) jni_env->CallIntMethod(javaRegisterDeviceInfo, getPriorityMethodID);
+
+		//mPushInfos
+		jmethodID getValueNamesMethodID = jni_env->GetMethodID( javaItemClass, "getValueNames", "()Ljava/util/List;" );
+		jobject valueNames = jni_env->CallObjectMethod(javaRegisterDeviceInfo, getValueNamesMethodID);
+		returnObject.mValueNames = OpenPeerCoreManager::presenceValueNameListToCore(valueNames);
+
+	}
+
+	return returnObject;
+}

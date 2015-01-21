@@ -187,20 +187,10 @@ JNIEXPORT void JNICALL Java_com_openpeer_javaapi_OPPushPresence_shutdown
 /*
  * Class:     com_openpeer_javaapi_OPPushPresence
  * Method:    registerDevice
- * Signature: (Lcom/openpeer/javaapi/OPPushPresenceRegisterQueryDelegate;Ljava/lang/String;Landroid/text/format/Time;Ljava/lang/String;ZLjava/lang/String;Ljava/lang/String;Ljava/lang/String;ILjava/util/List;)Lcom/openpeer/javaapi/OPPushPresenceRegisterQuery;
+ * Signature: (Lcom/openpeer/javaapi/OPPushPresenceRegisterQueryDelegate;Lcom/openpeer/javaapi/OPRegisterDeviceInfo;)Lcom/openpeer/javaapi/OPPushPresenceRegisterQuery;
  */
 JNIEXPORT jobject JNICALL Java_com_openpeer_javaapi_OPPushPresence_registerDevice
-(JNIEnv *, jobject owner,
-		jobject inDelegate,
-		jstring inDeviceToken,
-		jobject inExpires,
-		jstring inMappedType,
-		jboolean inUnreadBadge,
-		jstring inSound,
-		jstring inAction,
-		jstring inLaunchImage,
-		jint inPriority,
-		jobject inValueNames)
+(JNIEnv *, jobject owner, jobject inDelegate, jobject inDeviceInfo)
 {
 	jclass cls;
 	jmethodID method;
@@ -216,46 +206,6 @@ JNIEXPORT jobject JNICALL Java_com_openpeer_javaapi_OPPushPresence_registerDevic
 		return object;
 	}
 
-	const char *inDeviceTokenStr;
-	inDeviceTokenStr = jni_env->GetStringUTFChars(inDeviceToken, NULL);
-	if (inDeviceTokenStr == NULL) {
-		return object;
-	}
-
-	if (inExpires == NULL)
-	{
-		return object;
-	}
-
-	const char *inMappedTypeStr;
-	inMappedTypeStr = jni_env->GetStringUTFChars(inMappedType, NULL);
-	if (inMappedTypeStr == NULL) {
-		return object;
-	}
-
-	const char *inSoundStr;
-	inSoundStr = jni_env->GetStringUTFChars(inSound, NULL);
-	if (inSoundStr == NULL) {
-		return object;
-	}
-
-	const char *inActionStr;
-	inActionStr = jni_env->GetStringUTFChars(inAction, NULL);
-	if (inActionStr == NULL) {
-		return object;
-	}
-
-	const char *inLaunchImageStr;
-	inLaunchImageStr = jni_env->GetStringUTFChars(inLaunchImage, NULL);
-	if (inLaunchImageStr == NULL) {
-		return object;
-	}
-
-	if (inValueNames == NULL)
-	{
-		return object;
-	}
-
 	jclass presenceClass = findClass("com/openpeer/javaapi/OPPushPresence");
 	jfieldID presenceFid = jni_env->GetFieldID(presenceClass, "nativeClassPointer", "J");
 	jlong pointerValue = jni_env->GetLongField(owner, presenceFid);
@@ -267,22 +217,10 @@ JNIEXPORT jobject JNICALL Java_com_openpeer_javaapi_OPPushPresence_registerDevic
 
 	if (corePresencePtr)
 	{
-		//		IPushPresenceRegisterQueryPtr queryPtr =
-		//				corePresencePtr->get()->registerDevice(
-		//						registerQueryDelegatePtr,
-		//						(char const*)inDeviceTokenStr,
-		//						OpenPeerCoreManager::convertSecondsFromJava(inExpires),
-		//						(char const*)inMappedTypeStr,
-		//						(bool) inUnreadBadge,
-		//						(char const*)inSoundStr,
-		//						(char const*)inActionStr,
-		//						(char const*)inLaunchImageStr,
-		//						(int) inPriority,
-		//						OpenPeerCoreManager::presenceValueNameListToCore(inValueNames));
-		IPushPresence::RegisterDeviceInfo regInfo;
 		IPushPresenceRegisterQueryPtr queryPtr =
 				corePresencePtr->get()->registerDevice(
-						registerQueryDelegatePtr,regInfo);
+						registerQueryDelegatePtr,
+						OpenPeerCoreManager::registerDeviceInfoToPresence(inDeviceInfo));
 		if(queryPtr)
 		{
 			jclass queryCls = findClass("com/openpeer/javaapi/OPPushPresenceRegisterQuery");

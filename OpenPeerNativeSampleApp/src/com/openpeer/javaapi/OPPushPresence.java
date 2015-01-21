@@ -40,15 +40,7 @@ public class OPPushPresence {
 	// PURPOSE: register or unregister for push presence status updates
 	public native OPPushPresenceRegisterQuery registerDevice(
 			OPPushPresenceRegisterQueryDelegate inDelegate,
-			String inDeviceToken,        // a token used for pushing to this particular service
-			Time inExpires,                   // how long should the subscription for push messaging last; pass in Time() to remove a previous subscription
-			String inMappedType,         // for APNS maps to "loc-key"
-			boolean inUnreadBadge,               // true causes total unread messages to be displayed in badge
-			String inSound,              // what sound to play upon receiving a message. For APNS, maps to "sound" field
-			String inAction,             // for APNS, maps to "action-loc-key"
-			String inLaunchImage,        // for APNS, maps to "launch-image"
-			int inPriority,          // for APNS, maps to push priority
-			List<String> inValueNames // list of values requested from each push from the push server (in order they should be delivered); empty = all values
+			OPRegisterDeviceInfo deviceInfo
 			);
 
 	//-----------------------------------------------------------------------

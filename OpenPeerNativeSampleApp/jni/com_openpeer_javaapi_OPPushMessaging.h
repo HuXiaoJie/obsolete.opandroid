@@ -42,10 +42,10 @@ JNIEXPORT void JNICALL Java_com_openpeer_javaapi_OPPushMessaging_shutdown
 /*
  * Class:     com_openpeer_javaapi_OPPushMessaging
  * Method:    registerDevice
- * Signature: (Lcom/openpeer/javaapi/OPPushMessagingRegisterQueryDelegate;Ljava/lang/String;Landroid/text/format/Time;Ljava/lang/String;ZLjava/lang/String;Ljava/lang/String;Ljava/lang/String;ILjava/util/List;)Lcom/openpeer/javaapi/OPPushMessagingRegisterQuery;
+ * Signature: (Lcom/openpeer/javaapi/OPPushMessagingRegisterQueryDelegate;Lcom/openpeer/javaapi/OPRegisterDeviceInfo;)Lcom/openpeer/javaapi/OPPushMessagingRegisterQuery;
  */
 JNIEXPORT jobject JNICALL Java_com_openpeer_javaapi_OPPushMessaging_registerDevice
-  (JNIEnv *, jobject, jobject, jstring, jobject, jstring, jboolean, jstring, jstring, jstring, jint, jobject);
+  (JNIEnv *, jobject, jobject, jobject);
 
 /*
  * Class:     com_openpeer_javaapi_OPPushMessaging
