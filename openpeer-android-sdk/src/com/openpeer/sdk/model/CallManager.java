@@ -270,7 +270,7 @@ public class CallManager extends OPCallDelegate {
         OPMessage message = new OPMessage(
             OPDataManager.getInstance().getSharedAccount().getSelfContactId(),
             OPSystemMessage.getMessageType(),
-            systemMessage.toString(),
+            systemMessage.toJson(),
             System.currentTimeMillis(),
             UUID.randomUUID().toString());
         return message;

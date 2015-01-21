@@ -154,7 +154,16 @@ public class OPModelUtils {
         return IDs;
     }
 
-    public static List<OPContactProfileInfo> getProfileInfo(List<OPUser> users){
+    public static String[] getPeerUris(List<OPUser> users){
+        String[] peerUris = new String[users.size()];
+        int i = 0;
+        for (OPUser user : users) {
+            peerUris[i++] = user.getPeerUri();
+        }
+        return peerUris;
+    }
+
+    public static List<OPContactProfileInfo> getProfileInfo(List<OPUser> users) {
         List<OPContactProfileInfo> contactProfiles = new ArrayList<>();
         for (OPUser user : users) {
             if (!user.getOPContact().isSelf()) {

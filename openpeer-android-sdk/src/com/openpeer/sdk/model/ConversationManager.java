@@ -32,6 +32,8 @@
 
 package com.openpeer.sdk.model;
 
+import android.text.TextUtils;
+
 import com.openpeer.javaapi.ComposingStates;
 import com.openpeer.javaapi.ContactConnectionStates;
 import com.openpeer.javaapi.MessageDeliveryStates;
@@ -221,7 +223,11 @@ public class ConversationManager extends OPConversationThreadDelegate {
         if (!OPDataManager.getInstance().isAccountReady()) {
             return null;
         }
-        OPConversationThread thread = getCachedThread(conversationId);
+
+        OPConversationThread thread = null;
+        if (!TextUtils.isEmpty(conversationId)) {
+            thread = getCachedThread(conversationId);
+        }
         String metaData = ThreadMetaData.newMetaData(conversationType.toString()).toJsonBlob();
         if (thread == null && createNew) {
             thread = OPConversationThread.create(

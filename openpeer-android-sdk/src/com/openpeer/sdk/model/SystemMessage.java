@@ -8,8 +8,12 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParseException;
 import com.google.gson.reflect.TypeToken;
+import com.openpeer.javaapi.OPMessage;
+import com.openpeer.javaapi.OPSystemMessage;
+import com.openpeer.sdk.app.OPDataManager;
 
 import java.lang.reflect.Type;
+import java.util.UUID;
 
 /**
  * {"system":{"callStatus":{"$id":"adf","status":"placed","mediaType":"audio",
@@ -19,7 +23,7 @@ public class SystemMessage<T> {
 
     T system;
 
-    public T getSystemObject(){
+    public T getSystemObject() {
         return system;
     }
 
@@ -30,12 +34,25 @@ public class SystemMessage<T> {
         system = t;
     }
 
+    public static OPMessage getContactsRemovedSystemMessage(String[] removedContacts){
+        ContactsRemovedSystemMessage contactsRemovedSystemMessage= new ContactsRemovedSystemMessage(removedContacts);
+        SystemMessage<ContactsRemovedSystemMessage> systemMessage =
+            new SystemMessage<ContactsRemovedSystemMessage>(contactsRemovedSystemMessage);
+
+        OPMessage message = new OPMessage(
+            OPDataManager.getInstance().getSharedAccount().getSelfContactId(),
+            OPSystemMessage.getMessageType(),
+            systemMessage.toJson(),
+            System.currentTimeMillis(),
+            UUID.randomUUID().toString());
+        return message;
+    }
     public static SystemMessage parseSystemMessage(String jsonBlob) {
         return getGson().fromJson(jsonBlob,
                                   SystemMessage.class);
     }
 
-    public String toString() {
+    public String toJson() {
         return GsonFactory.getGson().toJson(this);
     }
 
@@ -49,8 +66,13 @@ public class SystemMessage<T> {
             System.out.println("object " + object.toString());
             if (object.has("callStatus")) {
 
-                CallSystemMessage callSystemMessage = context.deserialize(object, CallSystemMessage.class);
+                CallSystemMessage callSystemMessage = context.deserialize(object,
+                                                                          CallSystemMessage.class);
                 message.system = callSystemMessage;
+            } else if (object.has("contactsRemoved")) {
+                ContactsRemovedSystemMessage contactsRemovedSystemMessage =
+                    context.deserialize(object, ContactsRemovedSystemMessage.class);
+                message.system = contactsRemovedSystemMessage;
             }
             return message;
         }

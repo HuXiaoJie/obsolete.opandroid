@@ -128,6 +128,7 @@ public class OPConversation extends Observable {
 
     public void setDisabled(boolean disabled){
         mDisabled=disabled;
+        OPDataManager.getInstance().updateConversation(this);
     }
 
     public long getId() {
@@ -310,6 +311,8 @@ public class OPConversation extends Observable {
 
     public void removeParticipants(List<OPUser> users) {
         if (mConvThread != null) {
+            sendMessage(SystemMessage.getContactsRemovedSystemMessage(
+                OPModelUtils.getPeerUris(users)), false);
             OPModelUtils.removeParticipantsFromThread(mConvThread, users);
         } else {
             long oldCbcId = participantInfo.getCbcId();
@@ -350,10 +353,11 @@ public class OPConversation extends Observable {
                 }
 
                 OPDataManager.getInstance().saveMessage(message, conversationId,
-                                                                 participantInfo);
+                                                        participantInfo);
                 // TODO: Now notify observer
 
             }
+            selectActiveThread(thread);
         } else if (message.getMessageType().equals(OPMessage.OPMessageType.TYPE_JSON_SYSTEM_MESSAGE)) {
             SystemMessage systemMessage = SystemMessage.parseSystemMessage(message.getMessage());
             if (systemMessage.getSystemObject() instanceof CallSystemMessage) {
@@ -363,9 +367,20 @@ public class OPConversation extends Observable {
                     handleCallSystemMessage(callSystemMessage, getConversationId(),
                                             message.getTime().toMillis(false));
 
+            } else if (systemMessage.getSystemObject() instanceof ContactsRemovedSystemMessage) {
+                ContactsRemovedSystemMessage callSystemMessage = (ContactsRemovedSystemMessage)
+                    systemMessage
+                    .getSystemObject();
+                String selfPeerUri = OPDataManager.getInstance().getCurrentUser().getPeerUri();
+                for (String peerUri : callSystemMessage.getContactsRemoved()) {
+                    if (peerUri.equals(selfPeerUri)) {
+                        setDisabled(true);
+
+                        notifyContactsChanged();
+                    }
+                }
             }
         }
-        selectActiveThread(thread);
     }
 
     /**
