@@ -467,6 +467,7 @@ LOCAL_SRC_FILES := \
 		OpenPeerNativeSampleApp/jni/com_openpeer_javaapi_OPPresenceStreetLocation.cpp \
 		OpenPeerNativeSampleApp/jni/com_openpeer_javaapi_OPPresenceResources.cpp \
 		OpenPeerNativeSampleApp/jni/PushMessagingTransferNotifierWrapper.cpp \
+		OpenPeerNativeSampleApp/jni/PushPresenceTransferNotifierWrapper.cpp \
 		
 
 #LOCAL_LDLIBS += $(ANDROIDNDK_PATH)/sources/cxx-stl/llvm-libc++/libs/armeabi/libc++_static.a
