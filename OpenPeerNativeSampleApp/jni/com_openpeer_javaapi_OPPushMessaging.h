@@ -10,7 +10,7 @@ extern "C" {
 /*
  * Class:     com_openpeer_javaapi_OPPushMessaging
  * Method:    create
- * Signature: (Lcom/openpeer/javaapi/OPPushMessagingDelegate;Lcom/openpeer/javaapi/OPPushMessagingDatabaseAbstractionDelegate;Lcom/openpeer/javaapi/OPAccount;)Lcom/openpeer/javaapi/OPPushMessaging;
+ * Signature: (Lcom/openpeer/javaapi/OPPushMessagingDelegate;Lcom/openpeer/javaapi/OPPushMessagingTransferDelegate;Lcom/openpeer/javaapi/OPAccount;)Lcom/openpeer/javaapi/OPPushMessaging;
  */
 JNIEXPORT jobject JNICALL Java_com_openpeer_javaapi_OPPushMessaging_create
   (JNIEnv *, jclass, jobject, jobject, jobject);

@@ -15,10 +15,10 @@ extern "C" {
 /*
  * Class:     com_openpeer_javaapi_OPPushPresence
  * Method:    create
- * Signature: (Lcom/openpeer/javaapi/OPPushPresenceDelegate;Lcom/openpeer/javaapi/OPPushPresenceDatabaseAbstractionDelegate;Lcom/openpeer/javaapi/OPAccount;)Lcom/openpeer/javaapi/OPPushPresence;
+ * Signature: (Lcom/openpeer/javaapi/OPPushPresenceDelegate;Lcom/openpeer/javaapi/OPPushPresenceTransferDelegate;Lcom/openpeer/javaapi/OPAccount;)Lcom/openpeer/javaapi/OPPushPresence;
  */
 JNIEXPORT jobject JNICALL Java_com_openpeer_javaapi_OPPushPresence_create
-(JNIEnv *, jclass, jobject javaPresenceDelegate, jobject javaDatabaseDelegate, jobject javaAccount)
+(JNIEnv *, jclass, jobject javaPresenceDelegate, jobject javaTransferDelegate, jobject javaAccount)
 {
 	jclass cls;
 	jmethodID method;
@@ -29,7 +29,7 @@ JNIEXPORT jobject JNICALL Java_com_openpeer_javaapi_OPPushPresence_create
 
 	jni_env = getEnv();
 
-	if (javaPresenceDelegate == NULL || javaDatabaseDelegate == NULL)
+	if (javaPresenceDelegate == NULL || javaTransferDelegate == NULL)
 	{
 		return object;
 	}
@@ -44,9 +44,8 @@ JNIEXPORT jobject JNICALL Java_com_openpeer_javaapi_OPPushPresence_create
 	PushPresenceDelegateWrapperPtr presenceDelegatePtr = PushPresenceDelegateWrapperPtr(new PushPresenceDelegateWrapper(javaPresenceDelegate));
 
 	//TODO: Remove line bellow as soon as DB abstraction delegate is implemented
-	//PushMessagingDatabaseAbstractionDelegateWrapperPtr messagingDBAbstractionDelegatePtr = PushMessagingDatabaseAbstractionDelegateWrapperPtr(new PushMessagingDatabaseAbstractionDelegateWrapper(javaDatabaseDelegate));
-	//IPushMessagingPtr messagingPtr = IPushMessaging::create(messagingDelegatePtr, messagingDBAbstractionDelegatePtr, *coreAccountPtr);
-	IPushPresencePtr presencePtr = IPushPresence::create(presenceDelegatePtr,IPushPresenceTransferDelegatePtr() , *coreAccountPtr);
+	PushPresenceTransferDelegateWrapperPtr presenceTransferDelegatePtr = PushPresenceTransferDelegateWrapperPtr(new PushPresenceTransferDelegateWrapper(javaTransferDelegate));
+	IPushPresencePtr presencePtr = IPushPresence::create(presenceDelegatePtr, presenceTransferDelegatePtr, *coreAccountPtr);
 
 	if(presencePtr)
 	{
@@ -67,10 +66,10 @@ JNIEXPORT jobject JNICALL Java_com_openpeer_javaapi_OPPushPresence_create
 			jlong delegate = (jlong) ptrToPushPresenceDelegateWrapperPtr;
 			jni_env->SetLongField(object, delegateFid, delegate);
 
-			//			PushMessagingDatabaseAbstractionDelegateWrapperPtr* ptrToPushMessagingDBAbstractionDelegateWrapperPtr= new std::shared_ptr<PushMessagingDatabaseAbstractionDelegateWrapper>(messagingDBAbstractionDelegatePtr);
-			//			jfieldID dbDelegateFid = jni_env->GetFieldID(cls, "nativeDatabaseAbstractionDelegatePointer", "J");
-			//			jlong dbDelegate = (jlong) ptrToPushMessagingDBAbstractionDelegateWrapperPtr;
-			//			jni_env->SetLongField(object, dbDelegateFid, dbDelegate);
+			PushPresenceTransferDelegateWrapperPtr* ptrToPushPresenceTransferWrapperPtr= new std::shared_ptr<PushPresenceTransferDelegateWrapper>(presenceTransferDelegatePtr);
+			jfieldID transferDelegateFid = jni_env->GetFieldID(cls, "nativeTransferDelegatePointer", "J");
+			jlong transferDelegate = (jlong) ptrToPushPresenceTransferWrapperPtr;
+			jni_env->SetLongField(object, transferDelegateFid, transferDelegate);
 
 
 		}
@@ -430,10 +429,10 @@ JNIEXPORT void JNICALL Java_com_openpeer_javaapi_OPPushPresence_releaseCoreObjec
 
 		delete (PushPresenceDelegateWrapperPtr*)delegatePointerValue;
 
-		jfieldID dbDelegateFid = jni_env->GetFieldID(presenceClass, "nativeDatabaseAbstractionDelegatePointer", "J");
-		jlong dbDelegatePointerValue = jni_env->GetLongField(javaObject, dbDelegateFid);
+		jfieldID transferDelegateFid = jni_env->GetFieldID(presenceClass, "nativeTransferDelegatePointer", "J");
+		jlong transferDelegatePointerValue = jni_env->GetLongField(javaObject, transferDelegateFid);
 
-		delete (PushPresenceDatabaseAbstractionDelegateWrapperPtr*)dbDelegatePointerValue;
+		delete (PushPresenceTransferDelegateWrapperPtr*)transferDelegatePointerValue;
 		__android_log_print(ANDROID_LOG_DEBUG, "com.openpeer.jni", "OPPushPresence Core object deleted.");
 
 	}

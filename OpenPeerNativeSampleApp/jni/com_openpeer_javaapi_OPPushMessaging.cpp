@@ -15,10 +15,10 @@ extern "C" {
 /*
  * Class:     com_openpeer_javaapi_OPPushMessaging
  * Method:    create
- * Signature: (Lcom/openpeer/javaapi/OPPushMessagingDelegate;Lcom/openpeer/javaapi/OPPushMessagingDatabaseAbstractionDelegate;Lcom/openpeer/javaapi/OPAccount;)Lcom/openpeer/javaapi/OPPushMessaging;
+ * Signature: (Lcom/openpeer/javaapi/OPPushMessagingDelegate;Lcom/openpeer/javaapi/OPPushMessagingTransferDelegate;Lcom/openpeer/javaapi/OPAccount;)Lcom/openpeer/javaapi/OPPushMessaging;
  */
 JNIEXPORT jobject JNICALL Java_com_openpeer_javaapi_OPPushMessaging_create
-(JNIEnv *, jclass, jobject javaMessagingDelegate, jobject javaDatabaseDelegate, jobject javaAccount)
+(JNIEnv *, jclass, jobject javaMessagingDelegate, jobject javaTransferDelegate, jobject javaAccount)
 {
 	jclass cls;
 	jmethodID method;
@@ -29,7 +29,7 @@ JNIEXPORT jobject JNICALL Java_com_openpeer_javaapi_OPPushMessaging_create
 
 	jni_env = getEnv();
 
-	if (javaMessagingDelegate == NULL || javaDatabaseDelegate == NULL)
+	if (javaMessagingDelegate == NULL || javaTransferDelegate == NULL)
 	{
 		return object;
 	}
@@ -44,9 +44,8 @@ JNIEXPORT jobject JNICALL Java_com_openpeer_javaapi_OPPushMessaging_create
 	PushMessagingDelegateWrapperPtr messagingDelegatePtr = PushMessagingDelegateWrapperPtr(new PushMessagingDelegateWrapper(javaMessagingDelegate));
 
 	//TODO: Remove line bellow as soon as DB abstraction delegate is implemented
-	//PushMessagingDatabaseAbstractionDelegateWrapperPtr messagingDBAbstractionDelegatePtr = PushMessagingDatabaseAbstractionDelegateWrapperPtr(new PushMessagingDatabaseAbstractionDelegateWrapper(javaDatabaseDelegate));
-	//IPushMessagingPtr messagingPtr = IPushMessaging::create(messagingDelegatePtr, messagingDBAbstractionDelegatePtr, *coreAccountPtr);
-	IPushMessagingPtr messagingPtr = IPushMessaging::create(messagingDelegatePtr,IPushMessagingTransferDelegatePtr() , *coreAccountPtr);
+	PushMessagingTransferDelegateWrapperPtr messagingTransferDelegatePtr = PushMessagingTransferDelegateWrapperPtr(new PushMessagingTransferDelegateWrapper(javaTransferDelegate));
+	IPushMessagingPtr messagingPtr = IPushMessaging::create(messagingDelegatePtr, messagingTransferDelegatePtr, *coreAccountPtr);
 
 	if(messagingPtr)
 	{
@@ -67,10 +66,10 @@ JNIEXPORT jobject JNICALL Java_com_openpeer_javaapi_OPPushMessaging_create
 			jlong delegate = (jlong) ptrToPushMessagingDelegateWrapperPtr;
 			jni_env->SetLongField(object, delegateFid, delegate);
 
-			//			PushMessagingDatabaseAbstractionDelegateWrapperPtr* ptrToPushMessagingDBAbstractionDelegateWrapperPtr= new std::shared_ptr<PushMessagingDatabaseAbstractionDelegateWrapper>(messagingDBAbstractionDelegatePtr);
-			//			jfieldID dbDelegateFid = jni_env->GetFieldID(cls, "nativeDatabaseAbstractionDelegatePointer", "J");
-			//			jlong dbDelegate = (jlong) ptrToPushMessagingDBAbstractionDelegateWrapperPtr;
-			//			jni_env->SetLongField(object, dbDelegateFid, dbDelegate);
+			PushMessagingTransferDelegateWrapperPtr* ptrToPushMessagingTransferDelegateWrapperPtr= new std::shared_ptr<PushMessagingTransferDelegateWrapper>(messagingTransferDelegatePtr);
+			jfieldID transferDelegateFid = jni_env->GetFieldID(cls, "nativeTransferDelegatePointer", "J");
+			jlong transferDelegate = (jlong) ptrToPushMessagingTransferDelegateWrapperPtr;
+			jni_env->SetLongField(object, transferDelegateFid, transferDelegate);
 
 
 		}
@@ -574,10 +573,10 @@ JNIEXPORT void JNICALL Java_com_openpeer_javaapi_OPPushMessaging_releaseCoreObje
 
 		delete (PushMessagingDelegateWrapperPtr*)delegatePointerValue;
 
-		jfieldID dbDelegateFid = jni_env->GetFieldID(messagingClass, "nativeDatabaseAbstractionDelegatePointer", "J");
-		jlong dbDelegatePointerValue = jni_env->GetLongField(javaObject, dbDelegateFid);
+		jfieldID transferDelegateFid = jni_env->GetFieldID(messagingClass, "nativeTransferDelegatePointer", "J");
+		jlong transferDelegatePointerValue = jni_env->GetLongField(javaObject, transferDelegateFid);
 
-		delete (PushMessagingDatabaseAbstractionDelegateWrapperPtr*)dbDelegatePointerValue;
+		delete (PushMessagingTransferDelegateWrapperPtr*)transferDelegatePointerValue;
 		__android_log_print(ANDROID_LOG_DEBUG, "com.openpeer.jni", "OPPushMessaging Core object deleted.");
 
 	}

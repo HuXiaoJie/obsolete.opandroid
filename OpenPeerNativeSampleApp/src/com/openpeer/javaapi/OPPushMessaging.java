@@ -11,13 +11,13 @@ public class OPPushMessaging {
 
 	private long nativeDelegatePointer;
 
-	private long nativeDatabaseAbstractionDelegatePointer;
+	private long nativeTransferDelegatePointer;
 
 	//-----------------------------------------------------------------------
 	// PURPOSE: create a connection to the push messaging service
 	public static native OPPushMessaging create(
 			OPPushMessagingDelegate delegate,
-			OPPushMessagingDatabaseAbstractionDelegate databaseDelegate,
+			OPPushMessagingTransferDelegate transferDelegate,
 			OPAccount account
 			);
 
@@ -98,7 +98,7 @@ public class OPPushMessaging {
 
 	protected void finalize() throws Throwable {
 
-		if (nativeClassPointer != 0 || nativeDelegatePointer != 0 || nativeDatabaseAbstractionDelegatePointer != 0)
+		if (nativeClassPointer != 0 || nativeDelegatePointer != 0 || nativeTransferDelegatePointer != 0)
 		{
 			Log.d("output", "Cleaning push messaging core objects");
 			releaseCoreObjects();

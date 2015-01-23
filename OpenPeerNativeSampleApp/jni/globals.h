@@ -15,10 +15,10 @@
 #include "PushMessagingDelegateWrapper.h"
 #include "PushMessagingQueryDelegateWrapper.h"
 #include "PushMessagingRegisterQueryDelegateWrapper.h"
-#include "PushMessagingDatabaseAbstractionDelegateWrapper.h"
+#include "PushMessagingTransferDelegateWrapper.h"
 #include "PushPresenceDelegateWrapper.h"
 #include "PushPresenceRegisterQueryDelegateWrapper.h"
-#include "PushPresenceDatabaseAbstractionDelegateWrapper.h"
+#include "PushPresenceTransferDelegateWrapper.h"
 
 #include "openpeer/core/IPushMessaging.h"
 #include "openpeer/core/IPushPresence.h"

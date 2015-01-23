@@ -10,7 +10,7 @@ extern "C" {
 /*
  * Class:     com_openpeer_javaapi_OPPushPresence
  * Method:    create
- * Signature: (Lcom/openpeer/javaapi/OPPushPresenceDelegate;Lcom/openpeer/javaapi/OPPushPresenceDatabaseAbstractionDelegate;Lcom/openpeer/javaapi/OPAccount;)Lcom/openpeer/javaapi/OPPushPresence;
+ * Signature: (Lcom/openpeer/javaapi/OPPushPresenceDelegate;Lcom/openpeer/javaapi/OPPushPresenceTransferDelegate;Lcom/openpeer/javaapi/OPAccount;)Lcom/openpeer/javaapi/OPPushPresence;
  */
 JNIEXPORT jobject JNICALL Java_com_openpeer_javaapi_OPPushPresence_create
   (JNIEnv *, jclass, jobject, jobject, jobject);
