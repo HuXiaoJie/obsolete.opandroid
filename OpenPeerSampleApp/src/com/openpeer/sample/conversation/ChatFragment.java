@@ -66,7 +66,6 @@ import com.openpeer.javaapi.ComposingStates;
 import com.openpeer.javaapi.MessageDeliveryStates;
 import com.openpeer.javaapi.OPCall;
 import com.openpeer.javaapi.OPMessage;
-import com.openpeer.javaapi.OPMessage.OPMessageType;
 import com.openpeer.sample.BaseActivity;
 import com.openpeer.sample.BaseFragment;
 import com.openpeer.sample.IntentData;
@@ -274,7 +273,7 @@ public class ChatFragment extends BaseFragment implements
                 // we use 0 for home user
                 msg = new OPMessage(OPDataManager.getInstance()
                                         .getSharedAccount().getSelfContactId(),
-                                    OPMessageType.TYPE_TEXT,
+                                    OPMessage.TYPE_TEXT,
                                     mComposeBox.getText().toString(),
                                     System.currentTimeMillis(),
                                     OPMessage.generateUniqueId()
@@ -420,8 +419,8 @@ public class ChatFragment extends BaseFragment implements
         public int getItemViewType(Cursor cursor) {
             String type = cursor.getString(cursor
                                                .getColumnIndex(MessageEntry.COLUMN_MESSAGE_TYPE));
-            if (OPMessage.OPMessageType.TYPE_INERNAL_CALL_AUDIO.equals(type)
-                || OPMessage.OPMessageType.TYPE_INERNAL_CALL_VIDEO.equals(type)) {
+            if (OPMessage.TYPE_INERNAL_CALL_AUDIO.equals(type)
+                || OPMessage.TYPE_INERNAL_CALL_VIDEO.equals(type)) {
                 return VIEWTYPE_CALL_VIEW;
             }
             if (OPConversationEvent.EventTypes.ContactsChange.toString().equals(type)) {

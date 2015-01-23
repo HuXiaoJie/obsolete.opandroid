@@ -68,7 +68,7 @@ public class OPPushNotificationBuilder implements PushNotificationBuilder {
         String senderUri = extras.get(KEY_PEER_URI);
         String messageId = extras.get(KEY_MESSAGE_ID);
         String messageType = extras.get(KEY_MESSAGE_TYPE);
-        messageType = TextUtils.isEmpty(messageType) ? OPMessage.OPMessageType.TYPE_TEXT :
+        messageType = TextUtils.isEmpty(messageType) ? OPMessage.TYPE_TEXT :
             messageType;
         String conversationType = extras.get(KEY_CONVERSATION_TYPE);
         String conversationId = extras.get(KEY_CONVERSATION_ID);

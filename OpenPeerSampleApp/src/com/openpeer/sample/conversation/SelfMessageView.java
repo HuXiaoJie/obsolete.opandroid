@@ -37,7 +37,6 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.openpeer.javaapi.OPMessage;
-import com.openpeer.javaapi.OPMessage.OPMessageType;
 import com.openpeer.sample.R;
 import com.openpeer.sample.util.DateFormatUtils;
 import com.openpeer.sdk.app.OPDataManager;
@@ -142,7 +141,7 @@ public class SelfMessageView extends RelativeLayout {
 
     public void onDeleteSelected() {
         OPMessage message = new OPMessage(OPDataManager.getInstance().getSharedAccount().getSelfContactId(),
-                OPMessageType.TYPE_TEXT,
+                OPMessage.TYPE_TEXT,
                 "",
                 System.currentTimeMillis(),
                 OPMessage.generateUniqueId());

@@ -148,7 +148,7 @@ public class OPConversation extends Observable {
         getThread(true).sendMessage(message.getMessageId(),
                                     message.getReplacesMessageId(),
                                     message.getMessageType(), message.getMessage(), signMessage);
-        if(message.getMessageType().equals(OPMessage.OPMessageType.TYPE_TEXT)) {
+        if(message.getMessageType().equals(OPMessage.TYPE_TEXT)) {
             if (!TextUtils.isEmpty(message.getReplacesMessageId())) {
                 OPDataManager.getInstance().updateMessage(message, this);
             } else {
@@ -235,7 +235,6 @@ public class OPConversation extends Observable {
                             boolean includeAudio, boolean includeVideo) {
 
         OPContact newContact = user.getOPContact();
-
         OPCall call = OPCall.placeCall(getThread(true), newContact, includeAudio,
                                        includeVideo);
         return call;
@@ -335,7 +334,7 @@ public class OPConversation extends Observable {
     }
 
     public void onMessageReceived(OPConversationThread thread, OPMessage message) {
-        if (message.getMessageType().equals(OPMessage.OPMessageType.TYPE_TEXT)) {
+        if (message.getMessageType().equals(OPMessage.TYPE_TEXT)) {
             OPContact opContact = message.getFrom();
             OPUser user = OPDataManager.getInstance().
                 getUserByPeerUri(opContact.getPeerURI());
@@ -358,7 +357,7 @@ public class OPConversation extends Observable {
 
             }
             selectActiveThread(thread);
-        } else if (message.getMessageType().equals(OPMessage.OPMessageType.TYPE_JSON_SYSTEM_MESSAGE)) {
+        } else if (message.getMessageType().equals(OPMessage.TYPE_JSON_SYSTEM_MESSAGE)) {
             SystemMessage systemMessage = SystemMessage.parseSystemMessage(message.getMessage());
             if (systemMessage.getSystemObject() instanceof CallSystemMessage) {
                 CallSystemMessage callSystemMessage = (CallSystemMessage) systemMessage
@@ -538,6 +537,10 @@ public class OPConversation extends Observable {
         if (mConvThread != null) {
             mConvThread.setStatusInThread(status);
         }
+    }
+
+    public boolean isShowing() {
+        return mSessionListeners != null && mSessionListeners.size() > 0;
     }
 
     public void onMessagePushed(String messageId,OPUser user){
