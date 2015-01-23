@@ -1,24 +1,24 @@
-#include "PushMessagingTransferDelegateWrapper.h"
+#include "PushPresenceTransferDelegateWrapper.h"
 #include "OpenPeerCoreManager.h"
 #include "android/log.h"
 #include "globals.h"
 
 
-//PushMessagingTransferDelegateWrapper implementation
-PushMessagingTransferDelegateWrapper::PushMessagingTransferDelegateWrapper(jobject delegate)
+//PushPresenceTransferDelegateWrapper implementation
+PushPresenceTransferDelegateWrapper::PushPresenceTransferDelegateWrapper(jobject delegate)
 {
 	JNIEnv *jni_env = getEnv();
 	javaDelegate = jni_env->NewGlobalRef(delegate);
 }
 
-//IPushMessagingTransferDelegate implementation
-void PushMessagingTransferDelegateWrapper::onPushMessagingTransferUploadFileDataToURL(
-		IPushMessagingPtr session,
+//IPushPresenceTransferDelegate implementation
+void PushPresenceTransferDelegateWrapper::onPushPresenceTransferUploadFileDataToURL(
+		IPushPresencePtr session,
 		const char *postURL,
 		const char *fileNameContainingData,
 		ULONGEST totalFileSizeInBytes,
 		ULONGEST remainingBytesToUpload,
-		IPushMessagingTransferNotifierPtr notifier
+		IPushPresenceTransferNotifierPtr notifier
 )
 {
 	jclass cls;
@@ -26,7 +26,7 @@ void PushMessagingTransferDelegateWrapper::onPushMessagingTransferUploadFileData
 	jobject object;
 	JNIEnv *jni_env = 0;
 
-	__android_log_print(ANDROID_LOG_DEBUG, "com.openpeer.jni", "onPushMessagingTransferUploadFileDataToURL called");
+	__android_log_print(ANDROID_LOG_DEBUG, "com.openpeer.jni", "onPushPresenceTransferUploadFileDataToURL called");
 
 	bool attached = false;
 	switch (android_jvm->GetEnv((void**)&jni_env, JNI_VERSION_1_6))
@@ -46,47 +46,47 @@ void PushMessagingTransferDelegateWrapper::onPushMessagingTransferUploadFileData
 
 	if (javaDelegate != NULL)
 	{
-		//create new OPPushMessaging java object
-		cls = findClass("com/openpeer/javaapi/OPPushMessaging");
+		//create new OPPushPresence java object
+		cls = findClass("com/openpeer/javaapi/OPPushPresence");
 		method = jni_env->GetMethodID(cls, "<init>", "()V");
-		jobject pushMessagingObject = jni_env->NewObject(cls, method);
+		jobject pushPresenceObject = jni_env->NewObject(cls, method);
 
 		//fill new field with pointer to core pointer
-		IPushMessagingPtr* ptrToPushMessaging = new std::shared_ptr<IPushMessaging>(session);
+		IPushPresencePtr* ptrToPushPresence = new std::shared_ptr<IPushPresence>(session);
 		jfieldID fid = jni_env->GetFieldID(cls, "nativeClassPointer", "J");
-		jni_env->SetLongField(pushMessagingObject, fid, (jlong)ptrToPushMessaging);
+		jni_env->SetLongField(pushPresenceObject, fid, (jlong)ptrToPushPresence);
 
 		jstring postURLJavaString =  jni_env->NewStringUTF(postURL);
 		jstring fileNameContainingDataJavaString =  jni_env->NewStringUTF(fileNameContainingData);
 
-		//create new OPPushMessagingTransferNotifier java object
-		cls = findClass("com/openpeer/javaapi/OPPushMessagingTransferNotifier");
+		//create new OPPushPresenceTransferNotifier java object
+		cls = findClass("com/openpeer/javaapi/OPPushPresenceTransferNotifier");
 		method = jni_env->GetMethodID(cls, "<init>", "()V");
-		jobject pushMessagingTransferNotifierObject = jni_env->NewObject(cls, method);
+		jobject pushPresenceTransferNotifierObject = jni_env->NewObject(cls, method);
 
 		//fill new field with pointer to core pointer
-		IPushMessagingTransferNotifierPtr* ptrToPushMessagingTransferNotifier = new std::shared_ptr<IPushMessagingTransferNotifier>(notifier);
+		IPushPresenceTransferNotifierPtr* ptrToPushPresenceTransferNotifier = new std::shared_ptr<IPushPresenceTransferNotifier>(notifier);
 		fid = jni_env->GetFieldID(cls, "nativeClassPointer", "J");
-		jni_env->SetLongField(pushMessagingTransferNotifierObject, fid, (jlong)ptrToPushMessagingTransferNotifier);
+		jni_env->SetLongField(pushPresenceTransferNotifierObject, fid, (jlong)ptrToPushPresenceTransferNotifier);
 
 
 		//get delegate implementation class name in order to get method
 		String className = OpenPeerCoreManager::getObjectClassName(javaDelegate);
 
 		jclass callbackClass = findClass(className.c_str());
-		method = jni_env->GetMethodID(callbackClass, "onPushMessagingTransferUploadFileDataToURL", "(Lcom/openpeer/javaapi/OPPushMessaging;Ljava/lang/String;Ljava/lang/String;JJLcom/openpeer/javaapi/OPPushMessagingTransferNotifier;)V");
+		method = jni_env->GetMethodID(callbackClass, "onPushPresenceTransferUploadFileDataToURL", "(Lcom/openpeer/javaapi/OPPushPresence;Ljava/lang/String;Ljava/lang/String;JJLcom/openpeer/javaapi/OPPushPresenceTransferNotifier;)V");
 		jni_env->CallVoidMethod(javaDelegate, method,
-				pushMessagingObject,
+				pushPresenceObject,
 				postURLJavaString,
 				fileNameContainingDataJavaString,
 				(jlong) totalFileSizeInBytes,
 				(jlong) remainingBytesToUpload,
-				pushMessagingTransferNotifierObject
+				pushPresenceTransferNotifierObject
 		);
 	}
 	else
 	{
-		__android_log_print(ANDROID_LOG_ERROR, "com.openpeer.jni", "onPushMessagingTransferUploadFileDataToURL Java delegate is NULL !!!");
+		__android_log_print(ANDROID_LOG_ERROR, "com.openpeer.jni", "onPushPresenceTransferUploadFileDataToURL Java delegate is NULL !!!");
 	}
 
 	if (jni_env->ExceptionCheck()) {
@@ -99,13 +99,13 @@ void PushMessagingTransferDelegateWrapper::onPushMessagingTransferUploadFileData
 	}
 }
 
-void PushMessagingTransferDelegateWrapper::onPushMessagingTransferDownloadDataFromURL(
-		IPushMessagingPtr session,
+void PushPresenceTransferDelegateWrapper::onPushPresenceTransferDownloadDataFromURL(
+		IPushPresencePtr session,
 		const char *getURL,
 		const char *fileNameToAppendData,
 		ULONGEST finalFileSizeInBytes,
 		ULONGEST remainingBytesToBeDownloaded,
-		IPushMessagingTransferNotifierPtr notifier
+		IPushPresenceTransferNotifierPtr notifier
 )
 {
 	jclass cls;
@@ -113,7 +113,7 @@ void PushMessagingTransferDelegateWrapper::onPushMessagingTransferDownloadDataFr
 	jobject object;
 	JNIEnv *jni_env = 0;
 
-	__android_log_print(ANDROID_LOG_DEBUG, "com.openpeer.jni", "onPushMessagingTransferDownloadDataFromURL called");
+	__android_log_print(ANDROID_LOG_DEBUG, "com.openpeer.jni", "onPushPresenceTransferDownloadDataFromURL called");
 
 	bool attached = false;
 	switch (android_jvm->GetEnv((void**)&jni_env, JNI_VERSION_1_6))
@@ -133,47 +133,47 @@ void PushMessagingTransferDelegateWrapper::onPushMessagingTransferDownloadDataFr
 
 	if (javaDelegate != NULL)
 	{
-		//create new OPPushMessaging java object
-		cls = findClass("com/openpeer/javaapi/OPPushMessaging");
+		//create new OPPushPresencejava object
+		cls = findClass("com/openpeer/javaapi/OPPushPresence");
 		method = jni_env->GetMethodID(cls, "<init>", "()V");
-		jobject pushMessagingObject = jni_env->NewObject(cls, method);
+		jobject pushPresenceObject = jni_env->NewObject(cls, method);
 
 		//fill new field with pointer to core pointer
-		IPushMessagingPtr* ptrToPushMessaging = new std::shared_ptr<IPushMessaging>(session);
+		IPushPresencePtr* ptrToPushPresence = new std::shared_ptr<IPushPresence>(session);
 		jfieldID fid = jni_env->GetFieldID(cls, "nativeClassPointer", "J");
-		jni_env->SetLongField(pushMessagingObject, fid, (jlong)ptrToPushMessaging);
+		jni_env->SetLongField(pushPresenceObject, fid, (jlong)ptrToPushPresence);
 
 		jstring getURLJavaString =  jni_env->NewStringUTF(getURL);
 		jstring fileNameToAppendDataJavaString =  jni_env->NewStringUTF(fileNameToAppendData);
 
-		//create new OPPushMessagingTransferNotifier java object
-		cls = findClass("com/openpeer/javaapi/OPPushMessagingTransferNotifier");
+		//create new OPPushPresenceTransferNotifier java object
+		cls = findClass("com/openpeer/javaapi/OPPushPresenceTransferNotifier");
 		method = jni_env->GetMethodID(cls, "<init>", "()V");
-		jobject pushMessagingTransferNotifierObject = jni_env->NewObject(cls, method);
+		jobject pushPresenceTransferNotifierObject = jni_env->NewObject(cls, method);
 
 		//fill new field with pointer to core pointer
-		IPushMessagingTransferNotifierPtr* ptrToPushMessagingTransferNotifier = new std::shared_ptr<IPushMessagingTransferNotifier>(notifier);
+		IPushPresenceTransferNotifierPtr* ptrToPushPresenceTransferNotifier = new std::shared_ptr<IPushPresenceTransferNotifier>(notifier);
 		fid = jni_env->GetFieldID(cls, "nativeClassPointer", "J");
-		jni_env->SetLongField(pushMessagingTransferNotifierObject, fid, (jlong)ptrToPushMessagingTransferNotifier);
+		jni_env->SetLongField(pushPresenceTransferNotifierObject, fid, (jlong)ptrToPushPresenceTransferNotifier);
 
 
 		//get delegate implementation class name in order to get method
 		String className = OpenPeerCoreManager::getObjectClassName(javaDelegate);
 
 		jclass callbackClass = findClass(className.c_str());
-		method = jni_env->GetMethodID(callbackClass, "onPushMessagingTransferUploadFileDataToURL", "(Lcom/openpeer/javaapi/OPPushMessaging;Ljava/lang/String;Ljava/lang/String;JJLcom/openpeer/javaapi/OPPushMessagingTransferNotifier;)V");
+		method = jni_env->GetMethodID(callbackClass, "onPushPresenceTransferUploadFileDataToURL", "(Lcom/openpeer/javaapi/OPPushPresence;Ljava/lang/String;Ljava/lang/String;JJLcom/openpeer/javaapi/OPPushPresenceTransferNotifier;)V");
 		jni_env->CallVoidMethod(javaDelegate, method,
-				pushMessagingObject,
+				pushPresenceObject,
 				getURLJavaString,
 				fileNameToAppendDataJavaString,
 				(jlong) finalFileSizeInBytes,
 				(jlong) remainingBytesToBeDownloaded,
-				pushMessagingTransferNotifierObject
+				pushPresenceTransferNotifierObject
 		);
 	}
 	else
 	{
-		__android_log_print(ANDROID_LOG_ERROR, "com.openpeer.jni", "onPushMessagingTransferDownloadDataFromURL Java delegate is NULL !!!");
+		__android_log_print(ANDROID_LOG_ERROR, "com.openpeer.jni", "onPushPresenceTransferDownloadDataFromURL Java delegate is NULL !!!");
 	}
 
 	if (jni_env->ExceptionCheck()) {
@@ -186,7 +186,7 @@ void PushMessagingTransferDelegateWrapper::onPushMessagingTransferDownloadDataFr
 	}
 }
 
-PushMessagingTransferDelegateWrapper::~PushMessagingTransferDelegateWrapper()
+PushPresenceTransferDelegateWrapper::~PushPresenceTransferDelegateWrapper()
 {
 	JNIEnv *jni_env = getEnv();
 	jni_env->DeleteGlobalRef(javaDelegate);

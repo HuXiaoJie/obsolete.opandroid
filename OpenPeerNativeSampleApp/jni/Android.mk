@@ -469,6 +469,7 @@ LOCAL_SRC_FILES := \
 		OpenPeerNativeSampleApp/jni/PushMessagingTransferNotifierWrapper.cpp \
 		OpenPeerNativeSampleApp/jni/PushMessagingTransferDelegateWrapper.cpp \
 		OpenPeerNativeSampleApp/jni/PushPresenceTransferNotifierWrapper.cpp \
+		OpenPeerNativeSampleApp/jni/PushPresenceTransferDelegateWrapper.cpp \
 		
 
 #LOCAL_LDLIBS += $(ANDROIDNDK_PATH)/sources/cxx-stl/llvm-libc++/libs/armeabi/libc++_static.a
