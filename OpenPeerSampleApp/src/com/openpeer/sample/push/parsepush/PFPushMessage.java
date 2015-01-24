@@ -7,40 +7,27 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 public class PFPushMessage {
-    String alert;
-    String to;
-    String extras;
+    public static final String MESSAGE_TYPE_TEXT="text";
+    public static final String MESSAGE_TYPE_CALL_STATE="system/call";
+    public static final String MESSAGE_TYPE_CONTACTS_REMOVED="system/contactsRemoved";
 
-    public PFPushMessage() {
-    }
+    public static final String KEY_ALERT="alert";
+    public static final String KEY_TO="to";
+    public static final String KEY_PEER_URI="peerURI";
+    public static final String KEY_SENDER_NAME="senderName";
+    public static final String KEY_PEER_URIS="peerURIs";
+    public static final String KEY_LOCATION="location";
+    public static final String KEY_MESSAGE_TYPE="messageType";
+    public static final String KEY_MESSAGE_ID="messageId";
+    public static final String KEY_REPLACES_MESSAGE_ID="replacesMessageId";
+    public static final String KEY_DATE ="date";
+    public static final String KEY_CONVERSATION_ID="conversationId";
+    public static final String KEY_CONVERSATION_TYPE="conversationType";
+    public static final String KEY_SOUND="sound";
 
-    public PFPushMessage(String alert, String extras, String toPeerUri) {
-        this.alert = alert;
-        this.extras = extras;
-        this.to = toPeerUri;
-    }
-
-    public String getAlert() {
-        return alert;
-    }
-
-    public String getExtras() {
-        return extras;
-    }
-
-    public String toJsonBlob() {
-        return GsonFactory.getGson().toJson(this);
-    }
-
-    public static PFPushMessage fromJson(String jsonBlob) {
-        return GsonFactory.getGson().fromJson(jsonBlob, PFPushMessage.class);
-    }
-
-    public JSONObject toJsonObject() {
-        try {
-            return new JSONObject(toJsonBlob());
-        } catch(JSONException e) {
-            return null;
-        }
-    }
+    //for calls
+    public static final String KEY_SYSTEM_MESSAGE_TYPE="systemMessageType";
+    public static final String KEY_CALL_STATE="callState";
+    public static final String KEY_CALL_ID="callId";
+    public static final String KEY_CALL_MEDIA_TYPE="mediaType";
 }

@@ -1015,14 +1015,14 @@ public class OPDataManager {
         long eventRecordId = 0;
 
         switch (event.getState()){
-        case CallSystemMessage.TYPE_ANSWERED:{
+        case CallSystemMessage.STATUS_ANSWERED:{
             ContentValues callValues = new ContentValues();
             callValues.put(DatabaseContracts.CallEntry.COLUMN_ANSWER_TIME,
                            System.currentTimeMillis());
             updateCallTable(callId, callValues);
         }
         break;
-        case CallSystemMessage.TYPE_HUNGUP:{
+        case CallSystemMessage.STATUS_HUNGUP:{
             ContentValues callValues = new ContentValues();
             callValues.put(DatabaseContracts.CallEntry.COLUMN_END_TIME, System.currentTimeMillis());
             updateCallTable(callId, callValues);

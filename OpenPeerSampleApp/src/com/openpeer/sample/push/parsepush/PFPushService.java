@@ -48,6 +48,7 @@ import com.openpeer.sdk.app.OPDataManager;
 import com.openpeer.sdk.model.OPConversation;
 import com.openpeer.sdk.model.OPUser;
 import com.openpeer.sdk.model.PushServiceInterface;
+import com.openpeer.sdk.model.SystemMessage;
 import com.parse.FunctionCallback;
 import com.parse.Parse;
 import com.parse.ParseCloud;
@@ -59,13 +60,16 @@ import com.parse.ParseQuery;
 import com.parse.SaveCallback;
 import com.parse.SendCallback;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.util.HashMap;
 import java.util.List;
 
 public class PFPushService implements PushServiceInterface {
-    public static final String TAG=PFPushService.class.getSimpleName();
-    public static final String KEY_PARSE_APP_ID="parseAppId";
-    public static final String KEY_PARSE_CLIENT_KEY="parseClientKey";
+    public static final String TAG = PFPushService.class.getSimpleName();
+    public static final String KEY_PARSE_APP_ID = "parseAppId";
+    public static final String KEY_PARSE_CLIENT_KEY = "parseClientKey";
     static final String KEY_PEER_URI = "peerUri";
     static final String KEY_OS_VERSION = "osVersion";
     private static PFPushService instance;
@@ -77,15 +81,15 @@ public class PFPushService implements PushServiceInterface {
 
     private boolean mInitialized;
 
-    public static PFPushService getInstance() throws RuntimeException{
+    public static PFPushService getInstance() throws RuntimeException {
         if (instance == null) {
 
             instance = new PFPushService();
             String parseAppId = OPApplication.getMetaInfo(KEY_PARSE_APP_ID);
             String parseClientKey = OPApplication.getMetaInfo(KEY_PARSE_CLIENT_KEY);
-            if(TextUtils.isEmpty(parseAppId)){
+            if (TextUtils.isEmpty(parseAppId)) {
                 throw new RuntimeException("Parse application id is not defined");
-            } else if(TextUtils.isEmpty(parseClientKey)){
+            } else if (TextUtils.isEmpty(parseClientKey)) {
                 throw new RuntimeException("Parse client key is not defined");
             }
 
@@ -140,22 +144,68 @@ public class PFPushService implements PushServiceInterface {
             peerURIs = TextUtils.join(",", peerUris);
         }
 
-        PushExtra pushExtra = new PushExtra
-            (OPDataManager.getInstance().getCurrentUser().getPeerUri(),
-             OPDataManager.getInstance().getCurrentUser().getName(),
-             peerURIs,
-             message.getMessageType(),
-             message.getMessageId(),
-             message.getMessageId(),
-             conversation.getType().toString(),
-             conversation.getConversationId(),
-             OPDataManager.getInstance().getSharedAccount().getLocationID(),
-             message.getTime().toMillis(false) / 1000 + "");
+//        PushExtra pushExtra = new PushExtra
+//            (OPDataManager.getInstance().getCurrentUser().getPeerUri(),
+//             OPDataManager.getInstance().getCurrentUser().getName(),
+//             peerURIs,
+//             message.getMessageType(),
+//             message.getMessageId(),
+//             message.getMessageId(),
+//             conversation.getType().toString(),
+//             conversation.getConversationId(),
+//             OPDataManager.getInstance().getSharedAccount().getLocationID(),
+//             message.getTime().toMillis(false) / 1000 + "");
 
         HashMap<String, Object> params = new HashMap<String, Object>();
-        params.put("to", contact.getPeerUri());
-        params.put("alert", message.getMessage());
-        params.put("extras", pushExtra.toJsonBlob());
+        params.put(PFPushMessage.KEY_TO, contact.getPeerUri());
+        params.put(PFPushMessage.KEY_PEER_URI, OPDataManager.getInstance().getCurrentUser()
+            .getPeerUri());
+        params.put(PFPushMessage.KEY_SENDER_NAME, OPDataManager.getInstance().getCurrentUser()
+            .getName());
+        params.put(PFPushMessage.KEY_PEER_URIS, peerURIs);
+        params.put(PFPushMessage.KEY_MESSAGE_ID, message.getMessageId());
+        params.put(PFPushMessage.KEY_CONVERSATION_TYPE, conversation.getType().name());
+        params.put(PFPushMessage.KEY_CONVERSATION_ID, conversation.getConversationId());
+        params.put(PFPushMessage.KEY_LOCATION, OPDataManager.getInstance().getSharedAccount()
+            .getLocationID());
+        params.put(PFPushMessage.KEY_DATE, message.getTime().toMillis(false) / 1000);
+        String messageType = message.getMessageType();
+        params.put(PFPushMessage.KEY_MESSAGE_TYPE, messageType);
+
+        switch (messageType){
+        case OPMessage.TYPE_TEXT:{
+            params.put(PFPushMessage.KEY_ALERT, message.getMessage());
+        }
+        break;
+        case OPMessage.TYPE_JSON_SYSTEM_MESSAGE:{
+            try {
+                JSONObject jsonObject = new JSONObject(message.getMessage().replace("\"$id\"",
+                                                                                    "\"id\""));
+                JSONObject systemObject = jsonObject.getJSONObject(SystemMessage.KEY_ROOT);
+                params.put("system", systemObject);
+//                if (systemObject.has(SystemMessage.KEY_CALL_STATUS)) {
+//                    systemObject=systemObject.getJSONObject(SystemMessage.KEY_CALL_STATUS);
+//                    params.put(PFPushMessage.KEY_MESSAGE_TYPE,
+//                               PFPushMessage.MESSAGE_TYPE_CALL_STATE);
+//                    params.put(PFPushMessage.KEY_CALL_STATE,
+//                               systemObject.getString(SystemMessage.KEY_CALL_STATUS_STATUS));
+//                    params.put(PFPushMessage.KEY_CALL_MEDIA_TYPE,
+//                               systemObject.getString(SystemMessage.KEY_CALL_STATUS_MEDIA_TYPE));
+//                    params.put(PFPushMessage.KEY_CALL_ID,
+//                               systemObject.getString(SystemMessage.KEY_CALL_STATUS_CALL_ID));
+//                } else if (systemObject.has(SystemMessage.KEY_CONTACTS_REMOVED)) {
+//                    params.put(PFPushMessage.KEY_MESSAGE_TYPE,
+//                               PFPushMessage.MESSAGE_TYPE_CONTACTS_REMOVED);
+//                    // TODO: add others
+//                }
+
+            } catch(JSONException e) {
+                e.printStackTrace();
+            }
+        }
+        break;
+        }
+
         ParseCloud.callFunctionInBackground(
             "sendPushToUser",
             params,
@@ -178,8 +228,8 @@ public class PFPushService implements PushServiceInterface {
             });
     }
 
-    public void onSignout(){
-        ParseInstallation.getCurrentInstallation().put(KEY_PEER_URI,"");
+    public void onSignout() {
+        ParseInstallation.getCurrentInstallation().put(KEY_PEER_URI, "");
         ParseInstallation.getCurrentInstallation().saveInBackground();
     }
 }

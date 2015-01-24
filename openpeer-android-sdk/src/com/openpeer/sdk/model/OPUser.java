@@ -201,6 +201,9 @@ public class OPUser {
         return mUserId == OPDataManager.getInstance().getCurrentUserId();
     }
 
+    public void hintAboutLocation(String locationId) {
+        getOPContact().hintAboutLocation(locationId);
+    }
     @Override
     public boolean equals(Object o) {
         return o instanceof OPUser && ((OPUser) o).getUserId() == this.mUserId;

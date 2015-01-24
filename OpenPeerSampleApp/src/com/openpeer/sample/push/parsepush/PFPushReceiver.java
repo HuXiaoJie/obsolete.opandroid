@@ -11,9 +11,9 @@ import android.util.Log;
 import com.openpeer.javaapi.OPLogLevel;
 import com.openpeer.javaapi.OPLogger;
 import com.openpeer.javaapi.OPMessage;
+import com.openpeer.sample.BackgroundingManager;
 import com.openpeer.sample.OPNotificationBuilder;
 import com.openpeer.sample.conversation.ConversationActivity;
-import com.openpeer.sample.push.PushExtra;
 import com.openpeer.sdk.app.OPDataManager;
 import com.openpeer.sdk.model.ConversationManager;
 import com.openpeer.sdk.model.GroupChatMode;
@@ -21,6 +21,7 @@ import com.openpeer.sdk.model.MessageEditState;
 import com.openpeer.sdk.model.OPConversation;
 import com.openpeer.sdk.model.OPUser;
 import com.openpeer.sdk.model.ParticipantInfo;
+import com.openpeer.sdk.model.SystemMessage;
 import com.openpeer.sdk.utils.OPModelUtils;
 import com.parse.DeleteCallback;
 import com.parse.FindCallback;
@@ -29,6 +30,9 @@ import com.parse.ParseInstallation;
 import com.parse.ParseObject;
 import com.parse.ParsePushBroadcastReceiver;
 import com.parse.ParseQuery;
+
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -42,6 +46,103 @@ public class PFPushReceiver extends ParsePushBroadcastReceiver {
     @Override
     protected void onPushReceive(Context context, Intent intent) {
         super.onPushReceive(context, intent);
+
+        Bundle extras = intent.getExtras();
+
+        if (extras == null || extras.size() == 0) {
+            OPLogger.error(OPLogLevel.LogLevel_Basic, "PFPushReceiver received empty extras");
+            return;
+        }
+        String data = extras.getString(KEY_PUSH_DATA);
+        if (TextUtils.isEmpty(data)) {
+            OPLogger.error(OPLogLevel.LogLevel_Basic, "PFPushReceiver received empty data");
+            return;
+        }
+        try {
+            JSONObject jsonObject = new JSONObject(data);
+            String conversationType = jsonObject.getString(PFPushMessage.KEY_CONVERSATION_TYPE);
+            String conversationId = jsonObject.getString(PFPushMessage.KEY_CONVERSATION_ID);
+            String messageId = jsonObject.getString(PFPushMessage.KEY_MESSAGE_ID);
+            String senderUri = jsonObject.getString(PFPushMessage.KEY_PEER_URI);
+            long date = Long.parseLong(jsonObject.getString(PFPushMessage.KEY_DATE)) * 1000l;
+            // If message is already received, ignore notification
+            if (null != OPDataManager.getInstance().getMessage(messageId)) {
+                Log.e(TAG, "received push for message that is already received "
+                    + messageId);
+                return;
+            }
+            OPUser sender = OPDataManager.getInstance().getUserByPeerUri(senderUri);
+            if (sender == null) {
+                Log.e("test", "Couldn't find user for peer " + senderUri);
+                return;
+            }
+
+            String peerURIsString = jsonObject.getString(PFPushMessage.KEY_PEER_URIS);
+
+            ParticipantInfo participantInfo = getParticipantInfo(sender, peerURIsString);
+            //Make sure conversation is saved in db.
+            OPConversation conversation = ConversationManager.getInstance().getConversation
+                (GroupChatMode.valueOf(conversationType), participantInfo, conversationId, true);
+            String messageType = jsonObject.getString(PFPushMessage.KEY_MESSAGE_TYPE);
+
+            switch (messageType){
+            case OPMessage.TYPE_TEXT:{
+                String alert = jsonObject.getString(PFPushMessage.KEY_ALERT);
+
+                OPMessage message = new OPMessage(sender.getUserId(),
+                                                  PFPushMessage.MESSAGE_TYPE_TEXT,
+                                                  alert,
+                                                  date,
+                                                  messageId,
+                                                  MessageEditState.Normal);
+//                return getTextMessageNotification(jsonObject);
+                OPNotificationBuilder.showNotificationForMessage(
+                    OPModelUtils.getUserIds(participantInfo.getParticipants()),
+                    message,
+                    conversationType,
+                    conversation.getConversationId());
+            }
+
+            case OPMessage.TYPE_JSON_SYSTEM_MESSAGE:{
+                JSONObject systemObject = jsonObject.getJSONObject("system");
+                if (systemObject.has("callStatus")) {
+                    JSONObject callStatusObject = systemObject.getJSONObject("callStatus");
+                    String callStatus = callStatusObject.getString(SystemMessage
+                                                                       .KEY_CALL_STATUS_STATUS);
+                    if (OPDataManager.getInstance().isAccountReady()) {
+                        OPUser user = OPDataManager.getInstance().getUserByPeerUri(jsonObject
+                                                                                       .getString
+
+                                                                                           (PFPushMessage.KEY_PEER_URI));
+                        if (user != null) {
+                            user.hintAboutLocation(jsonObject.getString(PFPushMessage
+                                                                            .KEY_LOCATION));
+                        }
+                    }
+                    //Only register notification if app is in background
+                    if (BackgroundingManager.isInBackground()) {
+
+                    }
+                    String callId = callStatusObject.getString("id");
+                    OPNotificationBuilder.showNotification(
+                        OPNotificationBuilder.getNotificationIdForCall(callId),
+                        OPNotificationBuilder.buildPushNotificationForCall(
+                            callId,
+                            senderUri,
+                            jsonObject.getString(PFPushMessage.KEY_SENDER_NAME),
+                            callStatusObject.getString(SystemMessage.KEY_CALL_STATUS_STATUS),
+                            conversationType,
+                            conversation.getConversationId(),
+                            OPModelUtils.getUserIds(participantInfo.getParticipants())));
+                }
+            }
+            case PFPushMessage.MESSAGE_TYPE_CONTACTS_REMOVED:{
+            }
+            break;
+            }
+        } catch(JSONException e) {
+            e.printStackTrace();
+        }
         downloadMessages();
     }
 
@@ -57,75 +158,7 @@ public class PFPushReceiver extends ParsePushBroadcastReceiver {
 
     @Override
     protected Notification getNotification(Context context, Intent intent) {
-
-        Bundle extras = intent.getExtras();
-
-        if (extras == null || extras.size() == 0) {
-            OPLogger.error(OPLogLevel.LogLevel_Basic, "PFPushReceiver received empty extras");
-            return null;
-        }
-        String data = extras.getString(KEY_PUSH_DATA);
-        if (TextUtils.isEmpty(data)) {
-            OPLogger.error(OPLogLevel.LogLevel_Basic, "PFPushReceiver received empty data");
-            return null;
-        }
-        PFPushMessage pushMessage = PFPushMessage.fromJson(data);
-        PushExtra pushExtra = PushExtra.fromString(pushMessage.getExtras());
-        String alert = pushMessage.getAlert();
-        String senderUri = pushExtra.getPeerURI();
-        String messageId = pushExtra.getMessageId();
-        String messageType = pushExtra.getMessageType();
-        messageType = TextUtils.isEmpty(messageType) ? OPMessage.OPMessageType.TYPE_TEXT :
-            messageType;
-        String conversationType = pushExtra.getConversationType();
-        String conversationId = pushExtra.getConversationId();
-        // If message is already received, ignore notification
-        if (null != OPDataManager.getInstance().getMessage(messageId)) {
-            Log.e(TAG, "received push for message that is already received "
-                + messageId);
-            return null;
-        }
-        OPUser sender = OPDataManager.getInstance().getUserByPeerUri(senderUri);
-        if (sender == null) {
-            Log.e("test", "Couldn't find user for peer " + senderUri);
-            return null;
-        }
-        OPMessage message = new OPMessage(sender.getUserId(),
-                                          messageType,
-                                          alert,
-                                          Long.parseLong(pushExtra.getDate()) * 1000l,
-                                          messageId,
-                                          MessageEditState.Normal);
-        String peerURIsString = pushExtra.getPeerURIs();
-        List<OPUser> users = new ArrayList<>();
-        users.add(sender);
-        if (!TextUtils.isEmpty(peerURIsString)) {
-            String peerURIs[] = TextUtils.split(peerURIsString, ",");
-            for (String uri : peerURIs) {
-                OPUser user = OPDataManager.getInstance().getUserByPeerUri(uri);
-                if (user == null) {
-                    //TODO: error handling
-                    Log.e(TAG, "peerUri user not found " + uri);
-                    return null;
-                } else {
-                    users.add(user);
-                }
-            }
-        }
-        ParticipantInfo participantInfo = new ParticipantInfo(OPModelUtils.getWindowId(users),
-                                                              users);
-        //Make sure conversation is saved in db.
-        OPConversation conversation = ConversationManager.getInstance().getConversation
-            (GroupChatMode.valueOf(conversationType), participantInfo, conversationId, true);
-        OPDataManager.getInstance().saveMessage(message,
-                                                conversation.getConversationId(),
-                                                conversation.getParticipantInfo());
-
-        return OPNotificationBuilder.buildNotificationForMessage(
-            OPModelUtils.getUserIds(participantInfo.getParticipants()),
-            message,
-            conversationType,
-            conversation.getConversationId());
+        return null;
     }
 
     @Override
@@ -149,40 +182,26 @@ public class PFPushReceiver extends ParsePushBroadcastReceiver {
                 }
                 for (ParseObject object : list) {
                     //save messages
-                    PushExtra extras = PushExtra.fromString(object.getString(KEY_EXTRAS));
-                    String senderUri = extras.getPeerURI();
+                    String senderUri = object.getString(PFPushMessage.KEY_PEER_URI);
                     OPUser sender = OPDataManager.getInstance().getUserByPeerUri(senderUri);
                     if (sender == null) {
                         Log.e("test", "Couldn't find user for peer " + senderUri);
                         continue;
                     }
-                    String peerURIsString = extras.getPeerURIs();
-                    List<OPUser> users = new ArrayList<>();
-                    users.add(sender);
-                    if (!TextUtils.isEmpty(peerURIsString)) {
-                        String peerURIs[] = TextUtils.split(peerURIsString, ",");
-                        for (String uri : peerURIs) {
-                            OPUser user = OPDataManager.getInstance().getUserByPeerUri(uri);
-                            if (user == null) {
-                                //TODO: error handling
-                                Log.e(TAG, "peerUri user not found " + uri);
-                                continue;
-                            } else {
-                                users.add(user);
-                            }
-                        }
-                    }
-                    ParticipantInfo participantInfo = new ParticipantInfo(OPModelUtils
-                                                                              .getWindowId(users),
-                                                                          users);
-                    OPMessage message = new OPMessage(sender.getUserId(), extras.getMessageType(),
+                    String peerURIsString = object.getString(PFPushMessage.KEY_PEER_URIS);
+                    ParticipantInfo participantInfo = getParticipantInfo(sender, peerURIsString);
+                    OPMessage message = new OPMessage(sender.getUserId(),
+                                                      object.getString(PFPushMessage
+                                                                           .KEY_MESSAGE_TYPE),
                                                       object.getString(KEY_ALERT),
-                                                      Long.parseLong(extras.getDate()),
-                                                      extras.getMessageId());
+                                                      object.getLong(PFPushMessage.KEY_DATE),
+                                                      object.getString(PFPushMessage
+                                                                           .KEY_MESSAGE_ID));
                     OPConversation conversation = ConversationManager.getInstance().getConversation(
-                        GroupChatMode.valueOf(extras.getConversationType()),
+                        GroupChatMode.valueOf(object.getString(PFPushMessage
+                                                                   .KEY_CONVERSATION_TYPE)),
                         participantInfo,
-                        extras.getConversationId(),
+                        object.getString(PFPushMessage.KEY_CONVERSATION_ID),
                         true
                     );
                     OPDataManager.getInstance().saveMessage(message,
@@ -204,6 +223,28 @@ public class PFPushReceiver extends ParsePushBroadcastReceiver {
                 });
             }
         });
+    }
+
+    static ParticipantInfo getParticipantInfo(OPUser sender, String peerURIsString) {
+        List<OPUser> users = new ArrayList<>();
+        users.add(sender);
+        if (!TextUtils.isEmpty(peerURIsString)) {
+            String peerURIs[] = TextUtils.split(peerURIsString, ",");
+            for (String uri : peerURIs) {
+                OPUser user = OPDataManager.getInstance().getUserByPeerUri(uri);
+                if (user == null) {
+                    //TODO: error handling
+                    Log.e(TAG, "peerUri user not found " + uri);
+                    continue;
+                } else {
+                    users.add(user);
+                }
+            }
+        }
+        ParticipantInfo participantInfo = new ParticipantInfo(OPModelUtils
+                                                                  .getWindowId(users),
+                                                              users);
+        return participantInfo;
     }
 
 }

@@ -360,12 +360,10 @@ public class ConversationManager extends OPConversationThreadDelegate {
         if (mPushService != null) {
             final OPMessage message = conversationThread
                 .getMessageById(messageID);
-            if(message.getMessageType().equals(OPMessage.OPMessageType.TYPE_TEXT)) {
-                OPConversation conversation = ConversationManager.getInstance()
-                    .getConversation(conversationThread, true);
-                OPUser user = OPDataManager.getInstance().getUserByPeerUri(contact.getPeerURI());
-                mPushService.onConversationThreadPushMessage(conversation, message, user);
-            }
+            OPConversation conversation = ConversationManager.getInstance()
+                .getConversation(conversationThread, true);
+            OPUser user = OPDataManager.getInstance().getUserByPeerUri(contact.getPeerURI());
+            mPushService.onConversationThreadPushMessage(conversation, message, user);
         }
     }
 
