@@ -166,13 +166,6 @@ public class MainActivity extends BaseActivity implements ChatsFragment.ChatsVie
     @Override
     public void onResume() {
         super.onResume();
-        OPAccount account = OPDataManager.getInstance().getSharedAccount();
-//        if (account == null || account.getState() == AccountStates.AccountState_Shutdown) {
-////        if(LoginManager.getInstance().isLoggingIn()){
-//            if (NetworkUtil.isConnected()) {
-//                showLoginFragment();
-//            }
-//        }
     }
 
     @Override

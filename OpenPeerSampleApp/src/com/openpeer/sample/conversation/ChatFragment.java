@@ -271,8 +271,7 @@ public class ChatFragment extends BaseFragment implements
                 }
                 OPMessage msg = null;
                 // we use 0 for home user
-                msg = new OPMessage(OPDataManager.getInstance()
-                                        .getSharedAccount().getSelfContactId(),
+                msg = new OPMessage(OPDataManager.getInstance().getCurrentUserId(),
                                     OPMessage.TYPE_TEXT,
                                     mComposeBox.getText().toString(),
                                     System.currentTimeMillis(),
@@ -429,8 +428,7 @@ public class ChatFragment extends BaseFragment implements
 
             long sender_id = cursor.getLong(cursor
                                                 .getColumnIndex(MessageEntry.COLUMN_SENDER_ID));
-            if (sender_id == OPDataManager.getInstance().getSharedAccount()
-                .getSelfContactId()) {
+            if (sender_id == OPDataManager.getInstance().getCurrentUserId()) {
                 return VIEWTYPE_SELF_MESSAGE_VIEW;
             }
             return VIEWTYPE_RECIEVED_MESSAGE_VIEW;
@@ -598,8 +596,7 @@ public class ChatFragment extends BaseFragment implements
                 //TODO: error handling
                 return true;
             }
-            if (OPDataManager.getInstance().getSharedAccount()
-                .getState(0, null) != AccountStates.AccountState_Ready) {
+            if (OPDataManager.getInstance().isAccountReady()) {
                 BaseActivity.showInvalidStateWarning(getActivity());
                 return true;
             }

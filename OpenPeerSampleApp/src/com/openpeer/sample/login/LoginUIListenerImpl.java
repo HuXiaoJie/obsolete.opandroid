@@ -151,8 +151,7 @@ public class LoginUIListenerImpl implements LoginUIListener {
             if (!TextUtils.isEmpty(apid)) {
                 OPPushManager.getInstance()
                     .associateDeviceToken(
-                        OPDataManager.getInstance().getSharedAccount()
-                            .getPeerUri(),
+                        OPDataManager.getInstance().getCurrentUser().getPeerUri(),
                         PushManager.shared().getAPID(),
                         new Callback<HackApiService.HackAssociateResult>() {
                             @Override

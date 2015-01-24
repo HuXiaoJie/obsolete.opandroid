@@ -267,7 +267,7 @@ public class CallManager extends OPCallDelegate {
         SystemMessage<CallSystemMessage> systemMessage =
             new SystemMessage<CallSystemMessage>(callSystemMessage);
         OPMessage message = new OPMessage(
-            OPDataManager.getInstance().getSharedAccount().getSelfContactId(),
+            OPDataManager.getInstance().getCurrentUserId(),
             OPSystemMessage.getMessageType(),
             systemMessage.toJson(),
             System.currentTimeMillis(),

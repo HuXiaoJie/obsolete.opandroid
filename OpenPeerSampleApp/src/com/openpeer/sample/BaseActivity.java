@@ -69,8 +69,7 @@ public class BaseActivity extends BaseFragmentActivity {
         if (OPHelper.getInstance().isSigningOut()) {
             registerSignoutReceiver();
             showSignoutView();
-        } else if (OPDataManager.getInstance().getSharedAccount() == null
-                || OPDataManager.getInstance().getSharedAccount().getState() != AccountStates.AccountState_Ready) {
+        } else if (OPDataManager.getInstance().isAccountReady()) {
 
             if (!LoginManager.getInstance().loginPerformed()) {
                 LoginManager.getInstance().registerListener(

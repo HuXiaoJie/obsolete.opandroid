@@ -67,8 +67,7 @@ public class ConversationActivity extends BaseActivity {
         cFragment.setArguments(intent.getExtras());
         setContentFragment(cFragment);
 
-        if (OPDataManager.getInstance().getSharedAccount() == null
-                || !OPDataManager.getInstance().isAccountReady()) {
+        if (OPDataManager.getInstance().isAccountReady()) {
             // BaseActivity.showInvalidStateWarning(this);
             return;
         }

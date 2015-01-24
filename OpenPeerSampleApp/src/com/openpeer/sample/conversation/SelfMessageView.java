@@ -140,7 +140,7 @@ public class SelfMessageView extends RelativeLayout {
     }
 
     public void onDeleteSelected() {
-        OPMessage message = new OPMessage(OPDataManager.getInstance().getSharedAccount().getSelfContactId(),
+        OPMessage message = new OPMessage(OPDataManager.getInstance().getCurrentUserId(),
                 OPMessage.TYPE_TEXT,
                 "",
                 System.currentTimeMillis(),
