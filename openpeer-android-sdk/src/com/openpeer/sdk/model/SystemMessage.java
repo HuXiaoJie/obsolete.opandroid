@@ -20,7 +20,13 @@ import java.util.UUID;
  * "callee":"peer://opp.me/kadjfadkfj","error":{"$id":404}}}
  */
 public class SystemMessage<T> {
+    public static final String KEY_ROOT="system";
+    public static final String KEY_CALL_STATUS="callStatus";
+    public static final String KEY_CONTACTS_REMOVED="contactsRemoved";
 
+    public static final String KEY_CALL_STATUS_STATUS="status";
+    public static final String KEY_CALL_STATUS_MEDIA_TYPE="mediaType";
+    public static final String KEY_CALL_STATUS_CALL_ID="$id";
     T system;
 
     public T getSystemObject() {
@@ -40,7 +46,7 @@ public class SystemMessage<T> {
             new SystemMessage<ContactsRemovedSystemMessage>(contactsRemovedSystemMessage);
 
         OPMessage message = new OPMessage(
-            OPDataManager.getInstance().getSharedAccount().getSelfContactId(),
+            OPDataManager.getInstance().getCurrentUserId(),
             OPSystemMessage.getMessageType(),
             systemMessage.toJson(),
             System.currentTimeMillis(),
