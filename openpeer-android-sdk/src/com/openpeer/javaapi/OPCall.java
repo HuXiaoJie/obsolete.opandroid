@@ -120,7 +120,7 @@ public class OPCall {
 
     public native CallStates getState(); // state is always relative to "this" location, be is caller or callee
 
-    public native CallClosedReasons getClosedReason();
+    public native int getClosedReason();
 
     public native Time getCreationTime();
 
@@ -136,7 +136,7 @@ public class OPCall {
 
     public native void hold(boolean hold); // place the call on hold (or remove from hold)
 
-    public native void hangup(CallClosedReasons reason); // end the call
+    public native void hangup(int reason); // end the call
 
     private native void releaseCoreObjects();
 
