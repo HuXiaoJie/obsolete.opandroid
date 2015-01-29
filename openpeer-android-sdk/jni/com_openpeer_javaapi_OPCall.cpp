@@ -419,11 +419,11 @@ JNIEXPORT jobject JNICALL Java_com_openpeer_javaapi_OPCall_getState
  * Method:    getClosedReason
  * Signature: ()Lcom/openpeer/javaapi/CallClosedReasons;
  */
-JNIEXPORT jobject JNICALL Java_com_openpeer_javaapi_OPCall_getClosedReason
+JNIEXPORT jint JNICALL Java_com_openpeer_javaapi_OPCall_getClosedReason
 (JNIEnv *, jobject owner)
 {
-	jint reason = 0;
-	jobject ret;
+	jint reason = -1;
+//	jint ret;
 	JNIEnv *jni_env = 0;
 
 	__android_log_print(ANDROID_LOG_DEBUG, "com.openpeer.jni", "OPCall native getClosedReason called");
@@ -437,18 +437,12 @@ JNIEXPORT jobject JNICALL Java_com_openpeer_javaapi_OPCall_getClosedReason
 	if (coreCallPtr)
 	{
 		reason = (jint) coreCallPtr->get()->getClosedReason();
-
-		jni_env = getEnv();
-		if(jni_env)
-		{
-			ret = OpenPeerCoreManager::getJavaEnumObject("com/openpeer/javaapi/CallClosedReason", reason);
-		}
 	}
 	else
 	{
 		__android_log_print(ANDROID_LOG_ERROR, "com.openpeer.jni", "OPCall native getClosedReason core pointer is NULL!!!");
 	}
-	return ret;
+	return reason;
 }
 
 /*
@@ -739,7 +733,7 @@ JNIEXPORT void JNICALL Java_com_openpeer_javaapi_OPCall_hold
  * Signature: (Lcom/openpeer/javaapi/CallClosedReasons;)V
  */
 JNIEXPORT void JNICALL Java_com_openpeer_javaapi_OPCall_hangup
-(JNIEnv *, jobject owner, jobject callClosedReasonObj)
+(JNIEnv *, jobject owner, int intValue)
 {
 	JNIEnv *jni_env = 0;
 
@@ -755,14 +749,8 @@ JNIEXPORT void JNICALL Java_com_openpeer_javaapi_OPCall_hangup
 	{
 		jni_env = getEnv();
 
-		cls = findClass("com/openpeer/javaapi/CallClosedReasons");
-		if(jni_env->IsInstanceOf(callClosedReasonObj, cls) == JNI_TRUE)
-		{
-			jint intValue = OpenPeerCoreManager::getIntValueFromEnumObject(callClosedReasonObj, "com/openpeer/javaapi/CallClosedReasons");
-
-			ICall::CallClosedReasons reason = (ICall::CallClosedReasons)intValue;
-			coreCallPtr->get()->hangup(reason);
-		}
+		ICall::CallClosedReasons reason = (ICall::CallClosedReasons)intValue;
+		coreCallPtr->get()->hangup(reason);
 	}
 	else
 	{
