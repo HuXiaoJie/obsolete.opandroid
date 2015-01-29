@@ -5,8 +5,9 @@
 #include "openpeer/core/internal/core_MediaEngine.h"
 #include "openpeer/core/test/TestMediaEngine.h"
 #include <android/log.h>
-#include <voe_base.h>
-#include <vie_base.h>
+#include "webrtc/modules/video_capture/video_capture_internal.h"
+#include "webrtc/modules/video_render/video_render_internal.h"
+#include "webrtc/voice_engine/include/voe_base.h"
 
 #include "globals.h"
 
@@ -35,7 +36,8 @@ JNIEXPORT void JNICALL Java_com_openpeer_javaapi_OPMediaEngine_init
 	if(jni_env)
 	{
 		webrtc::VoiceEngine::SetAndroidObjects(android_jvm, jni_env, context);
-		webrtc::VideoEngine::SetAndroidObjects(android_jvm);
+		webrtc::SetCaptureAndroidVM(android_jvm, context);
+		webrtc::SetRenderAndroidVM(android_jvm);
 	}
 }
 
@@ -348,7 +350,7 @@ JNIEXPORT jobject JNICALL Java_com_openpeer_javaapi_OPMediaEngine_getCaptureCapa
 	if(jni_env)
 	{
 		//create return object - java/util/List is interface, ArrayList is implementation
-		jclass returnListClass = findClass("java/util/ArrayList");
+		jclass returnListClass = jni_env->FindClass("java/util/ArrayList");
 		jmethodID listConstructorMethodID = jni_env->GetMethodID(returnListClass, "<init>", "()V");
 		returnListObject = jni_env->NewObject(returnListClass, listConstructorMethodID);
 
