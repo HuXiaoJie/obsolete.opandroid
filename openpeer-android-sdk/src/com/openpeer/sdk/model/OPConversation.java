@@ -34,7 +34,6 @@ import android.util.Log;
 
 import com.openpeer.javaapi.CallStates;
 import com.openpeer.javaapi.ComposingStates;
-import com.openpeer.javaapi.MessageDeliveryStates;
 import com.openpeer.javaapi.OPCall;
 import com.openpeer.javaapi.OPContact;
 import com.openpeer.javaapi.OPConversationThread;
@@ -42,7 +41,12 @@ import com.openpeer.javaapi.OPIdentityContact;
 import com.openpeer.javaapi.OPMessage;
 import com.openpeer.sdk.app.OPDataManager;
 import com.openpeer.sdk.utils.CollectionUtils;
+import com.openpeer.sdk.utils.JSONUtils;
 import com.openpeer.sdk.utils.OPModelUtils;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.Hashtable;
@@ -71,17 +75,31 @@ public class OPConversation extends Observable {
     private long _id;// database id
     private String conversationId = "";
     private String topic;
-    private boolean mDisabled;
+    private boolean removed;
 
-    public boolean isDisabled() {
-        return mDisabled;
+    public boolean isQuit() {
+        return quit;
+    }
+
+    public void quit() {
+    }
+
+    private boolean quit;
+
+    //Start: from ios
+    String title;
+
+    //end: from ios
+
+    public boolean amIRemoved() {
+        return removed;
     }
 
     public ParticipantInfo getParticipantInfo() {
         return participantInfo;
     }
 
-    public void setParticipantInfo(ParticipantInfo participantInfo) {
+    void setParticipantInfo(ParticipantInfo participantInfo) {
         this.participantInfo = participantInfo;
     }
 
@@ -94,7 +112,7 @@ public class OPConversation extends Observable {
         this.participantInfo = participantInfo;
     }
 
-    public long save() {
+    long save() {
         _id = OPDataManager.getInstance().saveConversation(this);
         return _id;
     }
@@ -113,10 +131,6 @@ public class OPConversation extends Observable {
         }
     }
 
-    public void setType(GroupChatMode type) {
-        this.type = type;
-    }
-
     public String getTopic() {
         return topic;
     }
@@ -127,12 +141,8 @@ public class OPConversation extends Observable {
     }
 
     public void setDisabled(boolean disabled){
-        mDisabled=disabled;
+        removed =disabled;
         OPDataManager.getInstance().updateConversation(this);
-    }
-
-    public long getId() {
-        return _id;
     }
 
     private Hashtable<String, OPMessage> getMessageDeliveryQueue() {
@@ -185,14 +195,14 @@ public class OPConversation extends Observable {
      *
      * @param thread
      */
-    public void setThread(OPConversationThread thread) {
+    void setThread(OPConversationThread thread) {
         mConvThread = thread;
         if(conversationId==null){
             conversationId=mConvThread.getConversationId();
         }
     }
 
-    public OPConversationThread getThread(boolean createIfNo) {
+    OPConversationThread getThread(boolean createIfNo) {
         if (mConvThread == null && createIfNo) {
             mConvThread = ConversationManager.getInstance().getThread(type, conversationId, participantInfo,createIfNo);
         }
@@ -211,10 +221,7 @@ public class OPConversation extends Observable {
         return mConvThread;
     }
 
-    public void getSessionId() {
-    }
-
-    public long getCurrentWindowId() {
+    public long getCurrentCbcId() {
         return participantInfo.getCbcId();
     }
 
@@ -278,15 +285,6 @@ public class OPConversation extends Observable {
 
     }
 
-    private interface MessageDeliveryCallback {
-        public void onMessageDeliveryStateChange(String messageId,
-                                                 MessageDeliveryStates state);
-    }
-
-    public boolean isForUsers(List<OPUser> users) {
-        return getCurrentWindowId() == OPModelUtils.getWindowId(users);
-    }
-
     public void addParticipants(List<OPUser> users) {
         if (mConvThread != null) {
             addContactsToThread(users);
@@ -300,7 +298,7 @@ public class OPConversation extends Observable {
 
             OPConversationEvent event = OPConversationEvent.newContactsChangeEvent(
                 getConversationId(),
-                getCurrentWindowId(),
+                getCurrentCbcId(),
                 OPModelUtils.getUserIds(users), null);
             onNewEvent(event);
             OPDataManager.getInstance().updateConversation(this);
@@ -323,7 +321,7 @@ public class OPConversation extends Observable {
                                                                                    .getCbcId());
             OPConversationEvent event = OPConversationEvent.newContactsChangeEvent(
                 getConversationId(),
-                getCurrentWindowId(),
+                getCurrentCbcId(),
                 null,
                 OPModelUtils.getUserIds(users));
             onNewEvent(event);
@@ -333,16 +331,16 @@ public class OPConversation extends Observable {
         }
     }
 
-    public void onMessageReceived(OPConversationThread thread, OPMessage message) {
-        if (message.getMessageType().equals(OPMessage.TYPE_TEXT)) {
+    void onMessageReceived(OPConversationThread thread, OPMessage message) {
             OPContact opContact = message.getFrom();
-            OPUser user = OPDataManager.getInstance().
+            OPUser sender = OPDataManager.getInstance().
                 getUserByPeerUri(opContact.getPeerURI());
-            if (user == null) {
+        if (message.getMessageType().equals(OPMessage.TYPE_TEXT)) {
+            if (sender == null) {
                 List<OPIdentityContact> contacts = thread.getIdentityContactList(opContact);
-                user = OPDataManager.getInstance().getUser(opContact, contacts);
+                sender = OPDataManager.getInstance().getUser(opContact, contacts);
             }
-            message.setSenderId(user.getUserId());
+            message.setSenderId(sender.getUserId());
             if (!TextUtils.isEmpty(message.getReplacesMessageId())) {
                 OPDataManager.getInstance().updateMessage(message, this);
             } else {
@@ -358,26 +356,31 @@ public class OPConversation extends Observable {
             }
             selectActiveThread(thread);
         } else if (message.getMessageType().equals(OPMessage.TYPE_JSON_SYSTEM_MESSAGE)) {
-            SystemMessage systemMessage = SystemMessage.parseSystemMessage(message.getMessage());
-            if (systemMessage.getSystemObject() instanceof CallSystemMessage) {
-                CallSystemMessage callSystemMessage = (CallSystemMessage) systemMessage
-                    .getSystemObject();
-                CallManager.getInstance().
-                    handleCallSystemMessage(callSystemMessage, getConversationId(),
-                                            message.getTime().toMillis(false));
+            try {
+                JSONObject systemMessage = new JSONObject(message.getMessage());
+                if (systemMessage.has(SystemMessage.KEY_CALL_STATUS)) {
+                    JSONObject callSystemMessage = systemMessage.getJSONObject(SystemMessage.KEY_ROOT)
+                        .getJSONObject(SystemMessage.KEY_CALL_STATUS);
+                    CallManager.getInstance().
+                        handleCallSystemMessage(callSystemMessage,
+                                                sender,
+                                                thread.getConversationId(),
+                                                message.getTime().toMillis(false));
 
-            } else if (systemMessage.getSystemObject() instanceof ContactsRemovedSystemMessage) {
-                ContactsRemovedSystemMessage callSystemMessage = (ContactsRemovedSystemMessage)
-                    systemMessage
-                    .getSystemObject();
-                String selfPeerUri = OPDataManager.getInstance().getCurrentUser().getPeerUri();
-                for (String peerUri : callSystemMessage.getContactsRemoved()) {
-                    if (peerUri.equals(selfPeerUri)) {
-                        setDisabled(true);
+                } else if (systemMessage.has(SystemMessage.KEY_CONTACTS_REMOVED)) {
+                    JSONArray contactsRemovedMessage = systemMessage.getJSONObject(SystemMessage.KEY_ROOT).getJSONArray(SystemMessage.KEY_CONTACTS_REMOVED);
+                    String selfPeerUri = OPDataManager.getInstance().getCurrentUser().getPeerUri();
+                    for (String peerUri : (String[])JSONUtils.toArray(contactsRemovedMessage)) {
+                        if (peerUri.equals(selfPeerUri)) {
+                            setDisabled(true);
 
-                        notifyContactsChanged();
+                            notifyContactsChanged();
+                        }
                     }
                 }
+
+            } catch(JSONException e) {
+
             }
         }
     }
@@ -398,7 +401,7 @@ public class OPConversation extends Observable {
         switch (type){
         case thread:{
             long cbcId = OPModelUtils.getWindowId(users);
-            if (cbcId == getCurrentWindowId()) {
+            if (cbcId == getCurrentCbcId()) {
                 return;
             }
 
@@ -444,7 +447,7 @@ public class OPConversation extends Observable {
                                                                                .getCbcId());
         OPConversationEvent event = OPConversationEvent.
             newContactsChangeEvent(getConversationId(),
-                                   getCurrentWindowId(),
+                                   getCurrentCbcId(),
                                    OPModelUtils.getUserIds(addedUsers),
                                    OPModelUtils.getUserIds(deletedUsers));
         onNewEvent(event);
@@ -504,17 +507,6 @@ public class OPConversation extends Observable {
         return conversationId;
     }
 
-    public void setConversationId(String id) {
-        this.conversationId = id;
-    }
-
-    /**
-     * @param call
-     * @param state
-     */
-    public void onCallStateChanged(OPCall call, CallStates state) {
-    }
-
     /**
      * THis fucntion calls ConversationThread.markAllMessagesRead and update database. This
      * function should be call on chat view starts and when a new message received when the chat
@@ -529,7 +521,7 @@ public class OPConversation extends Observable {
 
     /**
      * Set the particpants's composing status.This function should be called when particpants start typing,
-     * pausing typing, view shows, view hides.
+     * pause typing, view shows, view hides.
      *
      * @param status
      */
@@ -537,10 +529,6 @@ public class OPConversation extends Observable {
         if (mConvThread != null) {
             mConvThread.setStatusInThread(status);
         }
-    }
-
-    public boolean isShowing() {
-        return mSessionListeners != null && mSessionListeners.size() > 0;
     }
 
     public void onMessagePushed(String messageId,OPUser user){

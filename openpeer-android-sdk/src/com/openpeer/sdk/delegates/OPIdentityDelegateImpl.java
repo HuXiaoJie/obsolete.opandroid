@@ -42,7 +42,7 @@ import com.openpeer.sdk.app.OPDataManager;
 import com.openpeer.sdk.app.OPIdentityLoginWebview;
 import com.openpeer.sdk.app.OPSdkConfig;
 
-public class OPIdentityDelegateImpl extends OPIdentityDelegate {
+public class OPIdentityDelegateImpl implements OPIdentityDelegate {
 
     private static OPIdentityDelegateImpl instance;
 

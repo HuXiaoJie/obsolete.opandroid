@@ -49,7 +49,7 @@ import com.openpeer.sdk.utils.OPModelUtils;
 import java.util.Hashtable;
 import java.util.List;
 
-public class ConversationManager extends OPConversationThreadDelegate {
+public class ConversationManager implements OPConversationThreadDelegate {
     private static ConversationManager instance;
     private Hashtable<Long, OPConversation> cbcIdToConversationTable;
     private Hashtable<String, OPConversation> conversationTable;//conversationId to conversation
@@ -119,7 +119,7 @@ public class ConversationManager extends OPConversationThreadDelegate {
                     (type, participantInfo, conversationId);
                 if (conversation != null) {
                     conversation.setParticipants(participantInfo.getParticipants());
-                    if (!conversation.isDisabled()) {
+                    if (!conversation.amIRemoved()) {
                         //For contact based conversation, teh conversation id might be different.
                         conversation.setThread(getThread(type,
                                                          conversation.getConversationId(),
@@ -144,7 +144,7 @@ public class ConversationManager extends OPConversationThreadDelegate {
                                                          participantInfo,
                                                          true));
 
-                        if (conversation.getCurrentWindowId() != participantInfo.getCbcId()) {
+                        if (conversation.getCurrentCbcId() != participantInfo.getCbcId()) {
                             conversation.setParticipantInfo(participantInfo);
                         }
                         cacheCbcToConversation(participantInfo.getCbcId(), conversation);
@@ -175,7 +175,7 @@ public class ConversationManager extends OPConversationThreadDelegate {
         return conversationTable.get(id);
     }
 
-    public OPConversation getConversationByCbcId(long id) {
+    OPConversation getConversationByCbcId(long id) {
         if (cbcIdToConversationTable != null) {
             return cbcIdToConversationTable.get(id);
         }
@@ -209,7 +209,7 @@ public class ConversationManager extends OPConversationThreadDelegate {
         mThreads.put(thread.getThreadID(), thread);
     }
 
-    OPConversationThread getCachedThread(String threadId) {
+    private OPConversationThread getCachedThread(String threadId) {
         if (mThreads != null) {
             return mThreads.get(threadId);
         } else {
@@ -244,7 +244,9 @@ public class ConversationManager extends OPConversationThreadDelegate {
         return thread;
     }
 
-
+    void quitConversation(boolean deleteHistory){
+        //TODO: implement proper logic
+    }
     //Beginning of OPConversationThreadDelegate
 
     @Override

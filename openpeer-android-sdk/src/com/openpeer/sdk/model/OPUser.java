@@ -29,15 +29,19 @@
  *******************************************************************************/
 package com.openpeer.sdk.model;
 
+import android.text.TextUtils;
+
 import java.util.List;
 
 import com.openpeer.javaapi.OPContact;
 import com.openpeer.javaapi.OPIdentityContact;
+import com.openpeer.javaapi.OPRolodexContact;
 import com.openpeer.sdk.app.OPDataManager;
 
 public class OPUser {
     private long mUserId;// locally maintained user id
     private List<OPIdentityContact> mIdentityContacts;
+    private List<OPRolodexContact> mRolodexContacts;
     private OPContact mOPContact;
 
     private String mPeerUri;
@@ -76,10 +80,6 @@ public class OPUser {
                 contact.getPeerFilePublic().getPeerFileString());
         }
         return mOPContact;
-    }
-
-    public void setOPContact(OPContact contact) {
-        this.mOPContact = contact;
     }
 
     public List<OPIdentityContact> getIdentityContacts() {
@@ -163,7 +163,7 @@ public class OPUser {
      *
      * @return Preferred identity contact based on priority and weight
      */
-    public OPIdentityContact getPreferredContact() {
+    OPIdentityContact getPreferredContact() {
         if (mIdentityContacts.size() == 1) {
             return mIdentityContacts.get(0);
         } else {
@@ -201,8 +201,14 @@ public class OPUser {
         return mUserId == OPDataManager.getInstance().getCurrentUserId();
     }
 
+    public boolean isOpenPeer() {
+        return !TextUtils.isEmpty(mPeerUri);
+    }
     public void hintAboutLocation(String locationId) {
         getOPContact().hintAboutLocation(locationId);
+    }
+    public int getNumberOfAssociatedIdentities(){
+        return mIdentityContacts.size();
     }
     @Override
     public boolean equals(Object o) {

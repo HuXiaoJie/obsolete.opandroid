@@ -177,7 +177,7 @@ public class OPNotificationBuilder {
 
 		builder.setContentIntent(contentIntent);
 
-		// int notificationId = (int) (session.getCurrentWindowId() + NOTIFICATION_ID_BASE);
+		// int notificationId = (int) (session.getCurrentCbcId() + NOTIFICATION_ID_BASE);
 
 		return builder.build();
 	}

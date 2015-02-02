@@ -96,7 +96,7 @@ public class LoginManager {
      * @param conversationThreadDelegate
      *            Global conversation thread delegate implementation. The object MUST be kept valid throughout the app lifecycle.
      */
-    public void login(
+    void login(
             OPCallDelegate callDelegate,
             OPConversationThreadDelegate conversationThreadDelegate) {
 
@@ -123,7 +123,7 @@ public class LoginManager {
      *            relogin jason blob stored from last login session
      */
 
-    public void relogin(
+    void relogin(
             OPCallDelegate callDelegate,
             OPConversationThreadDelegate conversationThreadDelegate,
             String reloginInfo) {
@@ -137,7 +137,7 @@ public class LoginManager {
         mListener.onStartAccountLogin();
     }
 
-    public void startIdentityLogin(String uri) {
+    void startIdentityLogin(String uri) {
         OPAccount account = OPDataManager.getInstance().getSharedAccount();
 
         OPIdentity identity = new OPIdentity();

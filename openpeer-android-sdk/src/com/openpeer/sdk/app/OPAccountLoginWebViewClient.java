@@ -42,7 +42,6 @@ import android.webkit.WebViewClient;
 
 public class OPAccountLoginWebViewClient extends WebViewClient {
 
-	boolean mInnerFrameLoaded;
 	boolean mNamespaceGrantInnerFrameLoaded;
 
 	@Override

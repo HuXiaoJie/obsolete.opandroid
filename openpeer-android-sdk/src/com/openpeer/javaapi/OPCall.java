@@ -63,6 +63,10 @@ public class OPCall {
         }
     }
 
+    public boolean isOutgoing(){
+        return getCaller().isSelf();
+    }
+
     /**
      * Helper function to retrieve the peer user information.
      * 

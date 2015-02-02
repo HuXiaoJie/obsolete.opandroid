@@ -33,6 +33,7 @@
 package com.openpeer.sdk.model;
 
 import android.content.Intent;
+import android.text.format.Time;
 
 import com.openpeer.javaapi.CallClosedReasons;
 import com.openpeer.javaapi.CallStates;
@@ -46,10 +47,13 @@ import com.openpeer.sdk.app.OPDataManager;
 import com.openpeer.sdk.app.OPHelper;
 import com.openpeer.sdk.utils.OPModelUtils;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.util.Hashtable;
 import java.util.UUID;
 
-public class CallManager extends OPCallDelegate {
+public class CallManager implements OPCallDelegate {
 
     Hashtable<String, OPCall> mIdToCalls;//peerId to call map
     Hashtable<Long, OPCall> mUserIdToCalls;//peerId to call map
@@ -183,25 +187,28 @@ public class CallManager extends OPCallDelegate {
 
     }
 
-    public void handleCallSystemMessage(CallSystemMessage message, String conversationId,
+    public void handleCallSystemMessage(JSONObject message, OPUser user, String conversationId,
                                         long timestamp) {
-        OPCall call = findCallById(message.getCallId());
-        OPUser user = OPDataManager.getInstance().getUserByPeerUri(message
-                                                                       .getCalleePeerUri
-                                                                           ());
-        if (call == null) {
-            //couldn't find call in memory. try to save call
-            OPDataManager.getInstance().saveCall(message.getCallId(),
-                                                 conversationId,
-                                                 user.getUserId(),
-                                                 OPCall.DIRECTION_INCOMING,
-                                                 message.getMediaType());
+        try {
+            String callId = message.getString(SystemMessage.KEY_ID);
+            OPCall call = findCallById(callId);
+
+            if (call == null) {
+                //couldn't find call in memory. try to save call
+                OPDataManager.getInstance().saveCall(message.getString(SystemMessage.KEY_ID),
+                                                     conversationId,
+                                                     user.getUserId(),
+                                                     OPCall.DIRECTION_INCOMING,
+                                                     message.getString(SystemMessage
+                                                                           .KEY_CALL_STATUS_MEDIA_TYPE));
+            }
+            CallEvent event = new CallEvent(callId,
+                                            message.getString(SystemMessage.KEY_CALL_STATUS_STATUS),
+                                            timestamp);
+            OPDataManager.getInstance().saveCallEvent(callId, conversationId, event);
+        } catch(JSONException e) {
+            e.printStackTrace();
         }
-        CallEvent event = new CallEvent(message.getCallId(),
-                                        message.getStatus(),
-                                        timestamp);
-        OPDataManager.getInstance().saveCallEvent(message.getCallId(), conversationId,
-                                                  event);
     }
 
     public boolean hasCalls() {
@@ -259,17 +266,30 @@ public class CallManager extends OPCallDelegate {
     }
 
     OPMessage callSystemMessage(String status, OPCall call) {
+        int callClosedReason = -1;
+        switch (status){
+        case CallSystemMessage.STATUS_HUNGUP:
+            if (Time.isEpoch(call.getAnswerTime())) {
+                callClosedReason = 404;
+            } else {
+                callClosedReason = call.getClosedReason();
+            }
+            break;
+        }
+
         String mediaType = call.hasVideo() ? CallSystemMessage.MEDIATYPE_VIDEO :
             CallSystemMessage.MEDIATYPE_AUDIO;
-        CallSystemMessage callSystemMessage = new CallSystemMessage(call.getCallID(), status,
-                                                                    mediaType,
-                                                                    call.getCallee().getPeerURI());
-        SystemMessage<CallSystemMessage> systemMessage =
-            new SystemMessage<CallSystemMessage>(callSystemMessage);
+        JSONObject callSystemMessage = SystemMessage.CallSystemMessage(
+            call.getCallID(),
+            status,
+            mediaType,
+            call.getCallee().getPeerURI(),
+            callClosedReason);
+
         OPMessage message = new OPMessage(
             OPDataManager.getInstance().getCurrentUserId(),
             OPSystemMessage.getMessageType(),
-            systemMessage.toJson(),
+            callSystemMessage.toString(),
             System.currentTimeMillis(),
             UUID.randomUUID().toString());
         return message;

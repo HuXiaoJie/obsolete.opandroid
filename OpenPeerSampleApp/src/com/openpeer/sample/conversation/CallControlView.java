@@ -31,6 +31,7 @@ package com.openpeer.sample.conversation;
 
 import android.content.Context;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.ImageView;
@@ -71,12 +72,14 @@ public class CallControlView extends LinearLayout {
 			@Override
 			public void onClick(View v) {
                 mCall.hangup(CallClosedReasons.CallClosedReason_User);
+                //test
+                Log.d("test","call closed reason "+mCall.getClosedReason());
 				if (mListener != null) {
 					mListener.onEndClick();
 				}
 			}
 		});
-		if (mCall.getCaller().isSelf()) {
+		if (mCall.isOutgoing()) {
 			removeView(mAnswerButton);
 			removeView(mPaddingView);
 		}

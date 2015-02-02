@@ -50,7 +50,7 @@ import com.openpeer.sdk.app.OPSdkConfig;
  * @ExcludeFromJavadoc Default implmentation of OPAccountDelegate. This will be created as singleton and will be passed in
  *                     LoginManager.login
  */
-public class OPAccountDelegateImpl extends OPAccountDelegate {
+public class OPAccountDelegateImpl implements OPAccountDelegate {
     private static OPAccountDelegateImpl instance;
 
     /**

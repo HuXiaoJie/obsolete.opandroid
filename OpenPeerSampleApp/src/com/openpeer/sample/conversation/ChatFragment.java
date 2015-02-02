@@ -60,7 +60,6 @@ import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.TextView;
 
-import com.openpeer.javaapi.AccountStates;
 import com.openpeer.javaapi.CallStates;
 import com.openpeer.javaapi.ComposingStates;
 import com.openpeer.javaapi.MessageDeliveryStates;
@@ -75,7 +74,6 @@ import com.openpeer.sample.contacts.ProfilePickerActivity;
 import com.openpeer.sdk.app.OPDataManager;
 import com.openpeer.sdk.app.OPSdkConfig;
 import com.openpeer.sdk.datastore.DatabaseContracts.MessageEntry;
-import com.openpeer.sdk.datastore.OPContentProvider;
 import com.openpeer.sdk.datastore.OPModelCursorHelper;
 import com.openpeer.sdk.model.ConversationManager;
 import com.openpeer.sdk.model.GroupChatMode;
@@ -87,7 +85,6 @@ import com.openpeer.sdk.model.SessionListener;
 import com.openpeer.sdk.utils.NoDuplicateArrayList;
 import com.openpeer.sdk.utils.OPModelUtils;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -222,7 +219,7 @@ public class ChatFragment extends BaseFragment implements
             getActivity().getActionBar().setTitle(TextUtils.join(",", names));
         }
 
-        boolean enabled = mSession != null && !mSession.isDisabled();
+        boolean enabled = mSession != null && !mSession.amIRemoved();
         mComposeBox.setEnabled(enabled);
         mSendButton.setEnabled(enabled);
     }
@@ -587,7 +584,7 @@ public class ChatFragment extends BaseFragment implements
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        if (mSession == null || mSession.isDisabled()) {
+        if (mSession == null || mSession.amIRemoved()) {
             return true;
         }
         switch (item.getItemId()){
@@ -596,7 +593,7 @@ public class ChatFragment extends BaseFragment implements
                 //TODO: error handling
                 return true;
             }
-            if (OPDataManager.getInstance().isAccountReady()) {
+            if (!OPDataManager.getInstance().isAccountReady()) {
                 BaseActivity.showInvalidStateWarning(getActivity());
                 return true;
             }
@@ -862,7 +859,7 @@ public class ChatFragment extends BaseFragment implements
     @Override
     public void onCreateContextMenu(ContextMenu menu, View v,
                                     ContextMenuInfo menuInfo) {
-        if (v == mMessagesList && !mSession.isDisabled()) {
+        if (v == mMessagesList && !mSession.amIRemoved()) {
             AdapterView.AdapterContextMenuInfo acmi = (AdapterContextMenuInfo) menuInfo;
 
             if (acmi.targetView instanceof SelfMessageView

@@ -28,8 +28,6 @@
  */
 package com.openpeer.sdk.model;
 
-import com.google.gson.reflect.TypeToken;
-
 /**
  *
  */
@@ -84,7 +82,7 @@ public class OPConversationEvent<T> {
      * @param event        TODO
      */
     public OPConversationEvent(OPConversation conversation, EventTypes type, T event) {
-        this(conversation.getConversationId(), type, event, conversation.getCurrentWindowId(),
+        this(conversation.getConversationId(), type, event, conversation.getCurrentCbcId(),
              System.currentTimeMillis());
     }
 

@@ -71,7 +71,6 @@ public class CallStatus {
 	public boolean useFrontCamera() {
 		// TODO Auto-generated method stub
 		return mFrontCamera;
-
 	}
 
 	public void setUseFrontCamera(boolean useFront) {

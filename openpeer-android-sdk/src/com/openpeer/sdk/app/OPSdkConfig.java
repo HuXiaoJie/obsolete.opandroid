@@ -52,14 +52,6 @@ public class OPSdkConfig {
     // TODO add configuration items in
     private static final String KEY_GRANT_ID = "openpeer/calculated/grantId";
 
-    private static final String PREFIX_APP_COMMON_SETTING = "openpeer/common/";
-
-    private static final String KEY_APP_NAME = PREFIX_APP_COMMON_SETTING
-            + "application-name";
-    private static final String KEY_APP_IMAGE_URL = PREFIX_APP_COMMON_SETTING
-            + "application-image-url";
-    private static final String KEY_APP_APPLICATION_URL = PREFIX_APP_COMMON_SETTING
-            + "application-url";
     public static final String KEY_USER_AGENT = "openpeer/calculated/user-agent";
 
     public static final String KEY_OUTER_FRAME_URL = "outerFrameURL";

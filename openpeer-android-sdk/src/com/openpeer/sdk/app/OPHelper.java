@@ -57,7 +57,8 @@ import com.openpeer.sdk.model.CallManager;
 import com.openpeer.sdk.model.ConversationManager;
 
 /**
- * 
+ * Helper class for openpeer sdk initialization and state changes. The object will hold reference
+ * to Application context and core api delegates
  * 
  *
  */
@@ -156,12 +157,12 @@ public class OPHelper {
      * @param cacheDelegate
      * @param settingsDelegate
      * @param stackDelegate
-     * @param mediaengineDelegate
+     * @param mediaEngineDelegate
      */
     public void init(Context context,
             OPCacheDelegate cacheDelegate,
             OPSettingsDelegate settingsDelegate, OPStackDelegate stackDelegate,
-            OPMediaEngineDelegate mediaengineDelegate) {
+            OPMediaEngineDelegate mediaEngineDelegate) {
         mCacheDelegate = cacheDelegate;
         mSettingsDelegate = settingsDelegate;
 
@@ -195,7 +196,7 @@ public class OPHelper {
 
         // OPSettings.applyDefaults();
 
-        stack.setup(stackDelegate, mediaengineDelegate);
+        stack.setup(stackDelegate, mediaEngineDelegate);
 
     }
 

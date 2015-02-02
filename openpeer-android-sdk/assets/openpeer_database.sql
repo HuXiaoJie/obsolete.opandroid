@@ -82,11 +82,14 @@ DROP TABLE IF EXISTS "conversation";
 CREATE TABLE "conversation" (
 	 "_id" INTEGER PRIMARY KEY,
 	 "type" TEXT NOT NULL,
+	 "name" TEXT,
+	 "topic" TEXT,
 	 "conversation_id" TEXT UNIQUE NOT NULL,
 	 "account_id" integer NOT NULL,
 	 "start_time" integer NOT NULL,
 	 "participants" integer NOT NULL,
-	 "disabled" integer DEFAULT 0,
+	 "removed" integer DEFAULT 0,
+	 "quit" integer DEFAULT 0,
 	CONSTRAINT "fk_conversation_account_id" FOREIGN KEY ("account_id") REFERENCES "account" ("_id") ON DELETE RESTRICT,
 	CONSTRAINT "fk_conversation_participants" FOREIGN KEY ("participants") REFERENCES "participants" ("cbc_id") ON DELETE RESTRICT
 );

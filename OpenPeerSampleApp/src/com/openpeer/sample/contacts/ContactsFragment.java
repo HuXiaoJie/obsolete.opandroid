@@ -32,7 +32,6 @@ package com.openpeer.sample.contacts;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
-import android.content.IntentFilter;
 import android.database.Cursor;
 import android.os.Bundle;
 import android.support.v4.app.LoaderManager;
@@ -56,7 +55,6 @@ import com.openpeer.sample.R;
 import com.openpeer.sample.view.ProgressEmptyView;
 import com.openpeer.sdk.app.OPDataManager;
 import com.openpeer.sdk.datastore.DatabaseContracts.RolodexContactEntry;
-import com.openpeer.sdk.datastore.OPContentProvider;
 
 import butterknife.ButterKnife;
 import butterknife.InjectView;
@@ -70,7 +68,6 @@ public class ContactsFragment extends BaseFragment implements SwipeRefreshLayout
 	ListView mListView;
 	private ContactsAdapter mAdapter;
 	private boolean mTest;
-	private DataChangeReceiver mReceiver;
     @InjectView(R.id.empty_view)
     ProgressEmptyView emptyView;
 
@@ -86,7 +83,6 @@ public class ContactsFragment extends BaseFragment implements SwipeRefreshLayout
 
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-		mReceiver = new DataChangeReceiver();
 		return inflater.inflate(R.layout.fragment_contacts, null);
 	}
 
@@ -143,14 +139,12 @@ public class ContactsFragment extends BaseFragment implements SwipeRefreshLayout
 	public void onPause() {
 		// TODO Auto-generated method stub
 		super.onPause();
-		getActivity().unregisterReceiver(mReceiver);
 	}
 
 	@Override
 	public void onResume() {
 		// TODO Auto-generated method stub
 		super.onResume();
-		getActivity().registerReceiver(mReceiver, new IntentFilter(OPDataManager.INTENT_CONTACTS_CHANGED));
 
 	}
 

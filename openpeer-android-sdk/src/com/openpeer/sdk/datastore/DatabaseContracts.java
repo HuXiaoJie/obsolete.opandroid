@@ -157,11 +157,14 @@ public class DatabaseContracts {
         public static final String URI_PATH_INFO = "/" + TABLE_NAME;
         public static final String URI_PATH_INFO_ID = "/" + TABLE_NAME + "/#";
         public static final String COLUMN_TYPE = "type";
+        public static final String COLUMN_NAME= "name";
+        public static final String COLUMN_TOPIC= "topic";
         public static final String COLUMN_ACCOUNT_ID = "account_id";
         public static final String COLUMN_START_TIME = "start_time";
         public static final String COLUMN_PARTICIPANTS = "participants";
         public static final String COLUMN_CONVERSATION_ID = "conversation_id";
-        public static final String COLUMN_DISABLED = "disabled";
+        public static final String COLUMN_REMOVED = "removed";
+        public static final String COLUMN_QUIT = "quit";
     }
 
     public static abstract class ConversationEventEntry implements BaseColumns {

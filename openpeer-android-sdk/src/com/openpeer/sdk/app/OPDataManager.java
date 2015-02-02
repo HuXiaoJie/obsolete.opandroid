@@ -83,8 +83,6 @@ import static com.openpeer.sdk.datastore.DatabaseContracts.COLUMN_PEER_URI;
 public class OPDataManager {
     private static final String TAG = OPDataManager.class.getSimpleName();
 
-    public static String INTENT_CONTACTS_CHANGED = "com.openpeer.contacts_changed";
-
     private static OPDataManager instance;
 
     private OPAccount mAccount;
@@ -564,7 +562,7 @@ public class OPDataManager {
                                                                            .COLUMN_PARTICIPANTS)));
             conversation.setDisabled(cursor.getInt(cursor.getColumnIndex(DatabaseContracts
                                                                              .ConversationEntry
-                                                                             .COLUMN_DISABLED))
+                                                                             .COLUMN_REMOVED))
                                          == 0 ? false : true);
 
         } else {
@@ -697,7 +695,7 @@ public class OPDataManager {
         values.put(DatabaseContracts.MessageEntry.COLUMN_MESSAGE_TYPE,
                    message.getMessageType());
         values.put(DatabaseContracts.MessageEntry.COLUMN_SENDER_ID, message.getSenderId());
-        values.put(DatabaseContracts.MessageEntry.COLUMN_CBC_ID, conversation.getCurrentWindowId());
+        values.put(DatabaseContracts.MessageEntry.COLUMN_CBC_ID, conversation.getCurrentCbcId());
         values.put(DatabaseContracts.MessageEntry.COLUMN_CONTEXT_ID, conversation
             .getConversationId());
 
@@ -914,7 +912,7 @@ public class OPDataManager {
         long id = 0;
         String where = conversation.getType() == GroupChatMode.contact ? DatabaseContracts
             .ConversationEntry
-            .COLUMN_PARTICIPANTS + "=" + conversation.getCurrentWindowId() :
+            .COLUMN_PARTICIPANTS + "=" + conversation.getCurrentCbcId() :
             DatabaseContracts.ConversationEntry.COLUMN_CONVERSATION_ID + "=?";
         String args[] = conversation.getType() == GroupChatMode.contact ? null : new
             String[]{conversation.getConversationId()};
@@ -929,25 +927,28 @@ public class OPDataManager {
         values.put(DatabaseContracts.ConversationEntry.COLUMN_START_TIME,
                    System.currentTimeMillis());
         values.put(DatabaseContracts.ConversationEntry.COLUMN_PARTICIPANTS,
-                   conversation.getCurrentWindowId());
+                   conversation.getCurrentCbcId());
         values.put(DatabaseContracts.ConversationEntry.COLUMN_CONVERSATION_ID,
                    conversation.getConversationId());
         values.put(DatabaseContracts.ConversationEntry.COLUMN_ACCOUNT_ID,
                    getCurrentUserId());
+        values.put(DatabaseContracts.ConversationEntry.COLUMN_NAME, conversation.getName());
+        values.put(DatabaseContracts.ConversationEntry.COLUMN_TOPIC, conversation.getTopic());
         id = getId(insert(DatabaseContracts.ConversationEntry.TABLE_NAME, values));
         conversation.setId(id);
-        saveParticipants(conversation.getCurrentWindowId(), conversation.getParticipants());
+        saveParticipants(conversation.getCurrentCbcId(), conversation.getParticipants());
 
         return id;
     }
 
-
     public long updateConversation(OPConversation conversation) {
         ContentValues values = new ContentValues();
         values.put(DatabaseContracts.ConversationEntry.COLUMN_PARTICIPANTS,
-                   conversation.getCurrentWindowId());
-        values.put(DatabaseContracts.ConversationEntry.COLUMN_DISABLED,
-                   conversation.isDisabled());
+                   conversation.getCurrentCbcId());
+        values.put(DatabaseContracts.ConversationEntry.COLUMN_REMOVED, conversation.amIRemoved());
+        values.put(DatabaseContracts.ConversationEntry.COLUMN_QUIT, conversation.isQuit());
+        values.put(DatabaseContracts.ConversationEntry.COLUMN_NAME, conversation.getName());
+        values.put(DatabaseContracts.ConversationEntry.COLUMN_TOPIC, conversation.getTopic());
         int count = update(DatabaseContracts.ConversationEntry.TABLE_NAME, values,
                            DatabaseContracts.ConversationEntry.COLUMN_CONVERSATION_ID + "=?",
                            new String[]{conversation.getConversationId()});

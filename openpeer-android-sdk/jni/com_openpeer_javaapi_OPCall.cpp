@@ -584,6 +584,8 @@ JNIEXPORT jobject JNICALL Java_com_openpeer_javaapi_OPCall_getAnswerTime
 			zsLib::Duration answerTimeDuration = answerTime - time_t_epoch;
 			object = jni_env->NewObject(timeCls, timeMethodID);
 			jni_env->CallVoidMethod(object, timeSetMillisMethodID, answerTimeDuration.total_milliseconds());
+	        __android_log_print(ANDROID_LOG_ERROR, "com.openpeer.jni", "OPCall native getAnswerTime %d,epoch %d",answerTime.);
+
 		}
 	}
 	else
