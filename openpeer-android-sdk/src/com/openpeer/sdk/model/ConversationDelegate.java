@@ -44,7 +44,8 @@ public interface ConversationDelegate {
                                                ComposingStates state, OPUser user);
 
     public boolean onNewMessage(OPConversation conversation, OPMessage message);
-    public boolean onCallSystemMessageReceived(OPConversation conversation, JSONObject message);
+    public boolean onCallSystemMessageReceived(OPConversation conversation, CallSystemMessage message,
+                                               OPUser sender);
 
     public boolean onPushMessageRequired(OPConversation conversation, OPMessage message);
 
@@ -52,6 +53,6 @@ public interface ConversationDelegate {
 
     public boolean onConversationTopicChanged(OPConversation conversation, String newTopic);
 
-    public boolean onConversationSwitch(OPConversation conversation, String fromConversationId,
-                                        String toConversationId);
+    public boolean onConversationSwitch(OPConversation fromConversation, OPConversation
+        toConversationId);
 }

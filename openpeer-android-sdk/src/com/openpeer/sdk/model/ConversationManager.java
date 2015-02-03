@@ -287,6 +287,14 @@ public class ConversationManager implements OPConversationThreadDelegate {
                                             sender,
                                             conversation.getConversationId(),
                                             message.getTime().toMillis(false));
+                synchronized (mConversationDelegates) {
+                    for (ConversationDelegate delegate : mConversationDelegates) {
+                        delegate.onCallSystemMessageReceived(
+                            conversation,
+                            new CallSystemMessage(callSystemMessage),
+                            sender);
+                    }
+                }
 
             } else if (systemMessage.has(SystemMessage.KEY_CONTACTS_REMOVED)) {
                 JSONArray contactsRemovedMessage = systemMessage.getJSONObject(SystemMessage

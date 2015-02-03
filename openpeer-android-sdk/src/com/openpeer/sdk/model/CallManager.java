@@ -190,20 +190,20 @@ public class CallManager implements OPCallDelegate {
     public void handleCallSystemMessage(JSONObject message, OPUser user, String conversationId,
                                         long timestamp) {
         try {
-            String callId = message.getString(SystemMessage.KEY_ID);
+            String callId = message.getString(CallSystemMessage.KEY_ID);
             OPCall call = findCallById(callId);
 
             if (call == null) {
                 //couldn't find call in memory. try to save call
-                OPDataManager.getInstance().saveCall(message.getString(SystemMessage.KEY_ID),
+                OPDataManager.getInstance().saveCall(message.getString(CallSystemMessage.KEY_ID),
                                                      conversationId,
                                                      user.getUserId(),
                                                      OPCall.DIRECTION_INCOMING,
-                                                     message.getString(SystemMessage
+                                                     message.getString(CallSystemMessage
                                                                            .KEY_CALL_STATUS_MEDIA_TYPE));
             }
             CallEvent event = new CallEvent(callId,
-                                            message.getString(SystemMessage.KEY_CALL_STATUS_STATUS),
+                                            message.getString(CallSystemMessage.KEY_CALL_STATUS_STATUS),
                                             timestamp);
             OPDataManager.getInstance().saveCallEvent(callId, conversationId, event);
         } catch(JSONException e) {

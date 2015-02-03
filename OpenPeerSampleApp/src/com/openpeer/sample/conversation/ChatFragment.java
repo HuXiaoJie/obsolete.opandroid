@@ -75,6 +75,7 @@ import com.openpeer.sdk.app.OPDataManager;
 import com.openpeer.sdk.app.OPSdkConfig;
 import com.openpeer.sdk.datastore.DatabaseContracts.MessageEntry;
 import com.openpeer.sdk.datastore.OPModelCursorHelper;
+import com.openpeer.sdk.model.CallSystemMessage;
 import com.openpeer.sdk.model.ConversationDelegate;
 import com.openpeer.sdk.model.ConversationManager;
 import com.openpeer.sdk.model.GroupChatMode;
@@ -936,7 +937,8 @@ public class ChatFragment extends BaseFragment implements
     }
 
     @Override
-    public boolean onCallSystemMessageReceived(OPConversation conversation, JSONObject message) {
+    public boolean onCallSystemMessageReceived(OPConversation conversation, CallSystemMessage message,
+                                               OPUser sender) {
         return false;
     }
 
