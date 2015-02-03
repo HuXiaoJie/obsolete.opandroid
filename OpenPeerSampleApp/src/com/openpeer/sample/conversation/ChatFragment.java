@@ -904,9 +904,8 @@ public class ChatFragment extends BaseFragment implements
 
     @Override
     public boolean onContactsChanged(OPConversation conversation) {
-        if(conversation.getConversationId().equals(mSession)){
-            onContactsChanged();
-            return true;
+        if(conversation.getConversationId().equals(mConversationId)){
+            return onContactsChanged();
         }
         return false;
     }
@@ -922,12 +921,17 @@ public class ChatFragment extends BaseFragment implements
     }
     @Override
     public boolean onConversationTopicChanged(OPConversation conversation,String newTopic) {
-        setTitle(newTopic);
+        if(conversation.getConversationId().equals(mConversationId)) {
+            setTitle(newTopic);
+        }
         return true;
     }
 
     @Override
-    public boolean onConversationSwitch(OPConversation conversation,String fromConversationId, String toConversationId) {
+    public boolean onConversationSwitch(OPConversation fromConversation, OPConversation
+        toConversation) {
+        if (fromConversation.getConversationId().equals(mConversationId)) {
+        }
         return false;
     }
 
