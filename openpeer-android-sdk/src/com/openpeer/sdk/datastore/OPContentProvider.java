@@ -37,6 +37,7 @@ import android.content.pm.PackageManager;
 import android.content.pm.PackageManager.NameNotFoundException;
 import android.content.pm.ProviderInfo;
 import android.database.Cursor;
+import android.database.sqlite.SQLiteConstraintException;
 import android.database.sqlite.SQLiteDatabase;
 import android.net.Uri;
 import android.provider.BaseColumns;
@@ -183,12 +184,16 @@ public class OPContentProvider extends ContentProvider implements ContentUriReso
                 break;
             }
             if (tableName != null) {
-                SQLiteDatabase db = mOpenHelper.getWritableDatabase();
-                long rowId = db.insert(tableName, null, values);
+                try {
+                    SQLiteDatabase db = mOpenHelper.getWritableDatabase();
+                    long rowId = db.insertWithOnConflict(tableName, null, values, SQLiteDatabase.CONFLICT_ABORT);
 
-                if (rowId != -1) {
-                    getContext().getContentResolver().notifyChange(uri, null);
-                    return ContentUris.withAppendedId(uri, rowId);
+
+                    if (rowId != -1) {
+                        getContext().getContentResolver().notifyChange(uri, null);
+                        return ContentUris.withAppendedId(uri, rowId);
+                    }
+                }catch(SQLiteConstraintException e){
                 }
             }
         }
@@ -196,13 +201,17 @@ public class OPContentProvider extends ContentProvider implements ContentUriReso
     }
 
     private Uri insertMessage(Uri uri, ContentValues values) {
-        SQLiteDatabase db = mOpenHelper.getWritableDatabase();
-        long result = db.insert(DatabaseContracts.MessageEntry.TABLE_NAME,
-                null, values);
-        getContext().getContentResolver().notifyChange(
+        try {
+            SQLiteDatabase db = mOpenHelper.getWritableDatabase();
+            long result = db.insertWithOnConflict(DatabaseContracts.MessageEntry.TABLE_NAME,
+                                                  null, values, SQLiteDatabase.CONFLICT_ABORT);
+            getContext().getContentResolver().notifyChange(
                 ContentUris.withAppendedId(uri, result), null);
-        notifyChatHistoryChange();
-        return uri;
+            notifyChatHistoryChange();
+            return uri;
+        } catch(SQLiteConstraintException e) {
+        }
+        return null;
     }
 
     @Override
