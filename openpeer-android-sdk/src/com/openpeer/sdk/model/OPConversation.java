@@ -32,7 +32,6 @@ package com.openpeer.sdk.model;
 import android.text.TextUtils;
 import android.util.Log;
 
-import com.openpeer.javaapi.CallStates;
 import com.openpeer.javaapi.ComposingStates;
 import com.openpeer.javaapi.OPCall;
 import com.openpeer.javaapi.OPContact;
@@ -41,12 +40,7 @@ import com.openpeer.javaapi.OPIdentityContact;
 import com.openpeer.javaapi.OPMessage;
 import com.openpeer.sdk.app.OPDataManager;
 import com.openpeer.sdk.utils.CollectionUtils;
-import com.openpeer.sdk.utils.JSONUtils;
 import com.openpeer.sdk.utils.OPModelUtils;
-
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.Hashtable;
@@ -70,7 +64,6 @@ public class OPConversation extends Observable {
     private Hashtable<String, OPMessage> mMessageDeliveryQueue;
     private OPConversationEvent mLastEvent;
 
-    private List<SessionListener> mSessionListeners = new ArrayList<SessionListener>();
     //try to keep the data fields correspond to database columns
     private long _id;// database id
     private String conversationId = "";
@@ -117,18 +110,12 @@ public class OPConversation extends Observable {
         return _id;
     }
 
-    public void registerListener(SessionListener listener) {
-        synchronized (mSessionListeners) {
-            Log.d(TAG, "registerListener " + listener);
-            mSessionListeners.add(listener);
-        }
+    public static void registerListener(ConversationDelegate listener) {
+        ConversationManager.getInstance().registerListener(listener);
     }
 
-    public void unregisterListener(SessionListener listener) {
-        synchronized (mSessionListeners) {
-            Log.d(TAG, "unregisterListener " + listener);
-            mSessionListeners.remove(listener);
-        }
+    public static void unregisterListener(ConversationDelegate listener) {
+        ConversationManager.getInstance().unregisterListener(listener);
     }
 
     public String getTopic() {
@@ -302,7 +289,7 @@ public class OPConversation extends Observable {
                 OPModelUtils.getUserIds(users), null);
             onNewEvent(event);
             OPDataManager.getInstance().updateConversation(this);
-            notifyContactsChanged();
+            ConversationManager.getInstance().notifyContactsChanged(this);
         }
     }
 
@@ -327,7 +314,7 @@ public class OPConversation extends Observable {
             onNewEvent(event);
             OPDataManager.getInstance().updateConversation(this);
 
-            notifyContactsChanged();
+            ConversationManager.getInstance().notifyContactsChanged(this);
         }
     }
 
@@ -344,44 +331,10 @@ public class OPConversation extends Observable {
             if (!TextUtils.isEmpty(message.getReplacesMessageId())) {
                 OPDataManager.getInstance().updateMessage(message, this);
             } else {
-                if (!mSessionListeners.isEmpty()) {
-                    message.setRead(true);
-                    //TODO: decide if this shoudl be done in listener
-                }
-
                 OPDataManager.getInstance().saveMessage(message, conversationId,
                                                         participantInfo);
-                // TODO: Now notify observer
-
             }
             selectActiveThread(thread);
-        } else if (message.getMessageType().equals(OPMessage.TYPE_JSON_SYSTEM_MESSAGE)) {
-            try {
-                JSONObject systemMessage = new JSONObject(message.getMessage());
-                if (systemMessage.has(SystemMessage.KEY_CALL_STATUS)) {
-                    JSONObject callSystemMessage = systemMessage.getJSONObject(SystemMessage.KEY_ROOT)
-                        .getJSONObject(SystemMessage.KEY_CALL_STATUS);
-                    CallManager.getInstance().
-                        handleCallSystemMessage(callSystemMessage,
-                                                sender,
-                                                thread.getConversationId(),
-                                                message.getTime().toMillis(false));
-
-                } else if (systemMessage.has(SystemMessage.KEY_CONTACTS_REMOVED)) {
-                    JSONArray contactsRemovedMessage = systemMessage.getJSONObject(SystemMessage.KEY_ROOT).getJSONArray(SystemMessage.KEY_CONTACTS_REMOVED);
-                    String selfPeerUri = OPDataManager.getInstance().getCurrentUser().getPeerUri();
-                    for (String peerUri : (String[])JSONUtils.toArray(contactsRemovedMessage)) {
-                        if (peerUri.equals(selfPeerUri)) {
-                            setDisabled(true);
-
-                            notifyContactsChanged();
-                        }
-                    }
-                }
-
-            } catch(JSONException e) {
-
-            }
         }
     }
 
@@ -452,31 +405,12 @@ public class OPConversation extends Observable {
                                    OPModelUtils.getUserIds(deletedUsers));
         onNewEvent(event);
         OPDataManager.getInstance().updateConversation(this);
-        notifyContactsChanged();
         return true;
     }
 
-    void notifyContactsChanged() {
-        synchronized (mSessionListeners) {
-            for (SessionListener listener : mSessionListeners) {
-                listener.onContactsChanged();
-            }
-        }
-    }
 
-    public void onContactComposingStateChanged(ComposingStates state,
-                                               OPContact contact) {
-        OPUser user = OPDataManager.getInstance().getUserByPeerUri(contact.getPeerURI());
-        if (user == null) {
-            Log.e(TAG, "onContactComposingStateChanged couldn't find particpants");
-            return;
-        }
-        synchronized (mSessionListeners) {
-            for (SessionListener listener : mSessionListeners) {
-                listener.onContactComposingStateChanged(state, user);
-            }
-        }
-    }
+
+
 
     /**
      * @return

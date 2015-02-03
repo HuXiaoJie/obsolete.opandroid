@@ -64,7 +64,7 @@ public class PFPushReceiver extends ParsePushBroadcastReceiver {
             String conversationId = jsonObject.getString(PFPushMessage.KEY_CONVERSATION_ID);
             String messageId = jsonObject.getString(PFPushMessage.KEY_MESSAGE_ID);
             String senderUri = jsonObject.getString(PFPushMessage.KEY_PEER_URI);
-            long date = Long.parseLong(jsonObject.getString(PFPushMessage.KEY_DATE)) * 1000l;
+            long date = jsonObject.getLong(PFPushMessage.KEY_DATE) * 1000l;
             // If message is already received, ignore notification
             if (null != OPDataManager.getInstance().getMessage(messageId)) {
                 Log.e(TAG, "received push for message that is already received "
@@ -95,6 +95,9 @@ public class PFPushReceiver extends ParsePushBroadcastReceiver {
                                                   date,
                                                   messageId,
                                                   MessageEditState.Normal);
+                OPDataManager.getInstance().saveMessage(message,
+                                                        conversation.getConversationId(),
+                                                        participantInfo);
 //                return getTextMessageNotification(jsonObject);
                 OPNotificationBuilder.showNotificationForMessage(
                     OPModelUtils.getUserIds(participantInfo.getParticipants()),
@@ -102,7 +105,7 @@ public class PFPushReceiver extends ParsePushBroadcastReceiver {
                     conversationType,
                     conversation.getConversationId());
             }
-
+            break;
             case OPMessage.TYPE_JSON_SYSTEM_MESSAGE:{
                 JSONObject systemObject = jsonObject.getJSONObject("system");
                 if (systemObject.has("callStatus")) {
@@ -194,7 +197,7 @@ public class PFPushReceiver extends ParsePushBroadcastReceiver {
                                                       object.getString(PFPushMessage
                                                                            .KEY_MESSAGE_TYPE),
                                                       object.getString(KEY_ALERT),
-                                                      object.getLong(PFPushMessage.KEY_DATE),
+                                                      object.getLong(PFPushMessage.KEY_DATE)*1000,
                                                       object.getString(PFPushMessage
                                                                            .KEY_MESSAGE_ID));
                     OPConversation conversation = ConversationManager.getInstance().getConversation(

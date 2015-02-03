@@ -44,8 +44,14 @@ import com.openpeer.javaapi.OPLogLevel;
 import com.openpeer.javaapi.OPLogger;
 import com.openpeer.javaapi.OPMessage;
 import com.openpeer.sdk.app.OPDataManager;
+import com.openpeer.sdk.utils.JSONUtils;
 import com.openpeer.sdk.utils.OPModelUtils;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.util.ArrayList;
 import java.util.Hashtable;
 import java.util.List;
 
@@ -53,6 +59,7 @@ public class ConversationManager implements OPConversationThreadDelegate {
     private static ConversationManager instance;
     private Hashtable<Long, OPConversation> cbcIdToConversationTable;
     private Hashtable<String, OPConversation> conversationTable;//conversationId to conversation
+    private List<ConversationDelegate> mConversationDelegates = new ArrayList<>();
 
     public static ConversationManager getInstance() {
         if (instance == null) {
@@ -62,6 +69,16 @@ public class ConversationManager implements OPConversationThreadDelegate {
     }
 
     private ConversationManager() {
+    }
+
+    public void registerListener(ConversationDelegate listener) {
+        mConversationDelegates.add(listener);
+    }
+
+    public void unregisterListener(ConversationDelegate listener) {
+        synchronized (mConversationDelegates) {
+            mConversationDelegates.remove(listener);
+        }
     }
 
     void cacheCbcToConversation(long cbcId, OPConversation conversation) {
@@ -244,9 +261,53 @@ public class ConversationManager implements OPConversationThreadDelegate {
         return thread;
     }
 
-    void quitConversation(boolean deleteHistory){
+    void quitConversation(boolean deleteHistory) {
         //TODO: implement proper logic
     }
+
+    void notifyContactsChanged(OPConversation conversation) {
+        synchronized (mConversationDelegates) {
+            for (ConversationDelegate listener : mConversationDelegates) {
+                listener.onContactsChanged(conversation);
+            }
+        }
+    }
+
+    void handleSystemMessage(OPConversation conversation, OPMessage message) {
+        try {
+            OPContact opContact = message.getFrom();
+            OPUser sender = OPDataManager.getInstance().
+                getUserByPeerUri(opContact.getPeerURI());
+            JSONObject systemMessage = new JSONObject(message.getMessage());
+            if (systemMessage.has(SystemMessage.KEY_CALL_STATUS)) {
+                JSONObject callSystemMessage = systemMessage.getJSONObject(SystemMessage.KEY_ROOT)
+                    .getJSONObject(SystemMessage.KEY_CALL_STATUS);
+                CallManager.getInstance().
+                    handleCallSystemMessage(callSystemMessage,
+                                            sender,
+                                            conversation.getConversationId(),
+                                            message.getTime().toMillis(false));
+
+            } else if (systemMessage.has(SystemMessage.KEY_CONTACTS_REMOVED)) {
+                JSONArray contactsRemovedMessage = systemMessage.getJSONObject(SystemMessage
+                                                                                   .KEY_ROOT)
+                    .getJSONArray(SystemMessage.KEY_CONTACTS_REMOVED);
+                String selfPeerUri = OPDataManager.getInstance().getCurrentUser().getPeerUri();
+                for (String peerUri : (String[]) JSONUtils.toArray(contactsRemovedMessage)) {
+                    if (peerUri.equals(selfPeerUri)) {
+                        conversation.setDisabled(true);
+
+                        ConversationManager.getInstance().notifyContactsChanged(conversation);
+                    }
+                }
+            }
+
+        } catch(JSONException e) {
+            e.printStackTrace();
+        }
+
+    }
+
     //Beginning of OPConversationThreadDelegate
 
     @Override
@@ -279,7 +340,9 @@ public class ConversationManager implements OPConversationThreadDelegate {
                            "onConversationThreadContactsChanged find old thread cbcId " + oldCbcId);
             if (conversation != null) {
                 conversation.setDisabled(amIRemoved(thread));
-                conversation.onContactsChanged(thread);
+                if (conversation.onContactsChanged(thread)) {
+                    notifyContactsChanged(conversation);
+                }
             }
             if (oldCbcId != 0) {
                 mCbcToThreads.remove(oldCbcId);
@@ -317,7 +380,15 @@ public class ConversationManager implements OPConversationThreadDelegate {
             OPConversation conversation = ConversationManager.getInstance()
                 .getConversation(conversationThread, true);
             if (conversation != null) {
-                conversation.onContactComposingStateChanged(state, contact);
+                OPUser user = OPDataManager.getInstance().getUserByPeerUri(contact.getPeerURI());
+                if (user == null) {
+                    return;
+                }
+                synchronized (mConversationDelegates) {
+                    for (ConversationDelegate listener : mConversationDelegates) {
+                        listener.onContactComposingStateChanged(conversation, state, user);
+                    }
+                }
             }
         }
     }
@@ -341,7 +412,11 @@ public class ConversationManager implements OPConversationThreadDelegate {
         }
         OPConversation conversation = ConversationManager.getInstance().getConversation
             (conversationThread, true);
-        conversation.onMessageReceived(conversationThread, message);
+        if (message.getMessageType().equals(OPMessage.TYPE_JSON_SYSTEM_MESSAGE)) {
+            conversation.onMessageReceived(conversationThread, message);
+        } else {
+            handleSystemMessage(conversation, message);
+        }
     }
 
     @Override
@@ -360,8 +435,7 @@ public class ConversationManager implements OPConversationThreadDelegate {
         final String messageID,
         OPContact contact) {
         if (mPushService != null) {
-            final OPMessage message = conversationThread
-                .getMessageById(messageID);
+            final OPMessage message = conversationThread.getMessageById(messageID);
             OPConversation conversation = ConversationManager.getInstance()
                 .getConversation(conversationThread, true);
             OPUser user = OPDataManager.getInstance().getUserByPeerUri(contact.getPeerURI());

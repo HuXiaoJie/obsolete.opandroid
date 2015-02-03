@@ -34,14 +34,24 @@ import com.openpeer.javaapi.OPContact;
 import com.openpeer.javaapi.OPConversationThread;
 import com.openpeer.javaapi.OPMessage;
 
+import org.json.JSONObject;
+
 /**
  * UI listener of session state changes
  */
-public interface SessionListener {
-    public void onContactComposingStateChanged(ComposingStates state, OPUser user);
-    public boolean onNewMessage(OPMessage message);
-    public boolean onPushMessage(OPMessage message);
-    public boolean onContactsChanged();
-    public boolean onConversationTopicChanged(String newTopic);
+public interface ConversationDelegate {
+    public void onContactComposingStateChanged(OPConversation conversation,
+                                               ComposingStates state, OPUser user);
 
+    public boolean onNewMessage(OPConversation conversation, OPMessage message);
+    public boolean onCallSystemMessageReceived(OPConversation conversation, JSONObject message);
+
+    public boolean onPushMessageRequired(OPConversation conversation, OPMessage message);
+
+    public boolean onContactsChanged(OPConversation conversation);
+
+    public boolean onConversationTopicChanged(OPConversation conversation, String newTopic);
+
+    public boolean onConversationSwitch(OPConversation conversation, String fromConversationId,
+                                        String toConversationId);
 }

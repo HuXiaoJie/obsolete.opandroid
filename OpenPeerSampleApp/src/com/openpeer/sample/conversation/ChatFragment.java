@@ -75,22 +75,24 @@ import com.openpeer.sdk.app.OPDataManager;
 import com.openpeer.sdk.app.OPSdkConfig;
 import com.openpeer.sdk.datastore.DatabaseContracts.MessageEntry;
 import com.openpeer.sdk.datastore.OPModelCursorHelper;
+import com.openpeer.sdk.model.ConversationDelegate;
 import com.openpeer.sdk.model.ConversationManager;
 import com.openpeer.sdk.model.GroupChatMode;
 import com.openpeer.sdk.model.OPConversation;
 import com.openpeer.sdk.model.OPConversationEvent;
 import com.openpeer.sdk.model.OPUser;
 import com.openpeer.sdk.model.ParticipantInfo;
-import com.openpeer.sdk.model.SessionListener;
 import com.openpeer.sdk.utils.NoDuplicateArrayList;
 import com.openpeer.sdk.utils.OPModelUtils;
+
+import org.json.JSONObject;
 
 import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
 
 public class ChatFragment extends BaseFragment implements
-    LoaderManager.LoaderCallbacks<Cursor>, SessionListener {
+    LoaderManager.LoaderCallbacks<Cursor>, ConversationDelegate {
 
     private static final int DEFAULT_NUM_MESSAGES_TO_LOAD = 30;
 
@@ -884,23 +886,32 @@ public class ChatFragment extends BaseFragment implements
     }
 
     @Override
-    public void onContactComposingStateChanged(ComposingStates composingStates,
+    public void onContactComposingStateChanged(OPConversation conversation,ComposingStates composingStates,
                                                OPUser contact) {
         mAdapter.notifyDataSetChanged(composingStates, contact);
     }
 
     @Override
-    public boolean onNewMessage(OPMessage message) {
+    public boolean onNewMessage(OPConversation conversation,OPMessage message) {
         return false;
     }
 
     @Override
-    public boolean onPushMessage(OPMessage message) {
+    public boolean onPushMessageRequired(OPConversation conversation,OPMessage message) {
         return false;
     }
 
+
     @Override
-    public boolean onContactsChanged() {
+    public boolean onContactsChanged(OPConversation conversation) {
+        if(conversation.getConversationId().equals(mSession)){
+            onContactsChanged();
+            return true;
+        }
+        return false;
+    }
+
+    boolean onContactsChanged(){
         if (mSession != null) {
             mParticipantInfo = mSession.getParticipantInfo();
         }
@@ -909,11 +920,20 @@ public class ChatFragment extends BaseFragment implements
 
         return true;
     }
-
     @Override
-    public boolean onConversationTopicChanged(String newTopic) {
+    public boolean onConversationTopicChanged(OPConversation conversation,String newTopic) {
         setTitle(newTopic);
         return true;
+    }
+
+    @Override
+    public boolean onConversationSwitch(OPConversation conversation,String fromConversationId, String toConversationId) {
+        return false;
+    }
+
+    @Override
+    public boolean onCallSystemMessageReceived(OPConversation conversation, JSONObject message) {
+        return false;
     }
 
     void setTitle(String title) {

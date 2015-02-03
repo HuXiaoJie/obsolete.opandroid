@@ -932,7 +932,6 @@ public class OPDataManager {
                    conversation.getConversationId());
         values.put(DatabaseContracts.ConversationEntry.COLUMN_ACCOUNT_ID,
                    getCurrentUserId());
-        values.put(DatabaseContracts.ConversationEntry.COLUMN_NAME, conversation.getName());
         values.put(DatabaseContracts.ConversationEntry.COLUMN_TOPIC, conversation.getTopic());
         id = getId(insert(DatabaseContracts.ConversationEntry.TABLE_NAME, values));
         conversation.setId(id);
@@ -947,7 +946,6 @@ public class OPDataManager {
                    conversation.getCurrentCbcId());
         values.put(DatabaseContracts.ConversationEntry.COLUMN_REMOVED, conversation.amIRemoved());
         values.put(DatabaseContracts.ConversationEntry.COLUMN_QUIT, conversation.isQuit());
-        values.put(DatabaseContracts.ConversationEntry.COLUMN_NAME, conversation.getName());
         values.put(DatabaseContracts.ConversationEntry.COLUMN_TOPIC, conversation.getTopic());
         int count = update(DatabaseContracts.ConversationEntry.TABLE_NAME, values,
                            DatabaseContracts.ConversationEntry.COLUMN_CONVERSATION_ID + "=?",
