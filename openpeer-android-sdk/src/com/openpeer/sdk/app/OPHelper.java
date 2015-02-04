@@ -181,10 +181,9 @@ public class OPHelper {
 
         OPSdkConfig.getInstance().applySystemSettings(context);
         OPSdkConfig.getInstance().applyApplicationSettings();
-        OPSettings
-                .setUInt(
-                        "openpeer/stack/finder-connection-send-ping-keep-alive-after-in-seconds",
-                        0);
+        OPSettings.setUInt(
+            "openpeer/stack/finder-connection-send-ping-keep-alive-after-in-seconds",
+            0);
         if (mCacheDelegate == null) {
             mCacheDelegate = OPCacheDelegateImpl.getInstance(mContext);
         }
@@ -277,7 +276,7 @@ public class OPHelper {
             CallManager.clearOnSignout();
             ConversationManager.clearOnSignout();
             mCacheDelegate.clear(null);
-            intent.setAction(IntentData.ACTION_SIGNOUT_DONE);
+            LoginManager.getInstance().onSignoutComplete();
             OPDataManager.getInstance().afterSignout();
             LoginManager.getInstance().afterSignout();
         } else {

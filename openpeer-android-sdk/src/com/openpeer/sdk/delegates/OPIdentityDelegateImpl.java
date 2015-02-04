@@ -2,16 +2,16 @@
  *
  *  Copyright (c) 2014 , Hookflash Inc.
  *  All rights reserved.
- *  
+ *
  *  Redistribution and use in source and binary forms, with or without
  *  modification, are permitted provided that the following conditions are met:
- *  
+ *
  *  1. Redistributions of source code must retain the above copyright notice, this
  *  list of conditions and the following disclaimer.
  *  2. Redistributions in binary form must reproduce the above copyright notice,
  *  this list of conditions and the following disclaimer in the documentation
  *  and/or other materials provided with the distribution.
- *  
+ *
  *  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
  *  ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
  *  WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
@@ -22,7 +22,7 @@
  *  ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
  *  (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  *  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- *  
+ *
  *  The views and conclusions contained in the software and documentation are those
  *  of the authors and should not be interpreted as representing official policies,
  *  either expressed or implied, of the FreeBSD Project.
@@ -36,12 +36,12 @@ import com.openpeer.javaapi.OPIdentity;
 import com.openpeer.javaapi.OPIdentityDelegate;
 import com.openpeer.javaapi.OPLogLevel;
 import com.openpeer.javaapi.OPLogger;
+import com.openpeer.sdk.app.LoginDelegate;
 import com.openpeer.sdk.app.LoginManager;
-import com.openpeer.sdk.app.LoginUIListener;
 import com.openpeer.sdk.app.OPDataManager;
 import com.openpeer.sdk.app.OPIdentityLoginWebview;
 import com.openpeer.sdk.app.OPSdkConfig;
-
+@Deprecated
 public class OPIdentityDelegateImpl implements OPIdentityDelegate {
 
     private static OPIdentityDelegateImpl instance;
@@ -64,38 +64,37 @@ public class OPIdentityDelegateImpl implements OPIdentityDelegate {
         // why isn' this working? Weird!!
         // mLoginView = mListener.getIdentityWebview(identity);
         // mLoginView.getClient().setIdentity(identity);
-        LoginUIListener mListener = LoginManager.getInstance().getListener();
-        if (mListener == null) {
-            OPLogger.error(OPLogLevel.LogLevel_Debug,
-                    "No UI listener while state change " + state);
+        LoginDelegate loginDelegate = LoginManager.getInstance().getListener();
 
-        }
-        switch (state) {
+        switch (state){
         case IdentityState_PendingAssociation:
             break;
         case IdentityState_WaitingAttachmentOfDelegate:
             break;
-        case IdentityState_WaitingForBrowserWindowToBeLoaded: {
-            if (mListener == null) {
+        case IdentityState_WaitingForBrowserWindowToBeLoaded:{
+            if (loginDelegate == null) {
                 return;
             }
             Log.d("login", "loading identity webview");
-            OPIdentityLoginWebview mLoginView = mListener
-                    .getIdentityWebview(identity);
+            OPIdentityLoginWebview mLoginView = loginDelegate
+                .getIdentityWebview(identity);
             mLoginView.loadUrl(OPSdkConfig.getInstance().getOuterFrameUrl());
             break;
         }
 
         case IdentityState_WaitingForBrowserWindowToBeMadeVisible:
-
-            mListener.onIdentityLoginWebViewMadeVisible(identity);
+            if (loginDelegate == null) {
+                return;
+            }
+            loginDelegate.onIdentityLoginWebViewMadeVisible(identity);
 
             identity.notifyBrowserWindowVisible();
             break;
         case IdentityState_WaitingForBrowserWindowToClose:
-
-            mListener.onIdentityLoginWebViewClose(identity);
-
+            if (loginDelegate != null) {
+                loginDelegate.onIdentityLoginWebViewClose(identity);
+            }
+            //we assume the brower window is already closed.
             identity.notifyBrowserWindowClosed();
             break;
         case IdentityState_Ready:
@@ -113,7 +112,7 @@ public class OPIdentityDelegateImpl implements OPIdentityDelegate {
 
     @Override
     public void onIdentityPendingMessageForInnerBrowserWindowFrame(
-            OPIdentity identity) {
+        OPIdentity identity) {
         // TODO Auto-generated method stub
         String msg = identity.getNextMessageForInnerBrowerWindowFrame();
         Log.d("login", "identity pendingMessageForInnerFrame " + msg);
@@ -121,7 +120,7 @@ public class OPIdentityDelegateImpl implements OPIdentityDelegate {
         String cmd = String.format("javascript:sendBundleToJS(\'%s\')", msg);
         Log.w("login", "Identity webview Pass to JS: " + cmd);
         OPIdentityLoginWebview mLoginView = LoginManager.getInstance()
-                .getListener().getIdentityWebview(identity);
+            .getListener().getIdentityWebview(identity);
         mLoginView.loadUrl(cmd);
     }
 

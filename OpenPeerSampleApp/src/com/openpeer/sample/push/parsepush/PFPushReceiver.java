@@ -15,13 +15,13 @@ import com.openpeer.sample.BackgroundingManager;
 import com.openpeer.sample.OPNotificationBuilder;
 import com.openpeer.sample.conversation.ConversationActivity;
 import com.openpeer.sdk.app.OPDataManager;
+import com.openpeer.sdk.model.CallSystemMessage;
 import com.openpeer.sdk.model.ConversationManager;
 import com.openpeer.sdk.model.GroupChatMode;
 import com.openpeer.sdk.model.MessageEditState;
 import com.openpeer.sdk.model.OPConversation;
 import com.openpeer.sdk.model.OPUser;
 import com.openpeer.sdk.model.ParticipantInfo;
-import com.openpeer.sdk.model.SystemMessage;
 import com.openpeer.sdk.utils.OPModelUtils;
 import com.parse.DeleteCallback;
 import com.parse.FindCallback;
@@ -110,7 +110,7 @@ public class PFPushReceiver extends ParsePushBroadcastReceiver {
                 JSONObject systemObject = jsonObject.getJSONObject("system");
                 if (systemObject.has("callStatus")) {
                     JSONObject callStatusObject = systemObject.getJSONObject("callStatus");
-                    String callStatus = callStatusObject.getString(SystemMessage
+                    String callStatus = callStatusObject.getString(CallSystemMessage
                                                                        .KEY_CALL_STATUS_STATUS);
                     if (OPDataManager.getInstance().isAccountReady()) {
                         OPUser user = OPDataManager.getInstance().getUserByPeerUri(jsonObject
@@ -133,7 +133,7 @@ public class PFPushReceiver extends ParsePushBroadcastReceiver {
                             callId,
                             senderUri,
                             jsonObject.getString(PFPushMessage.KEY_SENDER_NAME),
-                            callStatusObject.getString(SystemMessage.KEY_CALL_STATUS_STATUS),
+                            callStatusObject.getString(CallSystemMessage.KEY_CALL_STATUS_STATUS),
                             conversationType,
                             conversation.getConversationId(),
                             OPModelUtils.getUserIds(participantInfo.getParticipants())));

@@ -37,7 +37,6 @@ import com.openpeer.sdk.app.OPSdkConfig;
 import com.openpeer.sdk.model.IdentityData;
 
 public class OPIdentity {
-
     /**
      * Start identity login. This is handled automatically in {@link com.openpeer.sdk.app.LoginManager}. Application should not use this
      * method directly
@@ -72,7 +71,7 @@ public class OPIdentity {
     public static native String toDebugString(OPIdentity identity,
             Boolean includeCommaPrefix);
 
-    private static native OPIdentity login(
+    public static native OPIdentity login(
             OPAccount account,
             OPIdentityDelegate delegate,
             String identityProviderDomain, // used when identity URI is of legacy or oauth-type
@@ -186,6 +185,14 @@ public class OPIdentity {
 
     public boolean isAssociating() {
         return IdentityData.getInstance(getID()).isAssociating();
+    }
+
+    public IdentityStates getPendingState() {
+        return IdentityData.getInstance(getID()).getPendingState();
+    }
+
+    public void setPendingState(IdentityStates pendingState) {
+        IdentityData.getInstance(getID()).setPendingState(pendingState);
     }
 
     /**

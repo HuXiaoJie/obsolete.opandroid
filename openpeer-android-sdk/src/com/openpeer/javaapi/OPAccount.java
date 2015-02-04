@@ -110,10 +110,10 @@ public class OPAccount {
      *            valid relogin string cached from last session
      * @return
      */
-    public static OPAccount relogin(OPAccountDelegate delegate,
+    public static OPAccount relogin(OPAccountDelegate accountDelegate,
             OPConversationThreadDelegate conversationThreadDelegate,
             OPCallDelegate callDelegate, String reloginInformation) {
-        return relogin(delegate,
+        return relogin(accountDelegate,
                 conversationThreadDelegate,
                 callDelegate,
                 OPSdkConfig.getInstance().getOuterFrameUrl(),
@@ -166,7 +166,7 @@ public class OPAccount {
 
     /**
      * This function should be called during logout. This is Asynchronorous call, application should handle the SHUTDOWN state change
-     * {@link com.openpeer.javaapi.OPAccountDeleget}
+     * {@link com.openpeer.javaapi.OPAccountDelegate}
      */
     public native void shutdown();
 

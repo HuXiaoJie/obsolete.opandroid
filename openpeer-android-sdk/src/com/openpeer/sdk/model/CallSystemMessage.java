@@ -48,5 +48,8 @@ public class CallSystemMessage {
         return object.optJSONObject(KEY_CALL_STATUS_MEDIA_TYPE);
     }
 
+    public JSONObject getJsonObject() {
+        return object;
+    }
 }
 

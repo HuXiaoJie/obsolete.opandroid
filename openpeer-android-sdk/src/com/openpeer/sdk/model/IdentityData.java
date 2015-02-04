@@ -28,6 +28,8 @@
  */
 package com.openpeer.sdk.model;
 
+import com.openpeer.javaapi.IdentityStates;
+
 import java.util.Hashtable;
 
 /**
@@ -36,6 +38,15 @@ import java.util.Hashtable;
 public class IdentityData {
     boolean mLoggingIn;
     boolean mAssociating;
+    IdentityStates pendingState;
+
+    public IdentityStates getPendingState() {
+        return pendingState;
+    }
+
+    public void setPendingState(IdentityStates pendingState) {
+        this.pendingState = pendingState;
+    }
 
     public boolean isLoggingIn() {
         return mLoggingIn;

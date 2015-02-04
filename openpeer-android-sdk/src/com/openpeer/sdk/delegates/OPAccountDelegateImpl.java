@@ -39,17 +39,17 @@ import com.openpeer.javaapi.OPAccountDelegate;
 import com.openpeer.javaapi.OPIdentity;
 import com.openpeer.javaapi.OPLogLevel;
 import com.openpeer.javaapi.OPLogger;
+import com.openpeer.sdk.app.LoginDelegate;
 import com.openpeer.sdk.app.LoginManager;
-import com.openpeer.sdk.app.LoginUIListener;
 import com.openpeer.sdk.app.OPDataManager;
 import com.openpeer.sdk.app.OPHelper;
-import com.openpeer.sdk.app.OPIdentityLoginWebview;
 import com.openpeer.sdk.app.OPSdkConfig;
 
 /**
  * @ExcludeFromJavadoc Default implmentation of OPAccountDelegate. This will be created as singleton and will be passed in
  *                     LoginManager.login
  */
+@Deprecated
 public class OPAccountDelegateImpl implements OPAccountDelegate {
     private static OPAccountDelegateImpl instance;
 
@@ -71,26 +71,26 @@ public class OPAccountDelegateImpl implements OPAccountDelegate {
     @Override
     public void onAccountStateChanged(OPAccount account, AccountStates state) {
         Log.d("state", "Account state " + state);
-        final LoginUIListener mListener = LoginManager.getInstance()
+        final LoginDelegate loginDelegate = LoginManager.getInstance()
                 .getListener();
         switch (state) {
         case AccountState_WaitingForAssociationToIdentity:
             break;
         case AccountState_WaitingForBrowserWindowToBeLoaded:
 
-            mListener.getAccountWebview().loadUrl(
+            loginDelegate.getAccountWebview().loadUrl(
                     OPSdkConfig.getInstance().getNamespaceGrantServiceUrl());
 
             break;
         case AccountState_WaitingForBrowserWindowToBeMadeVisible:
 
-            mListener.onAccountLoginWebViewMadeVisible();
+            loginDelegate.onAccountLoginWebViewMadeVisible();
 
             account.notifyBrowserWindowVisible();
             break;
         case AccountState_WaitingForBrowserWindowToClose:
 
-            mListener.onAccountLoginWebViewMadeClose();
+            loginDelegate.onAccountLoginWebViewMadeClose();
 
             account.notifyBrowserWindowClosed();
             break;
@@ -121,7 +121,6 @@ public class OPAccountDelegateImpl implements OPAccountDelegate {
             return;
         }
 
-        LoginUIListener listener = LoginManager.getInstance().getListener();
         for (OPIdentity identity : identities) {
             if (null == OPDataManager.getInstance().getStoredIdentityById(
                     identity.getID())) {
@@ -147,7 +146,7 @@ public class OPAccountDelegateImpl implements OPAccountDelegate {
     }
 
     void passMessageToJS(final String msg) {
-        final LoginUIListener mListener = LoginManager.getInstance()
+        final LoginDelegate mListener = LoginManager.getInstance()
                 .getListener();
         String cmd = String.format("javascript:sendBundleToJS(\'%s\')", msg);
         mListener.getAccountWebview().loadUrl(cmd);

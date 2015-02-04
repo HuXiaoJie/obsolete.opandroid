@@ -377,10 +377,8 @@ public class SettingsActivity extends BaseActivity {
                     R.string.msg_cannot_signout_with_call, Toast.LENGTH_LONG)
                     .show();
         } else {
-            registerSignoutReceiver();
             showSignoutView();
             OPApplication.getInstance().signout();
         }
     }
-
 }

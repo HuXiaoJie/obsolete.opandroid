@@ -44,12 +44,13 @@ import android.widget.Toast;
 
 import com.openpeer.javaapi.OPIdentity;
 import com.openpeer.sample.BaseActivity;
+import com.openpeer.sample.MainActivity;
 import com.openpeer.sample.R;
 import com.openpeer.sample.push.HackApiService;
 import com.openpeer.sample.push.OPPushManager;
 import com.openpeer.sample.push.parsepush.PFPushService;
 import com.openpeer.sample.util.SettingsHelper;
-import com.openpeer.sdk.app.LoginUIListener;
+import com.openpeer.sdk.app.LoginDelegate;
 import com.openpeer.sdk.app.OPDataManager;
 import com.openpeer.sdk.app.OPIdentityLoginWebViewClient;
 import com.openpeer.sdk.app.OPIdentityLoginWebview;
@@ -59,20 +60,21 @@ import com.urbanairship.push.PushManager;
  * The listener monitor the Account/Identity login state changes and show appropriate UI indications. Activity should register this to the
  * LoginManager upon creation and unregister upon destroy
  */
-public class LoginUIListenerImpl implements LoginUIListener {
+@Deprecated
+public class LoginDelegateImpl implements LoginDelegate {
     WebView mAccountLoginWebView;
     ViewGroup mLoginViewContainer;
     BaseActivity mActivity;
     ProgressDialog progressDialog;
     Hashtable<Long, OPIdentityLoginWebview> mIdentityWebviews = new Hashtable<Long, OPIdentityLoginWebview>();
 
-    public LoginUIListenerImpl(BaseActivity activity) {
+    public LoginDelegateImpl(BaseActivity activity) {
         mActivity = activity;
     }
 
     ViewGroup getLoginViewContainer() {
         if (mLoginViewContainer == null) {
-            mLoginViewContainer = mActivity.getLoginViewContainer();
+//            mLoginViewContainer = mActivity.getLoginViewContainer();
         }
         return mLoginViewContainer;
     }
@@ -267,5 +269,11 @@ public class LoginUIListenerImpl implements LoginUIListener {
     public void onStartAccountLogin() {
         showProgressView(mActivity
                 .getString(R.string.msg_account_login_started));
+    }
+
+    @Override
+    public void onSignoutComplete() {
+        MainActivity.cleanLaunch(mActivity);
+
     }
 }
