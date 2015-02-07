@@ -62,7 +62,6 @@ import com.openpeer.javaapi.OPRolodexContact;
 import com.openpeer.sdk.datastore.ContentUriResolver;
 import com.openpeer.sdk.datastore.DatabaseContracts;
 import com.openpeer.sdk.datastore.OPModelCursorHelper;
-import com.openpeer.sdk.delegates.OPIdentityDelegateImpl;
 import com.openpeer.sdk.delegates.OPIdentityLookupDelegateImpl;
 import com.openpeer.sdk.model.CallEvent;
 import com.openpeer.sdk.model.CallSystemMessage;
@@ -260,7 +259,6 @@ public class OPDataManager {
      */
     public void afterSignout() {
         OPDataManager.getInstance().onSignOut();
-        OPIdentityDelegateImpl.clearAfterSignout();
     }
 
     public void setContentUriProvider(ContentUriResolver provider) {

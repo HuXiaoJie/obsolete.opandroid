@@ -110,12 +110,12 @@ public class OPConversation extends Observable {
         return _id;
     }
 
-    public static void registerListener(ConversationDelegate listener) {
-        ConversationManager.getInstance().registerListener(listener);
+    public static void registerDelegate(ConversationDelegate listener) {
+        ConversationManager.getInstance().registerDelegate(listener);
     }
 
-    public static void unregisterListener(ConversationDelegate listener) {
-        ConversationManager.getInstance().unregisterListener(listener);
+    public static void unregisterDelegate(ConversationDelegate listener) {
+        ConversationManager.getInstance().unregisterDelegate(listener);
     }
 
     public String getTopic() {
@@ -408,8 +408,10 @@ public class OPConversation extends Observable {
         return true;
     }
 
-
-
+    public static OPConversation onConversationParticipantsChanged(OPConversation conversation,
+                                                            List<OPUser> newParticipants) {
+        return ConversationManager.getInstance().onConversationParticipantsChanged(conversation,newParticipants);
+    }
 
 
     /**
