@@ -19,7 +19,10 @@ public class SystemMessage {
     public static final String KEY_ROOT = "system";
     public static final String KEY_CALL_STATUS = "callStatus";
     public static final String KEY_CONTACTS_REMOVED = "contactsRemoved";
+    public static final String KEY_CONVERSATION_SWITCH = "conversationSwitch";
 
+    public static final String KEY_FROM_CONVERSATION_ID = "from";
+    public static final String KEY_TO_CONVERSATION_ID = "to";
 
     public static OPMessage getContactsRemovedSystemMessage(String removedContacts[]) {
         JSONObject system = contactsRemovedMessage(removedContacts);
@@ -71,6 +74,41 @@ public class SystemMessage {
             return systemObject;
         } catch(JSONException e) {
             e.printStackTrace();
+            return null;
+        }
+    }
+
+    public static OPMessage getConversationSwitchMessage(String fromConversationId,
+                                                         String toConversationId) {
+        try {
+            JSONObject object = new JSONObject();
+            object.put(KEY_FROM_CONVERSATION_ID, fromConversationId);
+            object.put(KEY_TO_CONVERSATION_ID, toConversationId);
+            JSONObject object1 = new JSONObject();
+            object1.put(KEY_CONVERSATION_SWITCH, object);
+            return getSystemMessage(getSystemObject(object1));
+        } catch(JSONException e) {
+
+        }
+        return null;
+    }
+
+    static JSONObject getSystemObject(JSONObject object) throws JSONException {
+        JSONObject systemObject = new JSONObject();
+        systemObject.put(KEY_ROOT, object);
+        return systemObject;
+    }
+
+    static OPMessage getSystemMessage(JSONObject system) {
+        if (system != null) {
+            OPMessage message = new OPMessage(
+                OPDataManager.getInstance().getCurrentUserId(),
+                OPSystemMessage.getMessageType(),
+                system.toString(),
+                System.currentTimeMillis(),
+                UUID.randomUUID().toString());
+            return message;
+        } else {
             return null;
         }
     }

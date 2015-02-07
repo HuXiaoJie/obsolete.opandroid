@@ -44,6 +44,7 @@ import com.openpeer.javaapi.OPLogLevel;
 import com.openpeer.javaapi.OPLogger;
 import com.openpeer.javaapi.OPMessage;
 import com.openpeer.sdk.app.OPDataManager;
+import com.openpeer.sdk.app.OPSdkConfig;
 import com.openpeer.sdk.utils.JSONUtils;
 import com.openpeer.sdk.utils.OPModelUtils;
 
@@ -71,11 +72,11 @@ public class ConversationManager implements OPConversationThreadDelegate {
     private ConversationManager() {
     }
 
-    public void registerListener(ConversationDelegate listener) {
+    public void registerDelegate(ConversationDelegate listener) {
         mConversationDelegates.add(listener);
     }
 
-    public void unregisterListener(ConversationDelegate listener) {
+    public void unregisterDelegate(ConversationDelegate listener) {
         synchronized (mConversationDelegates) {
             mConversationDelegates.remove(listener);
         }
@@ -273,20 +274,18 @@ public class ConversationManager implements OPConversationThreadDelegate {
         }
     }
 
-    void handleSystemMessage(OPConversation conversation, OPMessage message) {
+    public void handleSystemMessage(OPConversation conversation, OPUser sender, JSONObject message,
+                             long time) {
         try {
-            OPContact opContact = message.getFrom();
-            OPUser sender = OPDataManager.getInstance().
-                getUserByPeerUri(opContact.getPeerURI());
-            JSONObject systemMessage = new JSONObject(message.getMessage());
+            JSONObject systemMessage = message.getJSONObject(SystemMessage.KEY_ROOT);
             if (systemMessage.has(SystemMessage.KEY_CALL_STATUS)) {
-                JSONObject callSystemMessage = systemMessage.getJSONObject(SystemMessage.KEY_ROOT)
+                JSONObject callSystemMessage = systemMessage
                     .getJSONObject(SystemMessage.KEY_CALL_STATUS);
                 CallManager.getInstance().
                     handleCallSystemMessage(callSystemMessage,
                                             sender,
                                             conversation.getConversationId(),
-                                            message.getTime().toMillis(false));
+                                            time);
                 synchronized (mConversationDelegates) {
                     for (ConversationDelegate delegate : mConversationDelegates) {
                         delegate.onCallSystemMessageReceived(
@@ -297,8 +296,7 @@ public class ConversationManager implements OPConversationThreadDelegate {
                 }
 
             } else if (systemMessage.has(SystemMessage.KEY_CONTACTS_REMOVED)) {
-                JSONArray contactsRemovedMessage = systemMessage.getJSONObject(SystemMessage
-                                                                                   .KEY_ROOT)
+                JSONArray contactsRemovedMessage = systemMessage
                     .getJSONArray(SystemMessage.KEY_CONTACTS_REMOVED);
                 String selfPeerUri = OPDataManager.getInstance().getCurrentUser().getPeerUri();
                 for (String peerUri : (String[]) JSONUtils.toArray(contactsRemovedMessage)) {
@@ -306,6 +304,20 @@ public class ConversationManager implements OPConversationThreadDelegate {
                         conversation.setDisabled(true);
 
                         ConversationManager.getInstance().notifyContactsChanged(conversation);
+                    }
+                }
+            } else if (systemMessage.has(SystemMessage.KEY_CONVERSATION_SWITCH)) {
+                JSONObject object = systemMessage.
+                    getJSONObject(SystemMessage.KEY_CONVERSATION_SWITCH);
+                OPConversation from = getConversationById(
+                    object.getString(SystemMessage.KEY_FROM_CONVERSATION_ID));
+                OPConversation to = getConversationById(
+                    object.getString(SystemMessage.KEY_TO_CONVERSATION_ID));
+                if (from != null && to != null) {
+                    synchronized (mConversationDelegates) {
+                        for (ConversationDelegate delegate : mConversationDelegates) {
+                            delegate.onConversationSwitch(from, to);
+                        }
                     }
                 }
             }
@@ -364,6 +376,35 @@ public class ConversationManager implements OPConversationThreadDelegate {
         cacheThread(thread);
     }
 
+    public OPConversation onConversationParticipantsChanged(OPConversation conversation,
+                                                            List<OPUser> newParticipants) {
+        ParticipantInfo mParticipantInfo = new ParticipantInfo(
+            OPModelUtils.getWindowId(newParticipants),
+            newParticipants);
+        OPConversation newConversation = conversation;
+        switch (OPSdkConfig.getInstance().getGroupChatMode()){
+        case contact:{
+            newConversation = ConversationManager.getInstance().
+                getConversation(GroupChatMode.contact, mParticipantInfo, null, true);
+            newConversation.sendMessage(SystemMessage.getConversationSwitchMessage(
+                conversation.getConversationId(), newConversation.getConversationId()), false);
+        }
+        break;
+        case thread:{
+            if (conversation.getType() == GroupChatMode.contact) {
+                newConversation = ConversationManager.getInstance().
+                    getConversation(GroupChatMode.thread, mParticipantInfo, null, true);
+                newConversation.sendMessage(SystemMessage.getConversationSwitchMessage(
+                    conversation.getConversationId(), newConversation.getConversationId()), false);
+            } else {
+                conversation.onContactsChanged(newParticipants);
+            }
+        }
+        break;
+        }
+        return newConversation;
+    }
+
     boolean amIRemoved(OPConversationThread thread) {
         for (OPContact contact : thread.getContacts()) {
             if (contact.isSelf()) {
@@ -404,8 +445,7 @@ public class ConversationManager implements OPConversationThreadDelegate {
     @Override
     public void onConversationThreadMessage(
         OPConversationThread conversationThread, String messageID) {
-        OPMessage message = conversationThread
-            .getMessageById(messageID);
+        OPMessage message = conversationThread.getMessageById(messageID);
 
         if (message.getFrom().isSelf()) {
             OPLogger.debug(
@@ -420,10 +460,23 @@ public class ConversationManager implements OPConversationThreadDelegate {
         }
         OPConversation conversation = ConversationManager.getInstance().getConversation
             (conversationThread, true);
-        if (message.getMessageType().equals(OPMessage.TYPE_JSON_SYSTEM_MESSAGE)) {
+        if (message.getMessageType().equals(OPMessage.TYPE_TEXT)) {
             conversation.onMessageReceived(conversationThread, message);
         } else {
-            handleSystemMessage(conversation, message);
+            OPContact opContact = message.getFrom();
+            OPUser sender = OPDataManager.getInstance().
+                getUserByPeerUri(opContact.getPeerURI());
+            String messageText = message.getMessage();
+            try {
+                JSONObject systemObject = new JSONObject(messageText).getJSONObject
+                    (SystemMessage.KEY_ROOT);
+
+                handleSystemMessage(conversation, sender, systemObject,
+                                    message.getTime().toMillis(false));
+            } catch(JSONException e) {
+                OPLogger.error(OPLogLevel.LogLevel_Basic, "Error:invalid system message " +
+                    message.getMessage());
+            }
         }
     }
 

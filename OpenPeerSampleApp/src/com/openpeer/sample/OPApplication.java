@@ -134,6 +134,7 @@ public class OPApplication extends Application {
             Logger.logLevel = Log.VERBOSE;
         }
 
+        OPConversation.registerDelegate(ConversationDelegateImpl.getInstance());
     }
 
     public static boolean isServiceAvailable(Class serviceClass) {

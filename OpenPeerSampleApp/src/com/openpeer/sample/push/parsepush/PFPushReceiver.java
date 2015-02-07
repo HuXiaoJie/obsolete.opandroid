@@ -14,6 +14,7 @@ import com.openpeer.javaapi.OPMessage;
 import com.openpeer.sample.BackgroundingManager;
 import com.openpeer.sample.OPNotificationBuilder;
 import com.openpeer.sample.conversation.ConversationActivity;
+import com.openpeer.sample.events.ConversationSwitchEvent;
 import com.openpeer.sdk.app.OPDataManager;
 import com.openpeer.sdk.model.CallSystemMessage;
 import com.openpeer.sdk.model.ConversationManager;
@@ -22,6 +23,7 @@ import com.openpeer.sdk.model.MessageEditState;
 import com.openpeer.sdk.model.OPConversation;
 import com.openpeer.sdk.model.OPUser;
 import com.openpeer.sdk.model.ParticipantInfo;
+import com.openpeer.sdk.model.SystemMessage;
 import com.openpeer.sdk.utils.OPModelUtils;
 import com.parse.DeleteCallback;
 import com.parse.FindCallback;
@@ -107,7 +109,7 @@ public class PFPushReceiver extends ParsePushBroadcastReceiver {
             }
             break;
             case OPMessage.TYPE_JSON_SYSTEM_MESSAGE:{
-                JSONObject systemObject = jsonObject.getJSONObject("system");
+                JSONObject systemObject = jsonObject.getJSONObject(SystemMessage.KEY_ROOT);
                 if (systemObject.has("callStatus")) {
                     JSONObject callStatusObject = systemObject.getJSONObject("callStatus");
                     String callStatus = callStatusObject.getString(CallSystemMessage
@@ -137,9 +139,15 @@ public class PFPushReceiver extends ParsePushBroadcastReceiver {
                             conversationType,
                             conversation.getConversationId(),
                             OPModelUtils.getUserIds(participantInfo.getParticipants())));
+                } else if (systemObject.has(SystemMessage.KEY_CONVERSATION_SWITCH)) {
+                    String fromConversationId = systemObject.getJSONObject(
+                        SystemMessage.KEY_CONVERSATION_SWITCH).getString(SystemMessage.KEY_FROM_CONVERSATION_ID);
+                    OPConversation fromConversation = ConversationManager.getInstance()
+                        .getConversationById(fromConversationId);
+                    if (fromConversation != null) {
+                        new ConversationSwitchEvent(fromConversation, conversation).post();
+                    }
                 }
-            }
-            case PFPushMessage.MESSAGE_TYPE_CONTACTS_REMOVED:{
             }
             break;
             }
@@ -197,7 +205,7 @@ public class PFPushReceiver extends ParsePushBroadcastReceiver {
                                                       object.getString(PFPushMessage
                                                                            .KEY_MESSAGE_TYPE),
                                                       object.getString(KEY_ALERT),
-                                                      object.getLong(PFPushMessage.KEY_DATE)*1000,
+                                                      object.getLong(PFPushMessage.KEY_DATE) * 1000,
                                                       object.getString(PFPushMessage
                                                                            .KEY_MESSAGE_ID));
                     OPConversation conversation = ConversationManager.getInstance().getConversation(
