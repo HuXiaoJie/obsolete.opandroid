@@ -39,6 +39,7 @@ public class IdentityData {
     boolean mLoggingIn;
     boolean mAssociating;
     IdentityStates pendingState;
+    String pendingCommand;
 
     public IdentityStates getPendingState() {
         return pendingState;
@@ -62,6 +63,14 @@ public class IdentityData {
 
     public void setAssociating(boolean associating) {
         this.mAssociating = associating;
+    }
+
+    public String getPendingCommand() {
+        return pendingCommand;
+    }
+
+    public void setPendingCommand(String pendingCommand) {
+        this.pendingCommand = pendingCommand;
     }
 
     static Hashtable<Long, IdentityData> instances = new Hashtable<Long, IdentityData>();

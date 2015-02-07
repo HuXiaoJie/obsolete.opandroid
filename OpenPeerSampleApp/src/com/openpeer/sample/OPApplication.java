@@ -41,6 +41,7 @@ import android.webkit.CookieManager;
 
 import com.openpeer.sample.delegates.CallDelegateImpl;
 import com.openpeer.sample.delegates.ConversationDelegateImpl;
+import com.openpeer.sample.login.LoginDelegateImpl;
 import com.openpeer.sample.push.OPPushManager;
 import com.openpeer.sample.push.OPPushNotificationBuilder;
 import com.openpeer.sample.push.PushIntentReceiver;
@@ -133,9 +134,9 @@ public class OPApplication extends Application {
             ConversationManager.getInstance().registerPushService(UAPushService.getInstance());
             Logger.logLevel = Log.VERBOSE;
         }
-
         OPConversation.registerDelegate(ConversationDelegateImpl.getInstance());
         CallManager.getInstance().registerDelegate(CallDelegateImpl.getInstance());
+        LoginManager.getInstance().registerDelegate(LoginDelegateImpl.getInstance());
     }
 
     public static boolean isServiceAvailable(Class serviceClass) {

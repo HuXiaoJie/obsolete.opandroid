@@ -2,16 +2,16 @@
  *
  *  Copyright (c) 2014 , Hookflash Inc.
  *  All rights reserved.
- *  
+ *
  *  Redistribution and use in source and binary forms, with or without
  *  modification, are permitted provided that the following conditions are met:
- *  
+ *
  *  1. Redistributions of source code must retain the above copyright notice, this
  *  list of conditions and the following disclaimer.
  *  2. Redistributions in binary form must reproduce the above copyright notice,
  *  this list of conditions and the following disclaimer in the documentation
  *  and/or other materials provided with the distribution.
- *  
+ *
  *  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
  *  ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
  *  WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
@@ -22,7 +22,7 @@
  *  ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
  *  (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  *  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- *  
+ *
  *  The views and conclusions contained in the software and documentation are those
  *  of the authors and should not be interpreted as representing official policies,
  *  either expressed or implied, of the FreeBSD Project.
@@ -40,7 +40,7 @@ public class OPIdentity {
     /**
      * Start identity login. This is handled automatically in {@link com.openpeer.sdk.app.LoginManager}. Application should not use this
      * method directly
-     * 
+     *
      * @param identityUri
      *            Pass null for initial login. Pass in the stored identity uri if you need to manually relogin this identity.
      * @param account
@@ -133,7 +133,7 @@ public class OPIdentity {
     /**
      * Download contacts from Rolodex server. This method is executed asynchrnously and the result will be handled in
      * {@link com.openpeer.javaapi.OPIdentityDelegate#onIdentityRolodexContactsDownloaded(OPIdentity)}
-     * 
+     *
      * @param inLastDownloadedVersion
      *            if a previous version of the rolodex was downloaded/stored, pass in the version of the last information downloaded to
      *            prevent redownloading infomration again
@@ -148,7 +148,7 @@ public class OPIdentity {
 
     /**
      * This method should be called ONLY once
-     * 
+     *
      * @return
      */
     public native OPDownloadedRolodexContacts getDownloadedRolodexContacts();
@@ -193,6 +193,12 @@ public class OPIdentity {
 
     public void setPendingState(IdentityStates pendingState) {
         IdentityData.getInstance(getID()).setPendingState(pendingState);
+    }
+    public String getPendingCommand(){
+        return IdentityData.getInstance(getID()).getPendingCommand();
+    }
+    public void setPendingCommand(String command){
+        IdentityData.getInstance(getID()).setPendingCommand(command);
     }
 
     /**

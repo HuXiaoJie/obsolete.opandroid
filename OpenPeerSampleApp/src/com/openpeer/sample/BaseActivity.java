@@ -41,12 +41,15 @@ import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.widget.Toast;
 
+import com.openpeer.javaapi.OPAccount;
 import com.openpeer.javaapi.OPIdentity;
+import com.openpeer.sample.events.SignoutCompleteEvent;
+import com.openpeer.sample.login.LoginDelegateImpl;
+import com.openpeer.sample.login.LoginViewHandler;
 import com.openpeer.sample.push.HackApiService;
 import com.openpeer.sample.push.OPPushManager;
 import com.openpeer.sample.push.parsepush.PFPushService;
 import com.openpeer.sample.util.SettingsHelper;
-import com.openpeer.sdk.app.LoginDelegate;
 import com.openpeer.sdk.app.LoginManager;
 import com.openpeer.sdk.app.OPDataManager;
 import com.openpeer.sdk.app.OPHelper;
@@ -56,11 +59,12 @@ import com.urbanairship.push.PushManager;
 
 import java.util.Hashtable;
 
+import de.greenrobot.event.EventBus;
 import retrofit.Callback;
 import retrofit.RetrofitError;
 import retrofit.client.Response;
 
-public class BaseActivity extends BaseFragmentActivity implements LoginDelegate{
+public class BaseActivity extends BaseFragmentActivity implements LoginViewHandler{
 
     private static int mStack = 0;
 
@@ -69,7 +73,6 @@ public class BaseActivity extends BaseFragmentActivity implements LoginDelegate{
     @Override
     public void onResume() {
         super.onResume();
-        LoginManager.getInstance().registerDelegate(this);
         if (mStack == 0) {
             OPHelper.getInstance().onEnteringForeground();
             LoginManager.getInstance().onEnteringForeground();
@@ -82,35 +85,38 @@ public class BaseActivity extends BaseFragmentActivity implements LoginDelegate{
         } else if (!OPDataManager.getInstance().isAccountReady()) {
 
             if (!LoginManager.getInstance().loginPerformed()) {
+                LoginDelegateImpl.getInstance().registerViewHandler(this);
                 LoginManager.getInstance().startLogin();
             } else if (!LoginManager.getInstance().isLoggingIn()) {
                 AlertDialog.Builder builder = new AlertDialog.Builder(this);
                 builder.setMessage(
-                        "Looks like you're disconnected. Do you want to login?")
-                        .setPositiveButton("Yes",
-                                new DialogInterface.OnClickListener() {
+                    "Looks like you're disconnected. Do you want to login?")
+                    .setPositiveButton("Yes",
+                                       new DialogInterface.OnClickListener() {
 
-                                    @Override
-                                    public void onClick(DialogInterface dialog,
-                                            int which) {
-                                        LoginManager.getInstance().startLogin();
-                                        dialog.dismiss();
-                                    }
-                                })
-                        .setNegativeButton("No",
-                                new DialogInterface.OnClickListener() {
+                                           @Override
+                                           public void onClick(DialogInterface dialog,
+                                                               int which) {
+                                               LoginDelegateImpl.getInstance()
+                                                   .registerViewHandler(BaseActivity.this);
+                                               LoginManager.getInstance().startLogin();
+                                               dialog.dismiss();
+                                           }
+                                       })
+                    .setNegativeButton("No",
+                                       new DialogInterface.OnClickListener() {
 
-                                    @Override
-                                    public void onClick(DialogInterface dialog,
-                                            int which) {
-                                        dialog.dismiss();
+                                           @Override
+                                           public void onClick(DialogInterface dialog,
+                                                               int which) {
+                                               dialog.dismiss();
 
-                                    }
-                                }).create().show();
+                                           }
+                                       }).create().show();
 
             }
         }
-
+        EventBus.getDefault().register(this);
     }
 
     /**
@@ -130,7 +136,7 @@ public class BaseActivity extends BaseFragmentActivity implements LoginDelegate{
             OPHelper.getInstance().onEnteringBackground();
             BackgroundingManager.onEnteringBackground();
         }
-        LoginManager.getInstance().unregisterDelegate();
+        EventBus.getDefault().unregister(this);
     }
 
     @Override
@@ -141,6 +147,7 @@ public class BaseActivity extends BaseFragmentActivity implements LoginDelegate{
     @Override
     public void onDestroy() {
         super.onDestroy();
+        LoginDelegateImpl.getInstance().unregisterViewHandler(this);
     }
 
     public static void showInvalidStateWarning(Context context) {
@@ -173,7 +180,7 @@ public class BaseActivity extends BaseFragmentActivity implements LoginDelegate{
         progressDialog.show();
     }
 
-    public OPIdentityLoginWebview getIdentityWebview(OPIdentity identity) {
+    OPIdentityLoginWebview getIdentityWebview(OPIdentity identity) {
         OPIdentityLoginWebview view = mIdentityWebviews.get(identity.getID());
         if (view == null) {
             view = new OPIdentityLoginWebview(getLoginViewContainer().getContext());
@@ -188,7 +195,7 @@ public class BaseActivity extends BaseFragmentActivity implements LoginDelegate{
         return view;
     }
 
-    public WebView getAccountWebview() {
+    WebView getAccountWebview() {
         if (mAccountLoginWebView == null) {
             mAccountLoginWebView = new WebView(getLoginViewContainer().getContext());
             setupWebView(mAccountLoginWebView);
@@ -209,8 +216,27 @@ public class BaseActivity extends BaseFragmentActivity implements LoginDelegate{
     }
 
     /* START implementation of LoginUIListener */
+
     @Override
-    public void onStartIdentityLogin(OPIdentity identity) {
+    public void processIdentityMessageForInnerBrowserWindowFrame(OPIdentity identity, String
+        message) {
+        getIdentityWebview(identity).loadUrl(message);
+    }
+
+    @Override
+    public void processAccountMessageForInnerBrowserWindowFrame(OPAccount account, String message) {
+        getAccountWebview().loadUrl(message);
+    }
+
+    @Override
+    public void loadAccountLoginUrl(String url) {
+        getAccountWebview().loadUrl(url);
+        showProgressView(this.getString(R.string.msg_account_login_started));
+    }
+
+    @Override
+    public void loadIdentityLoginUrl(OPIdentity identity,String url) {
+        getIdentityWebview(identity).loadUrl(url);
         showProgressView(this.getString(R.string.msg_identity_login_started));
     }
 
@@ -251,21 +277,7 @@ public class BaseActivity extends BaseFragmentActivity implements LoginDelegate{
     }
 
     @Override
-    public void onLoginError() {
-        if (!getLoginViewContainer().hasWindowFocus()
-            && mAccountLoginWebView != null) {
-            getLoginViewContainer().removeView(mAccountLoginWebView);
-
-            Toast.makeText(getLoginViewContainer().getContext(),
-                           R.string.msg_failed_login,
-                           Toast.LENGTH_LONG).show();
-
-            // ((BaseFragmentActivity) getActivity()).hideLoginFragment();
-        }
-    }
-
-    @Override
-    public void onIdentityLoginWebViewMadeVisible(OPIdentity identity) {
+    public void showIdentityLoginWebView(OPIdentity identity) {
         hideProgressView();
         OPIdentityLoginWebview view = getIdentityWebview(identity);
         view.setVisibility(View.VISIBLE);
@@ -273,7 +285,7 @@ public class BaseActivity extends BaseFragmentActivity implements LoginDelegate{
     }
 
     @Override
-    public void onAccountLoginWebViewMadeVisible() {
+    public void showAccountLoginWebView() {
         hideProgressView();
         if (mAccountLoginWebView == null) {
             mAccountLoginWebView = new WebView(getLoginViewContainer()
@@ -290,7 +302,7 @@ public class BaseActivity extends BaseFragmentActivity implements LoginDelegate{
     }
 
     @Override
-    public void onIdentityLoginWebViewClose(OPIdentity identity) {
+    public void closeIdentityLoginWebView(OPIdentity identity) {
         OPIdentityLoginWebview view = getIdentityWebview(identity);
         if (view != null) {
             getLoginViewContainer().removeView(view);
@@ -298,10 +310,9 @@ public class BaseActivity extends BaseFragmentActivity implements LoginDelegate{
     }
 
     @Override
-    public void onAccountLoginWebViewMadeClose() {
+    public void closeAccountLoginWebView() {
         getLoginViewContainer().removeView(mAccountLoginWebView);
         mAccountLoginWebView = null;
-
     }
 
     /* END implementation of LoginUIListener */
@@ -317,10 +328,10 @@ public class BaseActivity extends BaseFragmentActivity implements LoginDelegate{
     /*
      * (non-Javadoc)
      *
-     * @see com.openpeer.sdk.app.LoginUIListener#onIdentityLoginCompleted(com.openpeer.javaapi.OPIdentity)
+     * @see com.openpeer.sdk.app.LoginUIListener#onIdentityReady(com.openpeer.javaapi.OPIdentity)
      */
     @Override
-    public void onIdentityLoginCompleted(OPIdentity identity) {
+    public void onIdentityReady(OPIdentity identity) {
         hideProgressView();
         Toast.makeText(
             this,
@@ -330,7 +341,7 @@ public class BaseActivity extends BaseFragmentActivity implements LoginDelegate{
     }
 
     @Override
-    public void onIdentityLoginFail(OPIdentity identity) {
+    public void onIdentityShutdown(OPIdentity identity) {
         hideProgressView();
         OPIdentityLoginWebview view = getIdentityWebview(identity);
         if (view != null) {
@@ -338,18 +349,20 @@ public class BaseActivity extends BaseFragmentActivity implements LoginDelegate{
         }
     }
 
-    /*
-     * (non-Javadoc)
-     *
-     * @see com.openpeer.sdk.app.LoginUIListener#onStartAccountLogin()
-     */
     @Override
-    public void onStartAccountLogin() {
-        showProgressView(this.getString(R.string.msg_account_login_started));
+    public void onAccountShutdown() {
+        if (!getLoginViewContainer().hasWindowFocus()
+            && mAccountLoginWebView != null) {
+            getLoginViewContainer().removeView(mAccountLoginWebView);
+
+            Toast.makeText(getLoginViewContainer().getContext(),
+                           R.string.msg_failed_login,
+                           Toast.LENGTH_LONG).show();
+
+        }
     }
 
-    @Override
-    public void onSignoutComplete() {
+    public void onEvent(SignoutCompleteEvent event) {
         if (mSignoutDialog != null) {
             mSignoutDialog.dismiss();
             mSignoutDialog = null;

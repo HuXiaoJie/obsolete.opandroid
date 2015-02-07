@@ -29,9 +29,6 @@
  *******************************************************************************/
 package com.openpeer.sdk.app;
 
-import java.util.Hashtable;
-import java.util.List;
-
 import android.content.Intent;
 import android.text.TextUtils;
 import android.util.Log;
@@ -46,9 +43,11 @@ import com.openpeer.javaapi.OPIdentity;
 import com.openpeer.javaapi.OPIdentityDelegate;
 import com.openpeer.javaapi.OPLogLevel;
 import com.openpeer.javaapi.OPLogger;
-import com.openpeer.sdk.delegates.OPIdentityDelegateImpl;
 import com.openpeer.sdk.model.CallManager;
 import com.openpeer.sdk.model.ConversationManager;
+
+import java.util.Hashtable;
+import java.util.List;
 
 public class LoginManager implements OPIdentityDelegate,OPAccountDelegate{
 
@@ -60,6 +59,7 @@ public class LoginManager implements OPIdentityDelegate,OPAccountDelegate{
     private List<LoginRecord> mLoginRecords;
     Hashtable<Long, OPIdentity> mIdentitiesLoggingIn;
     AccountStates pendingState;
+    String mPendingCommand;
 
     private boolean mLoginPerformed;
 
@@ -77,6 +77,14 @@ public class LoginManager implements OPIdentityDelegate,OPAccountDelegate{
     }
 
     private LoginManager() {
+    }
+
+    public static String getAccountLoginUrl() {
+        return OPSdkConfig.getInstance().getNamespaceGrantServiceUrl();
+    }
+
+    public static String getIdentityLoginUrl() {
+        return OPSdkConfig.getInstance().getOuterFrameUrl();
     }
 
     public void startLogin() {
@@ -107,8 +115,6 @@ public class LoginManager implements OPIdentityDelegate,OPAccountDelegate{
                 conversationThreadDelegate, callDelegate);
         OPDataManager.getInstance().setSharedAccount(account);
         mAccountLoggingIn = true;
-        mDelegate.onStartAccountLogin();
-
         startIdentityLogin(null);
     }
 
@@ -133,7 +139,6 @@ public class LoginManager implements OPIdentityDelegate,OPAccountDelegate{
 
         OPDataManager.getInstance().setSharedAccount(account);
         mAccountLoggingIn = true;
-        mDelegate.onStartAccountLogin();
     }
 
     void startIdentityLogin(String uri) {
@@ -142,9 +147,7 @@ public class LoginManager implements OPIdentityDelegate,OPAccountDelegate{
         OPIdentity identity = OPIdentity.login(uri, account, this);
         identity.setIsLoggingIn(true);
         OPDataManager.getInstance().addIdentity(identity);
-        if (mDelegate != null) {
-            mDelegate.onStartIdentityLogin(identity);
-        }
+
     }
 
     /**
@@ -192,10 +195,6 @@ public class LoginManager implements OPIdentityDelegate,OPAccountDelegate{
         if (!isIdentityLoginInprog()) {
             mAccountLoggingIn = false;
         }
-        if (mDelegate != null) {
-            mDelegate.onAccountLoginComplete();
-        }
-
     }
 
     public static void onLoginComplete() {
@@ -239,23 +238,12 @@ public class LoginManager implements OPIdentityDelegate,OPAccountDelegate{
             identity.setIsAssocaiting(false);
         }
         identity.setIsLoggingIn(false);
-        mDelegate.onIdentityLoginCompleted(identity);
-
     }
 
     public void onIdentityLoginFail(OPIdentity identity) {
-        if (mDelegate != null) {
-            mDelegate.onLoginError();
-
-        }
-        Intent intent = new Intent(IntentData.ACTION_IDENTITY_SHUTDOWN);
-        intent.putExtra(IntentData.PARAM_IDENTITY_URI,
-                identity.getIdentityURI());
-        OPHelper.getInstance().sendBroadcast(intent);
         identity.setIsAssocaiting(false);
         identity.setIsLoggingIn(false);
         removeLoggingInIdentity(identity);
-
     }
 
     /**
@@ -322,31 +310,21 @@ public class LoginManager implements OPIdentityDelegate,OPAccountDelegate{
     // START of OPAccountDelegate
     @Override
     public void onAccountStateChanged(OPAccount account, AccountStates state) {
-        Log.d("state", "Account state " + state);
-        if(mDelegate ==null){
-            pendingState=state;
+        boolean processedByDelegate = mDelegate.onAccountStateChanged(account, state);
+        if (!processedByDelegate) {
+            pendingState = state;
             return;
         }
-        pendingState=null;
-        handleAccountStateChange(account,state);
-    }
-    void handleAccountStateChange(OPAccount account,AccountStates state){
-        switch (state) {
+        pendingState = null;
+        switch (state){
         case AccountState_WaitingForAssociationToIdentity:
             break;
         case AccountState_WaitingForBrowserWindowToBeLoaded:
-            mDelegate.getAccountWebview().loadUrl(
-                OPSdkConfig.getInstance().getNamespaceGrantServiceUrl());
-
             break;
         case AccountState_WaitingForBrowserWindowToBeMadeVisible:
-            mDelegate.onAccountLoginWebViewMadeVisible();
-
             account.notifyBrowserWindowVisible();
             break;
         case AccountState_WaitingForBrowserWindowToClose:
-            mDelegate.onAccountLoginWebViewMadeClose();
-
             account.notifyBrowserWindowClosed();
             break;
         case AccountState_Ready:
@@ -378,8 +356,6 @@ public class LoginManager implements OPIdentityDelegate,OPAccountDelegate{
                 OPDataManager.getInstance().addIdentity(identity);
             }
             if (!identity.isDelegateAttached()) {
-                OPIdentityDelegateImpl delegate = OPIdentityDelegateImpl
-                    .getInstance(identity);
                 attachDelegateForIdentity(identity);
                 OPDataManager.getInstance().addIdentity(identity);
             }
@@ -391,50 +367,34 @@ public class LoginManager implements OPIdentityDelegate,OPAccountDelegate{
         OPAccount account) {
 
         String msg = account.getNextMessageForInnerBrowerWindowFrame();
-        passMessageToJS(msg);
-    }
-
-    void passMessageToJS(final String msg) {
-        final LoginDelegate mListener = LoginManager.getInstance()
-            .getListener();
         String cmd = String.format("javascript:sendBundleToJS(\'%s\')", msg);
-        mListener.getAccountWebview().loadUrl(cmd);
-
+        if(mDelegate.onAccountPendingMessageForInnerBrowserWindowFrame(account,cmd)){
+            mPendingCommand=null;
+        } else {
+            mPendingCommand = cmd;
+        }
     }
     // ENDof OPAccountDelegate
     // START of OPIdentityDelegate
     @Override
     public void onIdentityStateChanged(OPIdentity identity, IdentityStates state) {
-        // TODO Auto-generated method stub
-        Log.d("login", "identity state " + state);
-        if(mDelegate ==null){
+        boolean processedByDelegate = mDelegate.onIdentityStateChanged(identity, state);
+        if (!processedByDelegate) {
             identity.setPendingState(state);
             return;
         }
-        identity.setPendingState(null);
-        handleIdentityStateChange(identity, state);
-    }
-
-    void handleIdentityStateChange(OPIdentity identity,IdentityStates state) {
         switch (state){
         case IdentityState_PendingAssociation:
             break;
         case IdentityState_WaitingAttachmentOfDelegate:
             break;
-        case IdentityState_WaitingForBrowserWindowToBeLoaded:{
-            Log.d("login", "loading identity webview");
-            OPIdentityLoginWebview mLoginView = mDelegate
-                .getIdentityWebview(identity);
-            mLoginView.loadUrl(OPSdkConfig.getInstance().getOuterFrameUrl());
-        }
-        break;
+        case IdentityState_WaitingForBrowserWindowToBeLoaded:
+            break;
 
         case IdentityState_WaitingForBrowserWindowToBeMadeVisible:
-            mDelegate.onIdentityLoginWebViewMadeVisible(identity);
             identity.notifyBrowserWindowVisible();
             break;
         case IdentityState_WaitingForBrowserWindowToClose:
-            mDelegate.onIdentityLoginWebViewClose(identity);
             //we assume the brower window is already closed.
             identity.notifyBrowserWindowClosed();
             break;
@@ -452,15 +412,14 @@ public class LoginManager implements OPIdentityDelegate,OPAccountDelegate{
     @Override
     public void onIdentityPendingMessageForInnerBrowserWindowFrame(
         OPIdentity identity) {
-        // TODO Auto-generated method stub
         String msg = identity.getNextMessageForInnerBrowerWindowFrame();
-        Log.d("login", "identity pendingMessageForInnerFrame " + msg);
-
         String cmd = String.format("javascript:sendBundleToJS(\'%s\')", msg);
         Log.w("login", "Identity webview Pass to JS: " + cmd);
-        OPIdentityLoginWebview mLoginView = LoginManager.getInstance()
-            .getListener().getIdentityWebview(identity);
-        mLoginView.loadUrl(cmd);
+        if(!mDelegate.onIdentityPendingMessageForInnerBrowserWindowFrame(identity,cmd)){
+            identity.setPendingCommand(cmd);
+        } else {
+            identity.setPendingCommand(null);
+        }
     }
 
     @Override
@@ -476,12 +435,13 @@ public class LoginManager implements OPIdentityDelegate,OPAccountDelegate{
 
     public void onEnteringForeground(){
         if(pendingState!=null){
-            handleAccountStateChange(OPDataManager.getInstance().getSharedAccount(),pendingState);
+            onAccountStateChanged(OPDataManager.getInstance().getSharedAccount(), pendingState);
         }
+
         if(OPDataManager.getInstance().isAccountReady()) {
             for (OPIdentity identity : OPDataManager.getInstance().getSharedAccount().getAssociatedIdentities()) {
                 if (identity.getPendingState() != null) {
-                    handleIdentityStateChange(identity, identity.getPendingState());
+                    onIdentityStateChanged(identity, identity.getPendingState());
                 }
             }
         }

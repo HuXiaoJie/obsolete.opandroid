@@ -28,252 +28,139 @@
  */
 package com.openpeer.sample.login;
 
-import java.util.Hashtable;
-
-import retrofit.Callback;
-import retrofit.RetrofitError;
-import retrofit.client.Response;
-import android.app.ProgressDialog;
-import android.text.TextUtils;
-import android.view.View;
-import android.view.ViewGroup;
-import android.view.ViewGroup.LayoutParams;
-import android.webkit.WebSettings;
-import android.webkit.WebView;
-import android.widget.Toast;
-
+import com.openpeer.javaapi.AccountStates;
+import com.openpeer.javaapi.IdentityStates;
+import com.openpeer.javaapi.OPAccount;
 import com.openpeer.javaapi.OPIdentity;
-import com.openpeer.sample.BaseActivity;
-import com.openpeer.sample.MainActivity;
-import com.openpeer.sample.R;
-import com.openpeer.sample.push.HackApiService;
-import com.openpeer.sample.push.OPPushManager;
-import com.openpeer.sample.push.parsepush.PFPushService;
-import com.openpeer.sample.util.SettingsHelper;
+import com.openpeer.sample.events.SignoutCompleteEvent;
 import com.openpeer.sdk.app.LoginDelegate;
-import com.openpeer.sdk.app.OPDataManager;
-import com.openpeer.sdk.app.OPIdentityLoginWebViewClient;
-import com.openpeer.sdk.app.OPIdentityLoginWebview;
-import com.urbanairship.push.PushManager;
+import com.openpeer.sdk.app.LoginManager;
 
 /**
- * The listener monitor the Account/Identity login state changes and show appropriate UI indications. Activity should register this to the
+ * The listener monitor the Account/Identity login state changes and show appropriate UI
+ * indications. Activity should register this to the
  * LoginManager upon creation and unregister upon destroy
  */
-@Deprecated
 public class LoginDelegateImpl implements LoginDelegate {
-    WebView mAccountLoginWebView;
-    ViewGroup mLoginViewContainer;
-    BaseActivity mActivity;
-    ProgressDialog progressDialog;
-    Hashtable<Long, OPIdentityLoginWebview> mIdentityWebviews = new Hashtable<Long, OPIdentityLoginWebview>();
+    LoginViewHandler viewHandler;//The actual activity that implements the same interface
 
-    public LoginDelegateImpl(BaseActivity activity) {
-        mActivity = activity;
-    }
+    private static LoginDelegateImpl instance;
 
-    ViewGroup getLoginViewContainer() {
-        if (mLoginViewContainer == null) {
-//            mLoginViewContainer = mActivity.getLoginViewContainer();
+    public static LoginDelegateImpl getInstance() {
+        if (instance == null) {
+            instance = new LoginDelegateImpl();
         }
-        return mLoginViewContainer;
+        return instance;
     }
 
-    void showProgressView(String message) {
-        if (progressDialog == null) {
-            progressDialog = new ProgressDialog(mActivity);
-            progressDialog.setIndeterminate(true);
-//            progressDialog.setCancelable(false);
-        }
-        progressDialog.setMessage(message);
-
-        progressDialog.show();
+    private LoginDelegateImpl() {
+    }
+    public void registerViewHandler(LoginViewHandler handler) {
+        viewHandler = handler;
+    }
+    public void unregisterViewHandler(LoginViewHandler handler){
+        viewHandler = null;
     }
 
-    public OPIdentityLoginWebview getIdentityWebview(OPIdentity identity) {
-        OPIdentityLoginWebview view = mIdentityWebviews.get(identity.getID());
-        if (view == null) {
-            view = new OPIdentityLoginWebview(getLoginViewContainer()
-                    .getContext());
-            OPIdentityLoginWebViewClient client = new OPIdentityLoginWebViewClient(
-                    identity);
-            view.setClient(client);
-            setupWebView(view);
-            getLoginViewContainer().addView(view, new LayoutParams(
-                    LayoutParams.MATCH_PARENT,
-                    LayoutParams.MATCH_PARENT));
-            mIdentityWebviews.put(identity.getID(), view);
-        }
-        return view;
-    }
-
-    public WebView getAccountWebview() {
-        if (mAccountLoginWebView == null) {
-            mAccountLoginWebView = new WebView(getLoginViewContainer()
-                    .getContext());
-            setupWebView(mAccountLoginWebView);
-            getLoginViewContainer().addView(
-                    mAccountLoginWebView,
-                    new LayoutParams(
-                            LayoutParams.MATCH_PARENT,
-                            LayoutParams.MATCH_PARENT));
-        }
-        return mAccountLoginWebView;
-    }
-
-    void hideProgressView() {
-        if (progressDialog != null) {
-            progressDialog.dismiss();
-            progressDialog = null;
-        }
-    }
-
-    /* START implementation of LoginUIListener */
-    @Override
-    public void onStartIdentityLogin(OPIdentity identity) {
-        showProgressView(mActivity
-                .getString(R.string.msg_identity_login_started));
-    }
-
-    @Override
-    public void onAccountLoginComplete() {
-        hideProgressView();
-        getLoginViewContainer().removeView(mAccountLoginWebView);
-        Toast.makeText(mActivity, R.string.msg_account_login_completed,
-                Toast.LENGTH_LONG)
-                .show();
-        if(SettingsHelper.getInstance().isParsePushEnabled() && !PFPushService.getInstance().isInitialized()){
-            PFPushService.getInstance().init();
-        }
-        if(SettingsHelper.getInstance().isUAPushEnabled()) {
-            PushManager.enablePush();
-
-            // TODO: move it to proper place after login refactoring.
-            String apid = PushManager.shared().getAPID();
-            if (!TextUtils.isEmpty(apid)) {
-                OPPushManager.getInstance()
-                    .associateDeviceToken(
-                        OPDataManager.getInstance().getCurrentUser().getPeerUri(),
-                        PushManager.shared().getAPID(),
-                        new Callback<HackApiService.HackAssociateResult>() {
-                            @Override
-                            public void success(
-                                HackApiService.HackAssociateResult hackAssociateResult,
-                                Response response) {
-
-                            }
-
-                            @Override
-                            public void failure(RetrofitError error) {
-                            }
-                        }
-                    );
+    public boolean onAccountStateChanged(OPAccount account, AccountStates state) {
+        switch (state){
+        case AccountState_WaitingForAssociationToIdentity:
+            break;
+        case AccountState_WaitingForBrowserWindowToBeLoaded:
+            if (viewHandler != null) {
+                viewHandler.loadAccountLoginUrl(LoginManager.getAccountLoginUrl());
+                return true;
             }
+            return false;
+        case AccountState_WaitingForBrowserWindowToBeMadeVisible:
+            if (viewHandler != null) {
+                viewHandler.showAccountLoginWebView();
+                return true;
+            }
+            return false;
+        case AccountState_WaitingForBrowserWindowToClose:
+            if (viewHandler != null) {
+                viewHandler.closeAccountLoginWebView();
+            }
+            return true;
+        case AccountState_Ready:
+            if (viewHandler != null) {
+                viewHandler.onAccountLoginComplete();
+            }
+            return true;
+        case AccountState_Shutdown:
+            if (viewHandler != null) {
+                viewHandler.onAccountShutdown();
+            }
+            return true;
+        default:
+            break;
+        }
+        return false;
+    }
+
+    public boolean onIdentityStateChanged(OPIdentity identity, IdentityStates state) {
+        switch (state){
+        case IdentityState_PendingAssociation:
+            return true;
+        case IdentityState_WaitingAttachmentOfDelegate:
+            return true;
+        case IdentityState_WaitingForBrowserWindowToBeLoaded:{
+            if (viewHandler != null) {
+                viewHandler.loadIdentityLoginUrl(identity,LoginManager.getIdentityLoginUrl());
+                return true;
+            }
+            return false;
+        }
+        case IdentityState_WaitingForBrowserWindowToBeMadeVisible:
+            if (viewHandler != null) {
+
+                viewHandler.showIdentityLoginWebView(identity);
+                return true;
+            }
+            return false;
+        case IdentityState_WaitingForBrowserWindowToClose:
+            if (viewHandler != null) {
+                viewHandler.closeIdentityLoginWebView(identity);
+                return true;
+            }
+            return false;
+        case IdentityState_Ready:
+            if (viewHandler != null) {
+                viewHandler.onIdentityReady(identity);
+            }
+            return true;
+        case IdentityState_Shutdown:
+            if (viewHandler != null) {
+                viewHandler.onIdentityShutdown(identity);
+            }
+            return true;
+        default:
+            return true;
         }
     }
 
-    @Override
-    public void onLoginError() {
-        if (!getLoginViewContainer().hasWindowFocus()
-                && mAccountLoginWebView != null) {
-            getLoginViewContainer().removeView(mAccountLoginWebView);
-
-            Toast.makeText(getLoginViewContainer().getContext(),
-                    R.string.msg_failed_login,
-                    Toast.LENGTH_LONG).show();
-
-            // ((BaseFragmentActivity) getActivity()).hideLoginFragment();
+    public boolean onAccountPendingMessageForInnerBrowserWindowFrame(OPAccount account,
+                                                                     String message) {
+        if (viewHandler != null) {
+            viewHandler.processAccountMessageForInnerBrowserWindowFrame(account, message);
+            return true;
         }
+        return false;
     }
 
     @Override
-    public void onIdentityLoginWebViewMadeVisible(OPIdentity identity) {
-        hideProgressView();
-        OPIdentityLoginWebview view = getIdentityWebview(identity);
-        view.setVisibility(View.VISIBLE);
-        view.bringToFront();
-    }
-
-    @Override
-    public void onAccountLoginWebViewMadeVisible() {
-        hideProgressView();
-        if (mAccountLoginWebView == null) {
-            mAccountLoginWebView = new WebView(getLoginViewContainer()
-                    .getContext());
-            setupWebView(mAccountLoginWebView);
-            getLoginViewContainer().addView(
-                    mAccountLoginWebView,
-                    new LayoutParams(
-                            LayoutParams.MATCH_PARENT,
-                            LayoutParams.MATCH_PARENT));
-        } else {
-            getLoginViewContainer().bringToFront();
+    public boolean onIdentityPendingMessageForInnerBrowserWindowFrame(OPIdentity identity,
+                                                                      String message) {
+        if (viewHandler != null) {
+            viewHandler.processIdentityMessageForInnerBrowserWindowFrame(identity, message);
+            return true;
         }
-    }
-
-    @Override
-    public void onIdentityLoginWebViewClose(OPIdentity identity) {
-        OPIdentityLoginWebview view = getIdentityWebview(identity);
-        if (view != null) {
-            getLoginViewContainer().removeView(view);
-        }
-    }
-
-    @Override
-    public void onAccountLoginWebViewMadeClose() {
-        getLoginViewContainer().removeView(mAccountLoginWebView);
-        mAccountLoginWebView = null;
-
-    }
-
-    /* END implementation of LoginUIListener */
-
-    void setupWebView(WebView view) {
-        WebSettings webSettings = view.getSettings();
-        webSettings.setJavaScriptEnabled(true);
-        webSettings.setDomStorageEnabled(true);
-        webSettings.setJavaScriptCanOpenWindowsAutomatically(true);
-
-    }
-
-    /*
-     * (non-Javadoc)
-     * 
-     * @see com.openpeer.sdk.app.LoginUIListener#onIdentityLoginCompleted(com.openpeer.javaapi.OPIdentity)
-     */
-    @Override
-    public void onIdentityLoginCompleted(OPIdentity identity) {
-        hideProgressView();
-        Toast.makeText(
-                mActivity,
-                mActivity.getString(R.string.msg_identity_login_completed)
-                        + identity.getIdentityURI(),
-                Toast.LENGTH_LONG).show();
-    }
-
-    @Override
-    public void onIdentityLoginFail(OPIdentity identity) {
-        hideProgressView();
-        OPIdentityLoginWebview view = getIdentityWebview(identity);
-        if (view != null) {
-            getLoginViewContainer().removeView(view);
-        }
-    }
-
-    /*
-     * (non-Javadoc)
-     * 
-     * @see com.openpeer.sdk.app.LoginUIListener#onStartAccountLogin()
-     */
-    @Override
-    public void onStartAccountLogin() {
-        showProgressView(mActivity
-                .getString(R.string.msg_account_login_started));
+        return false;
     }
 
     @Override
     public void onSignoutComplete() {
-        MainActivity.cleanLaunch(mActivity);
-
+        new SignoutCompleteEvent().post();
     }
 }

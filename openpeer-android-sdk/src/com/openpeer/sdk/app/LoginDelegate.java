@@ -29,37 +29,22 @@
  *******************************************************************************/
 package com.openpeer.sdk.app;
 
+import com.openpeer.javaapi.AccountStates;
+import com.openpeer.javaapi.IdentityStates;
+import com.openpeer.javaapi.OPAccount;
 import com.openpeer.javaapi.OPIdentity;
 
 import android.webkit.WebView;
 
 public interface LoginDelegate {
-    public void onStartIdentityLogin(OPIdentity identity);
+    public boolean onAccountStateChanged(OPAccount account, AccountStates state);
 
-    public void onStartAccountLogin();
+    public boolean onIdentityStateChanged(OPIdentity identity, IdentityStates state);
 
-    public void onAccountLoginComplete();
+    public boolean onAccountPendingMessageForInnerBrowserWindowFrame(OPAccount account,
+                                                                     String message);
 
-    public void onLoginError();
-
-    public void onIdentityLoginWebViewMadeVisible(OPIdentity identity);
-
-    public void onAccountLoginWebViewMadeVisible();
-
-    public void onIdentityLoginWebViewClose(OPIdentity identity);
-
-    public void onIdentityLoginCompleted(OPIdentity identity);
-
-    public void onAccountLoginWebViewMadeClose();
-
-    public WebView getAccountWebview();
-
-    public OPIdentityLoginWebview getIdentityWebview(OPIdentity identity);
-
-    /**
-     * @param identity
-     */
-    public void onIdentityLoginFail(OPIdentity identity);
+    public boolean onIdentityPendingMessageForInnerBrowserWindowFrame(OPIdentity identity,
+                                                                      String message);
     public void onSignoutComplete();
-
 }
