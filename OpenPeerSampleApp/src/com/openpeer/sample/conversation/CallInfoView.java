@@ -36,23 +36,21 @@ import android.content.IntentFilter;
 import android.util.AttributeSet;
 import android.view.LayoutInflater;
 import android.view.View;
-import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.openpeer.javaapi.CallStates;
 import com.openpeer.javaapi.OPCall;
-import com.openpeer.javaapi.OPRolodexContact;
 import com.openpeer.sample.IntentData;
 import com.openpeer.sample.R;
+import com.openpeer.sample.events.CallStateChangeEvent;
 import com.openpeer.sdk.model.CallManager;
 import com.openpeer.sdk.model.CallStatus;
 
-public class CallInfoView extends LinearLayout {
-	private OPRolodexContact mContact;
+import de.greenrobot.event.EventBus;
 
-	private ImageView mImageView;
-	private TextView mTitleView;
+public class CallInfoView extends LinearLayout {
+
 	private TextView mTimeView;
 
 	CallStatus mState;
@@ -67,9 +65,7 @@ public class CallInfoView extends LinearLayout {
 	public CallInfoView(Context context, AttributeSet attrs, int defStyle) {
 		super(context, attrs, defStyle);
 		LayoutInflater.from(context).inflate(R.layout.layout_call_info, this);
-		mImageView = (ImageView) findViewById(R.id.image_view);
 
-		mTitleView = (TextView) findViewById(R.id.title);
 		mTimeView = (TextView) findViewById(R.id.duration);
 	}
 
@@ -80,17 +76,7 @@ public class CallInfoView extends LinearLayout {
 	public void bindCall(OPCall call) {
         mCall = call;
         mState = CallManager.getInstance().getMediaStateForCall(call.getPeerUser().getUserId());
-        mDelegate = new BroadcastReceiver() {
-            @Override
-            public void onReceive(Context context, Intent intent) {
-                String callId = intent.getStringExtra(IntentData.ARG_CALL_ID);
-                CallStates state = CallStates.valueOf(intent.getStringExtra(IntentData
-                                                                                .ARG_CALL_STATE));
-                if (callId.equals(mCall.getCallID())) {
-                    onCallStateChanged(mCall, state);
-                }
-            }
-        };
+
         getContext().registerReceiver(mDelegate, new IntentFilter(IntentData
                                                                       .ACTION_CALL_STATE_CHANGE));
         this.setOnClickListener(new View.OnClickListener() {
@@ -104,10 +90,11 @@ public class CallInfoView extends LinearLayout {
             }
         });
         startShowDuration();
+        EventBus.getDefault().register(this);
     }
 
 	public void unbind() {
-        getContext().unregisterReceiver(mDelegate);
+        EventBus.getDefault().unregister(this);
 		mCall = null;
 	}
 
@@ -131,17 +118,23 @@ public class CallInfoView extends LinearLayout {
 			mTimeView.postDelayed(this, 1000);
 		}
 	};
-    public void onCallStateChanged(OPCall call, final CallStates state) {
-        switch (state) {
-            case CallState_Closed:
-                post(new Runnable() {
-                    public void run() {
-                        setVisibility(View.GONE);
-                    }
-                });
-                break;
-            default:
-                break;
+
+    public void onEvent(CallStateChangeEvent event) {
+        OPCall call = event.getCall();
+        final CallStates state = event.getState();
+        if (!call.getCallID().equals(mCall.getCallID())) {
+            return;
+        }
+        switch (state){
+        case CallState_Closed:
+            post(new Runnable() {
+                public void run() {
+                    setVisibility(View.GONE);
+                }
+            });
+            break;
+        default:
+            break;
         }
 
     }

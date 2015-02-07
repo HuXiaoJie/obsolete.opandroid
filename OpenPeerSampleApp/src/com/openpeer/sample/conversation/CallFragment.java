@@ -29,10 +29,6 @@
  *******************************************************************************/
 package com.openpeer.sample.conversation;
 
-import android.content.BroadcastReceiver;
-import android.content.Context;
-import android.content.Intent;
-import android.content.IntentFilter;
 import android.media.Ringtone;
 import android.os.Bundle;
 import android.util.Log;
@@ -54,6 +50,7 @@ import com.openpeer.sample.BaseFragment;
 import com.openpeer.sample.IntentData;
 import com.openpeer.sample.OPNotificationBuilder;
 import com.openpeer.sample.R;
+import com.openpeer.sample.events.CallStateChangeEvent;
 import com.openpeer.sample.util.CallUtil;
 import com.openpeer.sample.util.SettingsHelper;
 import com.openpeer.sample.util.ViewUtils;
@@ -68,6 +65,8 @@ import com.squareup.picasso.Picasso;
 import org.webrtc.videoengine.ViERenderer;
 
 import java.util.List;
+
+import de.greenrobot.event.EventBus;
 
 public class CallFragment extends BaseFragment {
     public static final String TAG = CallFragment.class.getSimpleName();
@@ -129,10 +128,7 @@ public class CallFragment extends BaseFragment {
             }
             mVideo = args.getBoolean(IntentData.ARG_VIDEO, true);
         }
-
-        getActivity().registerReceiver(receiver,
-                                       new IntentFilter(IntentData.ACTION_CALL_STATE_CHANGE));
-
+        EventBus.getDefault().register(this);
     }
 
     private View setupView(View view) {
@@ -348,8 +344,7 @@ public class CallFragment extends BaseFragment {
             OPMediaEngine.getInstance().setChannelRenderView(null);
             OPMediaEngine.getInstance().setCaptureRenderView(null);
         }
-        getActivity().unregisterReceiver(receiver);
-
+        EventBus.getDefault().unregister(this);
     }
 
     @Override
@@ -358,17 +353,14 @@ public class CallFragment extends BaseFragment {
         Log.d(TAG, "onDetach");
     }
 
-    BroadcastReceiver receiver = new BroadcastReceiver() {
-        @Override
-        public void onReceive(Context context, Intent intent) {
-            String callId = intent.getStringExtra(IntentData.ARG_CALL_ID);
-            CallStates state = CallStates.valueOf(intent
-                                                      .getStringExtra(IntentData.ARG_CALL_STATE));
-            if (callId.equals(mCall.getCallID())) {
-                onCallStateChanged(mCall, state);
-            }
+    public void onEvent(CallStateChangeEvent event){
+        OPCall call = event.getCall();
+        String callId = call.getCallID();
+        CallStates state = event.getState();
+        if (callId.equals(mCall.getCallID())) {
+            onCallStateChanged(mCall, state);
         }
-    };
+    }
 
     public void onCallStateChanged(OPCall call, final CallStates state) {
         Log.d(TAG, "onCallStateChanged " + state.toString() + " call "

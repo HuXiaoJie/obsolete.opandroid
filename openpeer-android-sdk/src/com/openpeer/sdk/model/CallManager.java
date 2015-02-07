@@ -59,6 +59,7 @@ public class CallManager implements OPCallDelegate {
     Hashtable<Long, OPCall> mUserIdToCalls;//peerId to call map
 
     private Hashtable<Long, CallStatus> mCallStates;
+    private CallDelegate delegate;
 
     private static CallManager instance;
 
@@ -72,21 +73,18 @@ public class CallManager implements OPCallDelegate {
     private CallManager() {
     }
 
+    public void registerDelegate(CallDelegate delegate){
+        this.delegate = delegate;
+    }
+    public void unregisterDelegate(CallDelegate delegate){
+        this.delegate=null;
+    }
     @Override
     public void onCallStateChanged(OPCall call, CallStates state) {
         OPConversationThread thread = call.getConversationThread();
         call.setCbcId(OPModelUtils.getWindowIdForThread(thread));
-        OPConversation conversation = ConversationManager.getInstance().
-            getConversation(thread, true);
+        OPConversation conversation = ConversationManager.getInstance().getConversation(thread,  true);
 
-        Intent intent = new Intent();
-
-        intent.setAction(IntentData.ACTION_CALL_STATE_CHANGE);
-        intent.putExtra(IntentData.ARG_CALL_STATE, state.name());
-        intent.putExtra(IntentData.ARG_CALL_ID, call.getCallID());
-        intent.putExtra(IntentData.ARG_PEER_USER_ID, call.getPeerUser().getUserId());
-
-        OPHelper.getInstance().sendBroadcast(intent);
         switch (state){
         case CallState_Preparing:{
             //Handle racing condition. SImply hangup the existing call for now.
@@ -157,6 +155,8 @@ public class CallManager implements OPCallDelegate {
             break;
 
         }
+
+        delegate.onCallStateChanged(call,state);
     }
 
     private void cacheCall(OPCall call) {

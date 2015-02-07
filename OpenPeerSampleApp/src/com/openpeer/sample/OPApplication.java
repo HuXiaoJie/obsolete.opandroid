@@ -30,7 +30,6 @@
 package com.openpeer.sample;
 
 import android.app.Application;
-import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.ApplicationInfo;
@@ -40,15 +39,19 @@ import android.os.StrictMode;
 import android.util.Log;
 import android.webkit.CookieManager;
 
+import com.openpeer.sample.delegates.CallDelegateImpl;
+import com.openpeer.sample.delegates.ConversationDelegateImpl;
 import com.openpeer.sample.push.OPPushManager;
 import com.openpeer.sample.push.OPPushNotificationBuilder;
 import com.openpeer.sample.push.PushIntentReceiver;
 import com.openpeer.sample.push.UAPushService;
 import com.openpeer.sample.push.parsepush.PFPushService;
 import com.openpeer.sample.util.SettingsHelper;
+import com.openpeer.sdk.app.LoginManager;
 import com.openpeer.sdk.app.OPHelper;
+import com.openpeer.sdk.model.CallManager;
 import com.openpeer.sdk.model.ConversationManager;
-import com.parse.Parse;
+import com.openpeer.sdk.model.OPConversation;
 import com.urbanairship.AirshipConfigOptions;
 import com.urbanairship.Logger;
 import com.urbanairship.UAirship;
@@ -93,9 +96,9 @@ public class OPApplication extends Application {
         }
 
         IntentFilter filter = new IntentFilter(Intent.ACTION_SHUTDOWN);
-        filter.addAction(IntentData.ACTION_CALL_STATE_CHANGE);
         filter.addAction(Intent.ACTION_REBOOT);
         registerReceiver(mReceiver, filter);
+        OPHelper.getInstance().init(this);
         init();
     }
 
@@ -116,11 +119,8 @@ public class OPApplication extends Application {
     }
 
     private void init() {
-        OPHelper.getInstance().init(this);
-
         SettingsHelper.getInstance().initLoggers();
         if (SettingsHelper.getInstance().isParsePushEnabled()) {
-
             PFPushService.getInstance().init();
             ConversationManager.getInstance().registerPushService(PFPushService.getInstance());
         } else if (SettingsHelper.getInstance().isUAPushEnabled()) {
@@ -135,6 +135,7 @@ public class OPApplication extends Application {
         }
 
         OPConversation.registerDelegate(ConversationDelegateImpl.getInstance());
+        CallManager.getInstance().registerDelegate(CallDelegateImpl.getInstance());
     }
 
     public static boolean isServiceAvailable(Class serviceClass) {
