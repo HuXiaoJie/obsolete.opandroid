@@ -41,14 +41,14 @@ import org.robolectric.RobolectricTestRunner;
 
 import android.app.Application;
 
-import com.openpeer.sdk.app.OPDataManager;
-import com.openpeer.sdk.model.OPUser;
+import com.openpeer.sdk.app.HOPDataManager;
+import com.openpeer.sdk.model.HOPContact;
 
 /**
  *
  */
 @RunWith(RobolectricTestRunner.class)
-public class OPModelUtilsTest {
+public class HOPModelUtilsTest {
 
     @Before
     public void setup() {
@@ -56,7 +56,7 @@ public class OPModelUtilsTest {
         OPDatastoreDelegateImpl delegate = OPDatastoreDelegateImpl.getInstance();
         delegate.init(application);
         delegate.setupForTest();
-        OPDataManager.getInstance().init(delegate);
+        HOPDataManager.getInstance().init(delegate);
     }
 
     @After
@@ -67,23 +67,23 @@ public class OPModelUtilsTest {
     public void testGetWindowIdArrayInput() {
         long[] userIds = { 1l, 2l, 3l };
         long[] userIds1 = { 1l, 3l, 2l };
-        Assert.assertEquals(OPModelUtils.getWindowId(userIds), OPModelUtils.getWindowId(userIds1));
+        Assert.assertEquals(HOPModelUtils.getWindowId(userIds), HOPModelUtils.getWindowId(userIds1));
     }
 
     @Test
     public void testGetWindowIdListInput() {
         long[] userIds = { 1l, 3l, 2l };
 
-        List<OPUser> users = new ArrayList<OPUser>();
-        OPUser user1 = new OPUser();
-        OPUser user2 = new OPUser();
-        OPUser user3 = new OPUser();
+        List<HOPContact> users = new ArrayList<HOPContact>();
+        HOPContact user1 = new HOPContact();
+        HOPContact user2 = new HOPContact();
+        HOPContact user3 = new HOPContact();
         user1.setUserId(1);
         user2.setUserId(2);
         user3.setUserId(3);
         users.add(user1);
         users.add(user2);
         users.add(user3);
-        Assert.assertEquals(OPModelUtils.getWindowId(users), OPModelUtils.getWindowId(userIds));
+        Assert.assertEquals(HOPModelUtils.getWindowId(users), HOPModelUtils.getWindowId(userIds));
     }
 }

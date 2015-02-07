@@ -30,7 +30,6 @@
 package com.openpeer.sample.conversation;
 
 import android.content.Context;
-import android.graphics.PorterDuff;
 import android.text.TextUtils;
 import android.util.AttributeSet;
 import android.view.LayoutInflater;
@@ -41,12 +40,10 @@ import com.openpeer.javaapi.OPMessage;
 import com.openpeer.sample.R;
 import com.openpeer.sample.util.DateFormatUtils;
 import com.openpeer.sample.util.ModelUtil;
-import com.openpeer.sdk.app.OPDataManager;
-import com.openpeer.sdk.model.GsonFactory;
-import com.openpeer.sdk.model.OPConversationEvent;
-import com.openpeer.sdk.model.OPUser;
+import com.openpeer.sdk.app.HOPDataManager;
+import com.openpeer.sdk.model.HOPContact;
+import com.openpeer.sdk.model.HOPConversationEvent;
 
-import java.util.Arrays;
 import java.util.List;
 
 public class ConversationEventView extends LinearLayout {
@@ -73,21 +70,21 @@ public class ConversationEventView extends LinearLayout {
 
     public void update(OPMessage message) {
         mTimeView.setText(DateFormatUtils.getSameDayTime(message.getTime().toMillis(false)));
-        OPConversationEvent.EventTypes eventType = OPConversationEvent.EventTypes
+        HOPConversationEvent.EventTypes eventType = HOPConversationEvent.EventTypes
             .valueOf(message.getMessageType());
         switch (eventType){
         case ContactsChange:{
-            OPConversationEvent.ContactsChange event = OPConversationEvent.contactsChangeFromJson
+            HOPConversationEvent.ContactsChange event = HOPConversationEvent.contactsChangeFromJson
                 (message.getMessage());
             if ( event.getAdded().length>0) {
-                List<OPUser> users = OPDataManager.getInstance().getUsers(event.getAdded
+                List<HOPContact> users = HOPDataManager.getInstance().getUsers(event.getAdded
                     ());
                 String names = ModelUtil.getNamesStringFromUsers(users);
                 if (!TextUtils.isEmpty(names)) {
                     mTitleView.setText(names + " joined");
                 }
             } else {
-                List<OPUser> users = OPDataManager.getInstance().getUsers(
+                List<HOPContact> users = HOPDataManager.getInstance().getUsers(
                     event.getRemoved());
                 String names = ModelUtil.getNamesStringFromUsers(users);
                 if (!TextUtils.isEmpty(names)) {

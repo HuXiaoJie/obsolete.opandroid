@@ -47,7 +47,7 @@ import com.openpeer.sdk.utils.AssetUtils;
  * 
  * All configurable items should have a default value and the value will be overwritten if the configuration file exists
  */
-public class OPSdkConfig {
+public class HOPSettingsHelper {
 
     // TODO add configuration items in
     private static final String KEY_GRANT_ID = "openpeer/calculated/grantId";
@@ -72,61 +72,61 @@ public class OPSdkConfig {
     static final long DURATION_ONE_YEAR_IN_MILLIS = 12 * 30 * 24 * 60 * 60
             * 1000l;
 
-    private static OPSdkConfig instance;
+    private static HOPSettingsHelper instance;
 
     public String getInstanceId() {
-        return OPHelper.getSettingsDelegate().getString(KEY_INSTANCE_ID);
+        return HOPHelper.getSettingsDelegate().getString(KEY_INSTANCE_ID);
     }
 
-    private OPSdkConfig() {
+    private HOPSettingsHelper() {
 
     }
 
     public String getAppId() {
-        return OPHelper.getSettingsDelegate().getString(KEY_APP_ID);
+        return HOPHelper.getSettingsDelegate().getString(KEY_APP_ID);
     }
 
-    public static OPSdkConfig getInstance() {
+    public static HOPSettingsHelper getInstance() {
         if (instance == null) {
-            instance = new OPSdkConfig();
+            instance = new HOPSettingsHelper();
         }
         return instance;
     }
 
     public String getOuterFrameUrl() {
-        return OPHelper.getSettingsDelegate().getString(KEY_OUTER_FRAME_URL);
+        return HOPHelper.getSettingsDelegate().getString(KEY_OUTER_FRAME_URL);
     }
 
     public String getRedirectUponCompleteUrl() {
-        return OPHelper.getSettingsDelegate().getString(
+        return HOPHelper.getSettingsDelegate().getString(
                 KEY_REDIRECT_UPON_LOGIN_URL);
     }
 
     public String getIdentityProviderDomain() {
-        return OPHelper.getSettingsDelegate().getString(
+        return HOPHelper.getSettingsDelegate().getString(
                 KEY_IDENTITY_PROVIDE_DOMAIN);
     }
 
     public String getIdentityBaseUri() {
-        return OPHelper.getSettingsDelegate().getString(KEY_IDENTITY_BASE_URI);
+        return HOPHelper.getSettingsDelegate().getString(KEY_IDENTITY_BASE_URI);
     }
 
     public String getNamespaceGrantServiceUrl() {
-        return OPHelper.getSettingsDelegate().getString(
+        return HOPHelper.getSettingsDelegate().getString(
                 KEY_NAMESPACE_GRANT_SERVICE_URL);
     }
 
     public String getLockboxServiceDomain() {
-        return OPHelper.getSettingsDelegate().getString(
+        return HOPHelper.getSettingsDelegate().getString(
                 KEY_LOCKBOX_SERVICE_DOMAIN);
     }
 
     public String getGrantId() {
-        String id = OPHelper.getSettingsDelegate().getString(KEY_GRANT_ID);// mContext.getSharedPreferences(PREF_NAME,
+        String id = HOPHelper.getSettingsDelegate().getString(KEY_GRANT_ID);// mContext.getSharedPreferences(PREF_NAME,
         // Context.MODE_PRIVATE).getString(KEY_GRANT_ID, null);
         if (id == null) {
             id = java.util.UUID.randomUUID().toString();
-            OPHelper.getSettingsDelegate().setString(KEY_GRANT_ID, id);
+            HOPHelper.getSettingsDelegate().setString(KEY_GRANT_ID, id);
         }
         return id;
     }
@@ -150,14 +150,14 @@ public class OPSdkConfig {
      * @param context
      */
     public void applyApplicationSettings() {
-        OPSettings.setString(OPSdkConfig.KEY_AUTHORIZED_APP_ID,
-                OPSdkConfig.generateAuthorizedAppId());
-        OPSettings.setString(OPSdkConfig.KEY_INSTANCE_ID,
+        OPSettings.setString(HOPSettingsHelper.KEY_AUTHORIZED_APP_ID,
+                HOPSettingsHelper.generateAuthorizedAppId());
+        OPSettings.setString(HOPSettingsHelper.KEY_INSTANCE_ID,
                 java.util.UUID.randomUUID().toString());
         OPSettings.setString(
                 KEY_USER_AGENT,
                 "user-agent-"
-                        + OPHelper.getSettingsDelegate().getString(KEY_APP_ID));
+                        + HOPHelper.getSettingsDelegate().getString(KEY_APP_ID));
     }
 
     private static String generateAuthorizedAppId() {
@@ -165,14 +165,14 @@ public class OPSdkConfig {
         expires.set(System.currentTimeMillis() + DURATION_ONE_YEAR_IN_MILLIS);
 
         String id = OPStack.createAuthorizedApplicationID(
-                OPHelper.getSettingsDelegate().getString(KEY_APP_ID),
-                OPHelper.getSettingsDelegate().getString(KEY_APP_APPKEY),
+                HOPHelper.getSettingsDelegate().getString(KEY_APP_ID),
+                HOPHelper.getSettingsDelegate().getString(KEY_APP_APPKEY),
                 expires);
         return id;
     }
 
     public void init(Context context) {
-        if (!TextUtils.isEmpty(OPSdkConfig.getInstance().getAppId())) {
+        if (!TextUtils.isEmpty(HOPSettingsHelper.getInstance().getAppId())) {
             return;
         }
         try {
@@ -188,7 +188,7 @@ public class OPSdkConfig {
     }
 
     public GroupChatMode getGroupChatMode() {
-        String mode = OPHelper.getSettingsDelegate().getString(KEY_CHAT_MODE);
+        String mode = HOPHelper.getSettingsDelegate().getString(KEY_CHAT_MODE);
         if (TextUtils.isEmpty(mode)) {
             return GroupChatMode.contact;
         } else {

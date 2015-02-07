@@ -44,8 +44,8 @@ import com.openpeer.javaapi.OPCall;
 import com.openpeer.sample.IntentData;
 import com.openpeer.sample.R;
 import com.openpeer.sample.events.CallStateChangeEvent;
-import com.openpeer.sdk.model.CallManager;
-import com.openpeer.sdk.model.CallStatus;
+import com.openpeer.sdk.model.CallMediaStatus;
+import com.openpeer.sdk.model.HOPCallManager;
 
 import de.greenrobot.event.EventBus;
 
@@ -53,7 +53,7 @@ public class CallInfoView extends LinearLayout {
 
 	private TextView mTimeView;
 
-	CallStatus mState;
+	CallMediaStatus mState;
 
 	private OPCall mCall;
 	BroadcastReceiver mDelegate;
@@ -75,7 +75,7 @@ public class CallInfoView extends LinearLayout {
 
 	public void bindCall(OPCall call) {
         mCall = call;
-        mState = CallManager.getInstance().getMediaStateForCall(call.getPeerUser().getUserId());
+        mState = HOPCallManager.getInstance().getMediaStateForCall(call.getPeerUser().getUserId());
 
         getContext().registerReceiver(mDelegate, new IntentFilter(IntentData
                                                                       .ACTION_CALL_STATE_CHANGE));

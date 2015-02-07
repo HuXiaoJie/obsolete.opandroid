@@ -27,54 +27,16 @@
  *  of the authors and should not be interpreted as representing official policies,
  *  either expressed or implied, of the FreeBSD Project.
  *******************************************************************************/
-package com.openpeer.sdk.app;
+package com.openpeer.sample.delegates;
 
-import android.content.Context;
-import android.util.AttributeSet;
-import android.webkit.WebView;
+import com.openpeer.javaapi.OPStackMessageQueueDelegate;
 
-/**
- * @author brucexia
- * 
- */
-public class OPIdentityLoginWebview extends WebView {
-	/**
-	 * @param context
-	 */
-	public OPIdentityLoginWebview(Context context) {
-		super(context);
-	}
+public class StackMessageQueueDelegate extends OPStackMessageQueueDelegate{
 
+	@Override
+	public void onStackMessageQueueWakeUpCustomThreadAndProcessOnCustomThread() {
+		// TODO Auto-generated method stub
 
-	/**
-	 * @param context
-	 * @param attrs
-	 * @param defStyle
-	 */
-	public OPIdentityLoginWebview(Context context, AttributeSet attrs, int defStyle) {
-		super(context, attrs, defStyle);
-		// TODO Auto-generated constructor stub
-	}
-
-	/**
-	 * @param context
-	 * @param attrs
-	 */
-	public OPIdentityLoginWebview(Context context, AttributeSet attrs) {
-		super(context, attrs);
-		// TODO Auto-generated constructor stub
-	}
-
-
-	OPIdentityLoginWebViewClient mClient;
-
-	public OPIdentityLoginWebViewClient getClient() {
-		return mClient;
-	}
-
-	public void setClient(OPIdentityLoginWebViewClient client) {
-		this.mClient = client;
-		this.setWebViewClient(client);
 	}
 
 }

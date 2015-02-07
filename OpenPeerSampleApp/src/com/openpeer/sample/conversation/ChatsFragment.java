@@ -49,18 +49,15 @@ import android.widget.ListView;
 
 import com.openpeer.sample.BaseFragment;
 import com.openpeer.sample.R;
-import com.openpeer.sdk.app.OPDataManager;
-import com.openpeer.sdk.app.OPSdkConfig;
-import com.openpeer.sdk.datastore.DatabaseContracts;
-import com.openpeer.sdk.datastore.OPContentProvider;
+import com.openpeer.sdk.app.HOPDataManager;
 import com.openpeer.sdk.datastore.DatabaseContracts.WindowViewEntry;
-import com.openpeer.sdk.model.OPConversation;
+import com.openpeer.sdk.model.HOPConversation;
 
 public class ChatsFragment extends BaseFragment implements
         LoaderManager.LoaderCallbacks<Cursor> {
 
     private ChatInfoAdaptor mAdapter;
-    private List<OPConversation> mSessions;
+    private List<HOPConversation> mSessions;
     private ListView mMessagesList;
 
     public static ChatsFragment newInstance() {
@@ -127,9 +124,9 @@ public class ChatsFragment extends BaseFragment implements
         return view;
     }
 
-    private List<OPConversation> getSessions() {
+    private List<HOPConversation> getSessions() {
         if (mSessions == null) {
-            mSessions = new ArrayList<OPConversation>();
+            mSessions = new ArrayList<HOPConversation>();
             // TODO: do some setup
         }
         return mSessions;
@@ -209,7 +206,7 @@ public class ChatsFragment extends BaseFragment implements
         public void onChatsEmptyViewClick();
     }
     public Uri getChatsUri() {
-        return OPDataManager.getInstance()
+        return HOPDataManager.getInstance()
             .getContentUri(WindowViewEntry.URI_PATH_INFO_CONTEXT);
     }
 }

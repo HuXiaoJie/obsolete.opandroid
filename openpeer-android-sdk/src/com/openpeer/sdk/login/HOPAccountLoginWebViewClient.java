@@ -27,11 +27,12 @@
  *  of the authors and should not be interpreted as representing official policies,
  *  either expressed or implied, of the FreeBSD Project.
  *******************************************************************************/
-package com.openpeer.sdk.app;
+package com.openpeer.sdk.login;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 
+import com.openpeer.sdk.app.HOPDataManager;
 import com.openpeer.sdk.utils.StringUtils;
 
 import android.graphics.Bitmap;
@@ -40,7 +41,7 @@ import android.webkit.WebResourceResponse;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 
-public class OPAccountLoginWebViewClient extends WebViewClient {
+public class HOPAccountLoginWebViewClient extends WebViewClient {
 
 	boolean mNamespaceGrantInnerFrameLoaded;
 
@@ -83,7 +84,7 @@ public class OPAccountLoginWebViewClient extends WebViewClient {
 
 			Log.d("login", "Account Client Namespace grant Received from JS: " + data);
 			// mAccount.handleMessageFromInnerBrowserWindowFrame(data);
-			OPDataManager.getInstance().getSharedAccount().handleMessageFromInnerBrowserWindowFrame(data);
+			HOPDataManager.getInstance().getSharedAccount().handleMessageFromInnerBrowserWindowFrame(data);
 
 			return null;
 		} else if (url.contains("?reload=true")) {
@@ -102,7 +103,7 @@ public class OPAccountLoginWebViewClient extends WebViewClient {
 		if (!mNamespaceGrantInnerFrameLoaded) {
 			mNamespaceGrantInnerFrameLoaded = true;
 			String cmd = String.format("javascript:initInnerFrame(\'%s\')",
-					OPDataManager.getInstance().getSharedAccount().getInnerBrowserWindowFrameURL());
+					HOPDataManager.getInstance().getSharedAccount().getInnerBrowserWindowFrameURL());
 			Log.d("login", "Account Client INIT NAMESPACE GRANT INNER FRAME: " + cmd);
 			view.loadUrl(cmd);
 

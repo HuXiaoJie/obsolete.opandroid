@@ -1,15 +1,15 @@
 package com.openpeer.sample.events;
 
-import com.openpeer.sdk.model.OPConversation;
+import com.openpeer.sdk.model.HOPConversation;
 
 public class ConversationContactsChangeEvent extends BaseEvent{
-    OPConversation conversation;
+    HOPConversation conversation;
 
-    public ConversationContactsChangeEvent(OPConversation conversation) {
+    public ConversationContactsChangeEvent(HOPConversation conversation) {
         this.conversation = conversation;
     }
 
-    public OPConversation getConversation() {
+    public HOPConversation getConversation() {
         return conversation;
     }
 }

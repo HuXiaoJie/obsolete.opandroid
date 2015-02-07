@@ -34,12 +34,10 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.view.MenuItem;
 
-import com.openpeer.javaapi.OPContact;
-import com.openpeer.javaapi.OPConversationThread;
 import com.openpeer.sample.BaseActivity;
 import com.openpeer.sample.IntentData;
 import com.openpeer.sample.R;
-import com.openpeer.sdk.app.OPDataManager;
+import com.openpeer.sdk.app.HOPDataManager;
 
 public class ConversationActivity extends BaseActivity {
 
@@ -67,7 +65,7 @@ public class ConversationActivity extends BaseActivity {
         cFragment.setArguments(intent.getExtras());
         setContentFragment(cFragment);
 
-        if (!OPDataManager.getInstance().isAccountReady()) {
+        if (!HOPDataManager.getInstance().isAccountReady()) {
             // BaseActivity.showInvalidStateWarning(this);
             return;
         }

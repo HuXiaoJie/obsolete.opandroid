@@ -6,6 +6,6 @@ import com.openpeer.javaapi.OPCall;
 /**
  * Created by brucexia on 2015-02-05.
  */
-public interface CallDelegate {
+public interface HOPCallDelegate {
     public void onCallStateChanged(OPCall call, CallStates state);
 }

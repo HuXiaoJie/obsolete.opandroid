@@ -33,12 +33,12 @@ import android.text.TextUtils;
 import android.text.format.Time;
 import android.util.Log;
 
-import com.openpeer.sdk.app.OPSdkConfig;
+import com.openpeer.sdk.app.HOPSettingsHelper;
 import com.openpeer.sdk.model.IdentityData;
 
 public class OPIdentity {
     /**
-     * Start identity login. This is handled automatically in {@link com.openpeer.sdk.app.LoginManager}. Application should not use this
+     * Start identity login. This is handled automatically in {@link com.openpeer.sdk.login.HOPLoginManager}. Application should not use this
      * method directly
      *
      * @param identityUri
@@ -50,7 +50,7 @@ public class OPIdentity {
 
     public static OPIdentity login(String identityUri, OPAccount account,
             OPIdentityDelegate delegate) {
-        OPSdkConfig config = OPSdkConfig.getInstance();
+        HOPSettingsHelper config = HOPSettingsHelper.getInstance();
         if (TextUtils.isEmpty(identityUri)) {
             identityUri = config.getIdentityBaseUri();
         }

@@ -63,9 +63,9 @@ import com.openpeer.javaapi.OPLogger;
 import com.openpeer.javaapi.OPSettings;
 import com.openpeer.sample.settings.SettingsDownloader;
 import com.openpeer.sample.util.SettingsHelper;
-import com.openpeer.sdk.app.OPHelper;
-import com.openpeer.sdk.app.OPSdkConfig;
-import com.openpeer.sdk.model.CallManager;
+import com.openpeer.sdk.app.HOPHelper;
+import com.openpeer.sdk.app.HOPSettingsHelper;
+import com.openpeer.sdk.model.HOPCallManager;
 
 public class SettingsActivity extends BaseActivity {
     static final String KEY_LOCAL_TELNET_LOGGER = "local_telnet_logger";
@@ -123,7 +123,7 @@ public class SettingsActivity extends BaseActivity {
                         public boolean onPreferenceChange(
                                 Preference preference, Object newValue) {
                             String url = logServerPref.getText();
-                            OPHelper.getInstance().toggleOutgoingTelnetLogging(
+                            HOPHelper.getInstance().toggleOutgoingTelnetLogging(
                                     (Boolean) newValue, url);
 
                             return true;
@@ -145,7 +145,7 @@ public class SettingsActivity extends BaseActivity {
                         @Override
                         public boolean onPreferenceChange(
                                 Preference preference, Object newValue) {
-                            OPHelper.getInstance().toggleTelnetLogging(
+                            HOPHelper.getInstance().toggleTelnetLogging(
                                     (Boolean) newValue, 59999);
                             return true;
                         }
@@ -157,7 +157,7 @@ public class SettingsActivity extends BaseActivity {
                         public boolean onPreferenceChange(
                                 Preference preference, Object newValue) {
                             String fileName = logFilePref.getText();
-                            OPHelper.getInstance().toggleFileLogger(
+                            HOPHelper.getInstance().toggleFileLogger(
                                     (Boolean) newValue, fileName);
                             return true;
                         }
@@ -341,7 +341,7 @@ public class SettingsActivity extends BaseActivity {
                         if (!TextUtils.isEmpty(jsonBlob)) {
                             OPSettings.apply(jsonBlob);
                             //App settings have changed so regenerate authorized-application-id and instance-id
-                            OPSdkConfig.getInstance().applyApplicationSettings();
+                            HOPSettingsHelper.getInstance().applyApplicationSettings();
                             SettingsHelper.getInstance().initLoggers();
                             
                             AlertDialog.Builder builder = new AlertDialog.Builder(
@@ -372,7 +372,7 @@ public class SettingsActivity extends BaseActivity {
     }
 
     void doSignout() {
-        if (CallManager.getInstance().hasCalls()) {
+        if (HOPCallManager.getInstance().hasCalls()) {
             Toast.makeText(SettingsActivity.this,
                     R.string.msg_cannot_signout_with_call, Toast.LENGTH_LONG)
                     .show();

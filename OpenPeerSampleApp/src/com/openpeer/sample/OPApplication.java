@@ -40,23 +40,22 @@ import android.util.Log;
 import android.webkit.CookieManager;
 
 import com.openpeer.sample.delegates.CallDelegateImpl;
-import com.openpeer.sample.delegates.ConversationDelegateImpl;
+import com.openpeer.sample.delegates.HOPConversationDelegateImpl;
 import com.openpeer.sample.login.LoginDelegateImpl;
-import com.openpeer.sample.push.OPPushManager;
-import com.openpeer.sample.push.OPPushNotificationBuilder;
+import com.openpeer.sample.push.PushManager;
+import com.openpeer.sample.push.PushNotificationBuilder;
 import com.openpeer.sample.push.PushIntentReceiver;
 import com.openpeer.sample.push.UAPushService;
 import com.openpeer.sample.push.parsepush.PFPushService;
 import com.openpeer.sample.util.SettingsHelper;
-import com.openpeer.sdk.app.LoginManager;
-import com.openpeer.sdk.app.OPHelper;
-import com.openpeer.sdk.model.CallManager;
-import com.openpeer.sdk.model.OPConversation;
-import com.openpeer.sdk.model.PushServiceInterface;
+import com.openpeer.sdk.app.HOPHelper;
+import com.openpeer.sdk.login.HOPLoginManager;
+import com.openpeer.sdk.model.HOPCallManager;
+import com.openpeer.sdk.model.HOPConversation;
+import com.openpeer.sample.push.PushServiceInterface;
 import com.urbanairship.AirshipConfigOptions;
 import com.urbanairship.Logger;
 import com.urbanairship.UAirship;
-import com.urbanairship.push.PushManager;
 
 import java.util.List;
 
@@ -104,7 +103,7 @@ public class OPApplication extends Application {
         IntentFilter filter = new IntentFilter(Intent.ACTION_SHUTDOWN);
         filter.addAction(Intent.ACTION_REBOOT);
         registerReceiver(mReceiver, filter);
-        OPHelper.getInstance().init(this);
+        HOPHelper.getInstance().init(this);
         init();
     }
 
@@ -115,13 +114,13 @@ public class OPApplication extends Application {
 
     public void signout() {
         if (SettingsHelper.getInstance().isUAPushEnabled()) {
-            OPPushManager.onSignOut();
+            PushManager.onSignOut();
         } else if(SettingsHelper.getInstance().isParsePushEnabled()){
             PFPushService.getInstance().onSignout();
         }
         CookieManager.getInstance().removeAllCookie();
         OPNotificationBuilder.cancelAllUponSignout();
-        OPHelper.getInstance().onSignOut();
+        HOPHelper.getInstance().onSignOut();
     }
 
     private void init() {
@@ -133,15 +132,15 @@ public class OPApplication extends Application {
             AirshipConfigOptions options = AirshipConfigOptions
                 .loadDefaultOptions(this);
             UAirship.takeOff(this, options);
-            PushManager.shared().setNotificationBuilder(
-                new OPPushNotificationBuilder());
-            PushManager.shared().setIntentReceiver(PushIntentReceiver.class);
+            com.urbanairship.push.PushManager.shared().setNotificationBuilder(
+                new PushNotificationBuilder());
+            com.urbanairship.push.PushManager.shared().setIntentReceiver(PushIntentReceiver.class);
            pushService = UAPushService.getInstance();
             Logger.logLevel = Log.VERBOSE;
         }
-        OPConversation.registerDelegate(ConversationDelegateImpl.getInstance());
-        CallManager.getInstance().registerDelegate(CallDelegateImpl.getInstance());
-        LoginManager.getInstance().registerDelegate(LoginDelegateImpl.getInstance());
+        HOPConversation.registerDelegate(HOPConversationDelegateImpl.getInstance());
+        HOPCallManager.getInstance().registerDelegate(CallDelegateImpl.getInstance());
+        HOPLoginManager.getInstance().registerDelegate(LoginDelegateImpl.getInstance());
     }
 
     public static boolean isServiceAvailable(Class serviceClass) {

@@ -34,19 +34,13 @@ import com.openpeer.javaapi.OPLogger;
 import com.openpeer.javaapi.OPSettings;
 import com.openpeer.sample.OPApplication;
 import com.openpeer.sample.R;
-import com.openpeer.sdk.app.OPHelper;
+import com.openpeer.sdk.app.HOPHelper;
 
-import android.content.Context;
-import android.content.Intent;
 import android.content.SharedPreferences;
-import android.content.pm.PackageManager;
 import android.media.Ringtone;
 import android.media.RingtoneManager;
 import android.net.Uri;
-import android.preference.ListPreference;
 import android.preference.PreferenceManager;
-
-import java.util.List;
 
 public class SettingsHelper {
 
@@ -122,14 +116,14 @@ public class SettingsHelper {
         if (isLogEnabled()) {
             toggleLogger(true);
             if (isOutgoingLoggerOn()) {
-                OPHelper.getInstance().toggleOutgoingTelnetLogging(true,
+                HOPHelper.getInstance().toggleOutgoingTelnetLogging(true,
                                                                    getLogServer());
             }
             if (isTelnetLoggerOn()) {
-                OPHelper.getInstance().toggleTelnetLogging(true, 59999);
+                HOPHelper.getInstance().toggleTelnetLogging(true, 59999);
             }
             if (isFileLoggerOn()) {
-                OPHelper.getInstance().toggleFileLogger(true, getLogFile());
+                HOPHelper.getInstance().toggleFileLogger(true, getLogFile());
             }
         }
     }
@@ -138,7 +132,7 @@ public class SettingsHelper {
      *
      */
     public static boolean isLogEnabled() {
-        return OPHelper.getSettingsDelegate().getBool(KEY_LOG_SWITCH);
+        return HOPHelper.getSettingsDelegate().getBool(KEY_LOG_SWITCH);
     }
 
     public static void setLogEnabled(boolean enabled) {
@@ -151,7 +145,7 @@ public class SettingsHelper {
     }
 
     public static String getLogServer() {
-        return OPHelper.getSettingsDelegate().getString(KEY_OUT_LOG_SERVER);
+        return HOPHelper.getSettingsDelegate().getString(KEY_OUT_LOG_SERVER);
     }
 
     public boolean isTelnetLoggerOn() {

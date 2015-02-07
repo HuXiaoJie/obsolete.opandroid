@@ -1,17 +1,17 @@
 package com.openpeer.sample.events;
 
-import com.openpeer.sdk.model.OPConversation;
+import com.openpeer.sdk.model.HOPConversation;
 
 public class ConversationTopicChangeEvent extends BaseEvent{
-    OPConversation conversation;
+    HOPConversation conversation;
     String newTopic;
 
-    public ConversationTopicChangeEvent(OPConversation conversation, String newTopic) {
+    public ConversationTopicChangeEvent(HOPConversation conversation, String newTopic) {
         this.conversation = conversation;
         this.newTopic = newTopic;
     }
 
-    public OPConversation getConversation() {
+    public HOPConversation getConversation() {
         return conversation;
     }
 

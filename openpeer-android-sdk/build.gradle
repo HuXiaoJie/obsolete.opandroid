@@ -83,6 +83,7 @@ dependencies {
         exclude module: 'wagon-provider-api'
     }
     androidTestCompile 'com.squareup:fest-android:1.0.+'
+
 }
 
 robolectric {

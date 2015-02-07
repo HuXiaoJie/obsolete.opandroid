@@ -44,7 +44,7 @@ import android.provider.BaseColumns;
 import android.text.TextUtils;
 import android.util.Log;
 
-import com.openpeer.sdk.app.OPDataManager;
+import com.openpeer.sdk.app.HOPDataManager;
 import com.openpeer.sdk.datastore.DatabaseContracts.AccountEntry;
 import com.openpeer.sdk.datastore.DatabaseContracts.AssociatedIdentityEntry;
 import com.openpeer.sdk.datastore.DatabaseContracts.AvatarEntry;
@@ -219,7 +219,7 @@ public class OPContentProvider extends ContentProvider implements ContentUriReso
         mOpenHelper = OPDatabaseHelper.getInstance(getContext());
         initMatcher();
         instance = this;
-        OPDataManager.getInstance().setContentUriProvider(this);
+        HOPDataManager.getInstance().setContentUriProvider(this);
         return true;
     }
 

@@ -27,16 +27,54 @@
  *  of the authors and should not be interpreted as representing official policies,
  *  either expressed or implied, of the FreeBSD Project.
  *******************************************************************************/
-package com.openpeer.sample.delegates;
+package com.openpeer.sdk.login;
 
-import com.openpeer.javaapi.OPStackDelegate;
+import android.content.Context;
+import android.util.AttributeSet;
+import android.webkit.WebView;
 
-public class OPStackDelegateImplementation extends OPStackDelegate {
+/**
+ * @author brucexia
+ * 
+ */
+public class HOPIdentityLoginWebview extends WebView {
+	/**
+	 * @param context
+	 */
+	public HOPIdentityLoginWebview(Context context) {
+		super(context);
+	}
 
-	@Override
-	public void onStackShutdown() {
-		// TODO Auto-generated method stub
-		
+
+	/**
+	 * @param context
+	 * @param attrs
+	 * @param defStyle
+	 */
+	public HOPIdentityLoginWebview(Context context, AttributeSet attrs, int defStyle) {
+		super(context, attrs, defStyle);
+		// TODO Auto-generated constructor stub
+	}
+
+	/**
+	 * @param context
+	 * @param attrs
+	 */
+	public HOPIdentityLoginWebview(Context context, AttributeSet attrs) {
+		super(context, attrs);
+		// TODO Auto-generated constructor stub
+	}
+
+
+	HOPIdentityLoginWebViewClient mClient;
+
+	public HOPIdentityLoginWebViewClient getClient() {
+		return mClient;
+	}
+
+	public void setClient(HOPIdentityLoginWebViewClient client) {
+		this.mClient = client;
+		this.setWebViewClient(client);
 	}
 
 }

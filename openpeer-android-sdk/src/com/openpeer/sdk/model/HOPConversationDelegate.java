@@ -30,35 +30,30 @@ package com.openpeer.sdk.model;
 
 import com.openpeer.javaapi.ComposingStates;
 import com.openpeer.javaapi.ContactConnectionStates;
-import com.openpeer.javaapi.MessageDeliveryStates;
-import com.openpeer.javaapi.OPContact;
-import com.openpeer.javaapi.OPConversationThread;
 import com.openpeer.javaapi.OPMessage;
-
-import org.json.JSONObject;
 
 /**
  * UI listener of session state changes
  */
-public interface ConversationDelegate {
-    public void onConversationContactStatusChanged(OPConversation conversation,
-                                               ComposingStates state, OPUser user);
+public interface HOPConversationDelegate {
+    public void onConversationContactStatusChanged(HOPConversation conversation,
+                                               ComposingStates state, HOPContact user);
 
-    public boolean onConversationMessage(OPConversation conversation, OPMessage message);
+    public boolean onConversationMessage(HOPConversation conversation, OPMessage message);
 
 //    public boolean onCallSystemMessageReceived(OPConversation conversation,
 //                                               CallSystemMessage message,
 //                                               OPUser sender);
 
-    public boolean onConversationPushMessage(OPConversation conversation, OPMessage message,
-                                             OPUser user);
+    public boolean onConversationPushMessage(HOPConversation conversation, OPMessage message,
+                                             HOPContact user);
 
-    public boolean onConversationContactsChanged(OPConversation conversation);
+    public boolean onConversationContactsChanged(HOPConversation conversation);
 
-    public void onConversationMessageDeliveryStateChanged(OPConversation conversation,
+    public void onConversationMessageDeliveryStateChanged(HOPConversation conversation,
                                                           OPMessage message);
 
-    public void onConversationContactConnectionStateChanged(OPConversation conversation,
-                                                            OPUser contact,
+    public void onConversationContactConnectionStateChanged(HOPConversation conversation,
+                                                            HOPContact HOPContact,
                                                             ContactConnectionStates state);
 }

@@ -1,26 +1,26 @@
 package com.openpeer.sample.events;
 
 import com.openpeer.javaapi.ComposingStates;
-import com.openpeer.sdk.model.OPConversation;
-import com.openpeer.sdk.model.OPUser;
+import com.openpeer.sdk.model.HOPContact;
+import com.openpeer.sdk.model.HOPConversation;
 
 public class ConversationComposingStatusChangeEvent extends BaseEvent{
-    OPConversation conversation;
-    OPUser user;
+    HOPConversation conversation;
+    HOPContact user;
     ComposingStates nState;
 
-    public ConversationComposingStatusChangeEvent(OPConversation conversation, OPUser user,
+    public ConversationComposingStatusChangeEvent(HOPConversation conversation, HOPContact user,
                                                   ComposingStates nState) {
         this.conversation = conversation;
         this.user = user;
         this.nState = nState;
     }
 
-    public OPConversation getConversation() {
+    public HOPConversation getConversation() {
         return conversation;
     }
 
-    public OPUser getUser() {
+    public HOPContact getUser() {
         return user;
     }
 

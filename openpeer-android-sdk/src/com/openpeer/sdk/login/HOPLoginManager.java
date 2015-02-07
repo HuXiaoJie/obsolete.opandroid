@@ -27,9 +27,8 @@
  *  of the authors and should not be interpreted as representing official policies,
  *  either expressed or implied, of the FreeBSD Project.
  *******************************************************************************/
-package com.openpeer.sdk.app;
+package com.openpeer.sdk.login;
 
-import android.content.Intent;
 import android.text.TextUtils;
 import android.util.Log;
 
@@ -43,17 +42,20 @@ import com.openpeer.javaapi.OPIdentity;
 import com.openpeer.javaapi.OPIdentityDelegate;
 import com.openpeer.javaapi.OPLogLevel;
 import com.openpeer.javaapi.OPLogger;
-import com.openpeer.sdk.model.CallManager;
-import com.openpeer.sdk.model.ConversationManager;
+import com.openpeer.sdk.app.HOPDataManager;
+import com.openpeer.sdk.app.HOPHelper;
+import com.openpeer.sdk.app.HOPSettingsHelper;
+import com.openpeer.sdk.model.HOPCallManager;
+import com.openpeer.sdk.model.HOPConversationManager;
 
 import java.util.Hashtable;
 import java.util.List;
 
-public class LoginManager implements OPIdentityDelegate,OPAccountDelegate{
+public class HOPLoginManager implements OPIdentityDelegate,OPAccountDelegate{
 
-    private LoginDelegate mDelegate;
+    private HOPLoginDelegate mDelegate;
 
-    private static LoginManager instance;
+    private static HOPLoginManager instance;
 
     private boolean mAccountLoggingIn;
     private List<LoginRecord> mLoginRecords;
@@ -69,32 +71,32 @@ public class LoginManager implements OPIdentityDelegate,OPAccountDelegate{
         int failureReason;
     }
 
-    public static LoginManager getInstance() {
+    public static HOPLoginManager getInstance() {
         if (instance == null) {
-            instance = new LoginManager();
+            instance = new HOPLoginManager();
         }
         return instance;
     }
 
-    private LoginManager() {
+    private HOPLoginManager() {
     }
 
     public static String getAccountLoginUrl() {
-        return OPSdkConfig.getInstance().getNamespaceGrantServiceUrl();
+        return HOPSettingsHelper.getInstance().getNamespaceGrantServiceUrl();
     }
 
     public static String getIdentityLoginUrl() {
-        return OPSdkConfig.getInstance().getOuterFrameUrl();
+        return HOPSettingsHelper.getInstance().getOuterFrameUrl();
     }
 
     public void startLogin() {
-        String reloginInfo = OPDataManager.getInstance().getReloginInfo();
+        String reloginInfo = HOPDataManager.getInstance().getReloginInfo();
         if (reloginInfo == null || reloginInfo.length() == 0) {
-            login(CallManager.getInstance(),
-                    ConversationManager.getInstance());
+            login(HOPCallManager.getInstance(),
+                    HOPConversationManager.getInstance());
         } else {
-            relogin(CallManager.getInstance(),
-                    ConversationManager.getInstance(),
+            relogin(HOPCallManager.getInstance(),
+                    HOPConversationManager.getInstance(),
                     reloginInfo);
         }
         mLoginPerformed = true;
@@ -113,7 +115,7 @@ public class LoginManager implements OPIdentityDelegate,OPAccountDelegate{
 
         OPAccount account = OPAccount.login(this,
                 conversationThreadDelegate, callDelegate);
-        OPDataManager.getInstance().setSharedAccount(account);
+        HOPDataManager.getInstance().setSharedAccount(account);
         mAccountLoggingIn = true;
         startIdentityLogin(null);
     }
@@ -137,16 +139,16 @@ public class LoginManager implements OPIdentityDelegate,OPAccountDelegate{
         OPAccount account = OPAccount.relogin(this,
                 conversationThreadDelegate, callDelegate, reloginInfo);
 
-        OPDataManager.getInstance().setSharedAccount(account);
+        HOPDataManager.getInstance().setSharedAccount(account);
         mAccountLoggingIn = true;
     }
 
     void startIdentityLogin(String uri) {
-        OPAccount account = OPDataManager.getInstance().getSharedAccount();
+        OPAccount account = HOPDataManager.getInstance().getSharedAccount();
 
         OPIdentity identity = OPIdentity.login(uri, account, this);
         identity.setIsLoggingIn(true);
-        OPDataManager.getInstance().addIdentity(identity);
+        HOPDataManager.getInstance().addIdentity(identity);
 
     }
 
@@ -158,7 +160,7 @@ public class LoginManager implements OPIdentityDelegate,OPAccountDelegate{
      */
     public void onAccountStateReady(OPAccount account) {
 
-        OPDataManager.getInstance().saveAccount();
+        HOPDataManager.getInstance().saveAccount();
 
         List<OPIdentity> identities = account.getAssociatedIdentities();
         if (identities.size() == 0) {
@@ -174,11 +176,11 @@ public class LoginManager implements OPIdentityDelegate,OPAccountDelegate{
             if (!identity.isDelegateAttached()) {// This is relogin
 
                 attachDelegateForIdentity(identity);
-                OPDataManager.getInstance().addIdentity(identity);
+                HOPDataManager.getInstance().addIdentity(identity);
 
             } else {
 
-                String version = OPDataManager.getInstance()
+                String version = HOPDataManager.getInstance()
                     .getDownloadedContactsVersion(identity.getIdentityURI());
                 if (TextUtils.isEmpty(version)) {
                     OPLogger.debug(OPLogLevel.LogLevel_Detail,
@@ -223,7 +225,7 @@ public class LoginManager implements OPIdentityDelegate,OPAccountDelegate{
     }
     public void onIdentityLoginSucceed(OPIdentity identity) {
         if (identity.isAssociating()) {
-            String version = OPDataManager.getInstance()
+            String version = HOPDataManager.getInstance()
                 .getDownloadedContactsVersion(identity.getIdentityURI());
             if (TextUtils.isEmpty(version)) {
                 OPLogger.debug(OPLogLevel.LogLevel_Detail,
@@ -249,12 +251,12 @@ public class LoginManager implements OPIdentityDelegate,OPAccountDelegate{
     /**
      * @return
      */
-    public LoginDelegate getListener() {
+    public HOPLoginDelegate getListener() {
         // TODO Auto-generated method stub
         return mDelegate;
     }
 
-    public void registerDelegate(LoginDelegate delegate) {
+    public void registerDelegate(HOPLoginDelegate delegate) {
         mDelegate = delegate;
     }
 
@@ -280,7 +282,7 @@ public class LoginManager implements OPIdentityDelegate,OPAccountDelegate{
     }
 
     public boolean hasUnloggedinIdentities() {
-        List<OPIdentity> identities = OPDataManager.getInstance().getSharedAccount()
+        List<OPIdentity> identities = HOPDataManager.getInstance().getSharedAccount()
             .getAssociatedIdentities();
         for (OPIdentity identity : identities) {
             if (identity.getState() != IdentityStates.IdentityState_Ready) {
@@ -328,10 +330,10 @@ public class LoginManager implements OPIdentityDelegate,OPAccountDelegate{
             account.notifyBrowserWindowClosed();
             break;
         case AccountState_Ready:
-            LoginManager.getInstance().onAccountStateReady(account);
+            HOPLoginManager.getInstance().onAccountStateReady(account);
             break;
         case AccountState_Shutdown:
-            OPHelper.getInstance().onAccountShutdown();
+            HOPHelper.getInstance().onAccountShutdown();
             break;
         default:
             break;
@@ -351,13 +353,13 @@ public class LoginManager implements OPIdentityDelegate,OPAccountDelegate{
         }
 
         for (OPIdentity identity : identities) {
-            if (null == OPDataManager.getInstance().getStoredIdentityById(
+            if (null == HOPDataManager.getInstance().getStoredIdentityById(
                 identity.getID())) {
-                OPDataManager.getInstance().addIdentity(identity);
+                HOPDataManager.getInstance().addIdentity(identity);
             }
             if (!identity.isDelegateAttached()) {
                 attachDelegateForIdentity(identity);
-                OPDataManager.getInstance().addIdentity(identity);
+                HOPDataManager.getInstance().addIdentity(identity);
             }
         }
     }
@@ -424,22 +426,22 @@ public class LoginManager implements OPIdentityDelegate,OPAccountDelegate{
 
     @Override
     public void onIdentityRolodexContactsDownloaded(OPIdentity identity) {
-        OPDataManager.getInstance().onDownloadedRolodexContacts(identity);
+        HOPDataManager.getInstance().onDownloadedRolodexContacts(identity);
     }
 
     void attachDelegateForIdentity(OPIdentity identity){
         identity.setIsAssocaiting(true);
-        identity.attachDelegate(this, OPSdkConfig
+        identity.attachDelegate(this, HOPSettingsHelper
             .getInstance().getRedirectUponCompleteUrl());
     }
 
     public void onEnteringForeground(){
         if(pendingState!=null){
-            onAccountStateChanged(OPDataManager.getInstance().getSharedAccount(), pendingState);
+            onAccountStateChanged(HOPDataManager.getInstance().getSharedAccount(), pendingState);
         }
 
-        if(OPDataManager.getInstance().isAccountReady()) {
-            for (OPIdentity identity : OPDataManager.getInstance().getSharedAccount().getAssociatedIdentities()) {
+        if(HOPDataManager.getInstance().isAccountReady()) {
+            for (OPIdentity identity : HOPDataManager.getInstance().getSharedAccount().getAssociatedIdentities()) {
                 if (identity.getPendingState() != null) {
                     onIdentityStateChanged(identity, identity.getPendingState());
                 }

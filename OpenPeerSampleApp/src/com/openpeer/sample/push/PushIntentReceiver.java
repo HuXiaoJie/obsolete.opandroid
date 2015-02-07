@@ -35,13 +35,11 @@ import android.content.Intent;
 import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 
-import com.openpeer.javaapi.AccountStates;
-import com.openpeer.sdk.app.OPDataManager;
+import com.openpeer.sdk.app.HOPDataManager;
 import com.urbanairship.actions.DeepLinkAction;
 import com.urbanairship.actions.LandingPageAction;
 import com.urbanairship.actions.OpenExternalUrlAction;
 import com.urbanairship.push.GCMMessageHandler;
-import com.urbanairship.push.PushManager;
 
 import java.util.Arrays;
 import java.util.List;
@@ -73,19 +71,19 @@ public class PushIntentReceiver extends BroadcastReceiver {
             return;
         }
 
-        if (action.equals(PushManager.ACTION_PUSH_RECEIVED)) {
+        if (action.equals(com.urbanairship.push.PushManager.ACTION_PUSH_RECEIVED)) {
 
-            int id = intent.getIntExtra(PushManager.EXTRA_NOTIFICATION_ID, 0);
+            int id = intent.getIntExtra(com.urbanairship.push.PushManager.EXTRA_NOTIFICATION_ID, 0);
 
             Log.i(logTag, "Received push notification. Alert: "
-                    + intent.getStringExtra(PushManager.EXTRA_ALERT)
+                    + intent.getStringExtra(com.urbanairship.push.PushManager.EXTRA_ALERT)
                     + " [NotificationID=" + id + "]");
 
             logPushExtras(intent);
 
             //TODO: Now notify observer
 
-        } else if (action.equals(PushManager.ACTION_NOTIFICATION_OPENED)) {
+        } else if (action.equals(com.urbanairship.push.PushManager.ACTION_NOTIFICATION_OPENED)) {
 
         } else if (action.equals(GCMMessageHandler.ACTION_GCM_DELETED_MESSAGES)) {
             Log.i(logTag,
@@ -93,13 +91,13 @@ public class PushIntentReceiver extends BroadcastReceiver {
                             + intent.getStringExtra(GCMMessageHandler.EXTRA_GCM_TOTAL_DELETED)
                             + " messages."
                     );
-        } else if (action.equals(PushManager.ACTION_REGISTRATION_FINISHED)) {
-            String apid = intent.getStringExtra(PushManager.EXTRA_APID);
+        } else if (action.equals(com.urbanairship.push.PushManager.ACTION_REGISTRATION_FINISHED)) {
+            String apid = intent.getStringExtra(com.urbanairship.push.PushManager.EXTRA_APID);
             Log.i(logTag, "Push registration finished " + apid);
             if (apid != null
-                    && OPDataManager.getInstance().isAccountReady()) {
-                OPPushManager.getInstance().associateDeviceToken(
-                        OPDataManager.getInstance().getCurrentUser().getPeerUri(),
+                    && HOPDataManager.getInstance().isAccountReady()) {
+                PushManager.getInstance().associateDeviceToken(
+                        HOPDataManager.getInstance().getCurrentUser().getPeerUri(),
                         apid,
                         new Callback<HackApiService.HackAssociateResult>() {
                             @Override
@@ -138,9 +136,9 @@ public class PushIntentReceiver extends BroadcastReceiver {
             List<String> ignoredKeys = (List<String>) Arrays.asList(
                     "collapse_key",// c2dm collapse key
                     "from",// c2dm sender
-                    PushManager.EXTRA_NOTIFICATION_ID,// int id of generated notification (ACTION_PUSH_RECEIVED only)
-                    PushManager.EXTRA_PUSH_ID,// internal UA push id
-                    PushManager.EXTRA_ALERT);// ignore alert
+                    com.urbanairship.push.PushManager.EXTRA_NOTIFICATION_ID,// int id of generated notification (ACTION_PUSH_RECEIVED only)
+                    com.urbanairship.push.PushManager.EXTRA_PUSH_ID,// internal UA push id
+                    com.urbanairship.push.PushManager.EXTRA_ALERT);// ignore alert
             if (ignoredKeys.contains(key)) {
                 continue;
             }

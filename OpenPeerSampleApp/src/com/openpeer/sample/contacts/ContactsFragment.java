@@ -53,7 +53,7 @@ import android.widget.SearchView;
 import com.openpeer.sample.BaseFragment;
 import com.openpeer.sample.R;
 import com.openpeer.sample.view.ProgressEmptyView;
-import com.openpeer.sdk.app.OPDataManager;
+import com.openpeer.sdk.app.HOPDataManager;
 import com.openpeer.sdk.datastore.DatabaseContracts.RolodexContactEntry;
 
 import butterknife.ButterKnife;
@@ -170,7 +170,7 @@ public class ContactsFragment extends BaseFragment implements SwipeRefreshLayout
 
 	@Override
 	public void onRefresh() {
-		OPDataManager.getInstance().refreshContacts();
+		HOPDataManager.getInstance().refreshContacts();
 		mRootLayout.setRefreshing(false);
 	}
 
@@ -215,7 +215,7 @@ public class ContactsFragment extends BaseFragment implements SwipeRefreshLayout
         case URL_LOADER:
             emptyView.showProgress();
             return new CursorLoader(getActivity(), // Parent activity context
-                    OPDataManager.getInstance()
+                    HOPDataManager.getInstance()
                             .getContentUri(RolodexContactEntry.URI_PATH_INFO),
 
                     null, // Projection to return

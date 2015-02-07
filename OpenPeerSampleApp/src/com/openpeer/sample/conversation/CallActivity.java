@@ -38,7 +38,7 @@ import android.view.Window;
 import com.openpeer.sample.BaseActivity;
 import com.openpeer.sample.IntentData;
 import com.openpeer.sample.R;
-import com.openpeer.sdk.app.OPDataManager;
+import com.openpeer.sdk.app.HOPDataManager;
 
 public class CallActivity extends BaseActivity {
 
@@ -47,7 +47,7 @@ public class CallActivity extends BaseActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        if (!OPDataManager.getInstance().isAccountReady()) {
+        if (!HOPDataManager.getInstance().isAccountReady()) {
             BaseActivity.showInvalidStateWarning(this);
             finish();
             return;

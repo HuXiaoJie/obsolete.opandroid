@@ -38,9 +38,9 @@ import com.openpeer.javaapi.OPContact;
 import com.openpeer.javaapi.OPConversationThread;
 import com.openpeer.javaapi.OPIdentityContact;
 import com.openpeer.javaapi.OPMessage;
-import com.openpeer.sdk.app.OPDataManager;
+import com.openpeer.sdk.app.HOPDataManager;
 import com.openpeer.sdk.utils.CollectionUtils;
-import com.openpeer.sdk.utils.OPModelUtils;
+import com.openpeer.sdk.utils.HOPModelUtils;
 
 import java.util.ArrayList;
 import java.util.Hashtable;
@@ -50,8 +50,8 @@ import java.util.Observable;
 /**
  * A session represents exact state of a conversation thread.
  */
-public class OPConversation extends Observable {
-    private static final String TAG = OPConversation.class.getSimpleName();
+public class HOPConversation extends Observable {
+    private static final String TAG = HOPConversation.class.getSimpleName();
 
     // So if Alice and Bob, Eric in group chat, Alice then added Mike, a new
     // session is created but from Alice point of view,
@@ -62,7 +62,7 @@ public class OPConversation extends Observable {
     private String lastReadMessageId;
     private OPMessage mLastMessage;
     private Hashtable<String, OPMessage> mMessageDeliveryQueue;
-    private OPConversationEvent mLastEvent;
+    private HOPConversationEvent mLastEvent;
 
     //try to keep the data fields correspond to database columns
     private long _id;// database id
@@ -88,34 +88,35 @@ public class OPConversation extends Observable {
         return removed;
     }
 
-    public ParticipantInfo getParticipantInfo() {
-        return participantInfo;
+    public HOPParticipantInfo getParticipantInfo() {
+        return HOPParticipantInfo;
     }
 
-    void setParticipantInfo(ParticipantInfo participantInfo) {
-        this.participantInfo = participantInfo;
+    void setParticipantInfo(HOPParticipantInfo HOPParticipantInfo) {
+        this.HOPParticipantInfo = HOPParticipantInfo;
     }
 
-    ParticipantInfo participantInfo;
+    HOPParticipantInfo HOPParticipantInfo;
     private GroupChatMode type;
 
-    public OPConversation(ParticipantInfo participantInfo, String conversationId, GroupChatMode mode) {
+    public HOPConversation(HOPParticipantInfo HOPParticipantInfo, String conversationId,
+                           GroupChatMode mode) {
         this.conversationId = conversationId;
         type = mode;
-        this.participantInfo = participantInfo;
+        this.HOPParticipantInfo = HOPParticipantInfo;
     }
 
     long save() {
-        _id = OPDataManager.getInstance().saveConversation(this);
+        _id = HOPDataManager.getInstance().saveConversation(this);
         return _id;
     }
 
-    public static void registerDelegate(ConversationDelegate listener) {
-        ConversationManager.getInstance().registerDelegate(listener);
+    public static void registerDelegate(HOPConversationDelegate listener) {
+        HOPConversationManager.getInstance().registerDelegate(listener);
     }
 
-    public static void unregisterDelegate(ConversationDelegate listener) {
-        ConversationManager.getInstance().unregisterDelegate(listener);
+    public static void unregisterDelegate(HOPConversationDelegate listener) {
+        HOPConversationManager.getInstance().unregisterDelegate(listener);
     }
 
     public String getTopic() {
@@ -129,7 +130,7 @@ public class OPConversation extends Observable {
 
     public void setDisabled(boolean disabled){
         removed =disabled;
-        OPDataManager.getInstance().updateConversation(this);
+        HOPDataManager.getInstance().updateConversation(this);
     }
 
     private Hashtable<String, OPMessage> getMessageDeliveryQueue() {
@@ -147,9 +148,9 @@ public class OPConversation extends Observable {
                                     message.getMessageType(), message.getMessage(), signMessage);
         if(message.getMessageType().equals(OPMessage.TYPE_TEXT)) {
             if (!TextUtils.isEmpty(message.getReplacesMessageId())) {
-                OPDataManager.getInstance().updateMessage(message, this);
+                HOPDataManager.getInstance().updateMessage(message, this);
             } else {
-                OPDataManager.getInstance().saveMessage(message, conversationId, participantInfo);
+                HOPDataManager.getInstance().saveMessage(message, conversationId, HOPParticipantInfo);
 
             }
         }
@@ -174,7 +175,7 @@ public class OPConversation extends Observable {
     }
 
     public OPCall getCurrentCall() {
-        return CallManager.getInstance().findCallByCbcId(participantInfo.getCbcId());
+        return HOPCallManager.getInstance().findCallByCbcId(HOPParticipantInfo.getCbcId());
     }
 
     /**
@@ -191,7 +192,7 @@ public class OPConversation extends Observable {
 
     OPConversationThread getThread(boolean createIfNo) {
         if (mConvThread == null && createIfNo) {
-            mConvThread = ConversationManager.getInstance().getThread(type, conversationId, participantInfo,createIfNo);
+            mConvThread = HOPConversationManager.getInstance().getThread(type, conversationId, HOPParticipantInfo,createIfNo);
         }
         return mConvThread;
     }
@@ -209,23 +210,23 @@ public class OPConversation extends Observable {
     }
 
     public long getCurrentCbcId() {
-        return participantInfo.getCbcId();
+        return HOPParticipantInfo.getCbcId();
     }
 
-    public OPConversationEvent getLastEvent() {
+    public HOPConversationEvent getLastEvent() {
         return mLastEvent;
     }
 
-    public void onNewEvent(OPConversationEvent event) {
-        OPDataManager.getInstance().saveConversationEvent(event);
+    public void onNewEvent(HOPConversationEvent event) {
+        HOPDataManager.getInstance().saveConversationEvent(event);
         mLastEvent = event;
     }
 
-    private void addContactsToThread(List<OPUser> users) {
-        OPModelUtils.addParticipantsToThread(mConvThread,users);
+    private void addContactsToThread(List<HOPContact> users) {
+        HOPModelUtils.addParticipantsToThread(mConvThread, users);
     }
 
-    public OPCall placeCall(OPUser user,
+    public OPCall placeCall(HOPContact user,
                             boolean includeAudio, boolean includeVideo) {
 
         OPContact newContact = user.getOPContact();
@@ -239,16 +240,16 @@ public class OPConversation extends Observable {
      *
      * @return
      */
-    public List<OPUser> getParticipants() {
-        return participantInfo.getParticipants();
+    public List<HOPContact> getParticipants() {
+        return HOPParticipantInfo.getParticipants();
     }
 
     public void setCbcId(long cbcId) {
-        participantInfo.setCbcId(cbcId);
+        HOPParticipantInfo.setCbcId(cbcId);
     }
 
-    public void setParticipants(List<OPUser> participants) {
-        participantInfo.setUsers(participants);
+    public void setParticipants(List<HOPContact> participants) {
+        HOPParticipantInfo.setUsers(participants);
     }
 
     private OPMessage getLastMessage() {
@@ -272,67 +273,68 @@ public class OPConversation extends Observable {
 
     }
 
-    public void addParticipants(List<OPUser> users) {
+    public void addParticipants(List<HOPContact> users) {
         if (mConvThread != null) {
             addContactsToThread(users);
         } else {
-            long oldCbcId = participantInfo.getCbcId();
-            participantInfo.addUsers(users);
-            participantInfo.setCbcId(OPModelUtils.getWindowId(participantInfo.getParticipants()));
-            ConversationManager.getInstance().onConversationParticipantsChange(this, oldCbcId,
-                                                                               participantInfo
+            long oldCbcId = HOPParticipantInfo.getCbcId();
+            HOPParticipantInfo.addUsers(users);
+            HOPParticipantInfo.setCbcId(HOPModelUtils.getWindowId(HOPParticipantInfo
+                                                                      .getParticipants()));
+            HOPConversationManager.getInstance().onConversationParticipantsChange(this, oldCbcId,
+                                                                               HOPParticipantInfo
                                                                                    .getCbcId());
 
-            OPConversationEvent event = OPConversationEvent.newContactsChangeEvent(
+            HOPConversationEvent event = HOPConversationEvent.newContactsChangeEvent(
                 getConversationId(),
                 getCurrentCbcId(),
-                OPModelUtils.getUserIds(users), null);
+                HOPModelUtils.getUserIds(users), null);
             onNewEvent(event);
-            OPDataManager.getInstance().updateConversation(this);
-            ConversationManager.getInstance().notifyContactsChanged(this);
+            HOPDataManager.getInstance().updateConversation(this);
+            HOPConversationManager.getInstance().notifyContactsChanged(this);
         }
     }
 
-    public void removeParticipants(List<OPUser> users) {
+    public void removeParticipants(List<HOPContact> users) {
         if (mConvThread != null) {
-            sendMessage(SystemMessage.getContactsRemovedSystemMessage(
-                OPModelUtils.getPeerUris(users)), false);
-            OPModelUtils.removeParticipantsFromThread(mConvThread, users);
+            sendMessage(HOPSystemMessage.getContactsRemovedSystemMessage(
+                HOPModelUtils.getPeerUris(users)), false);
+            HOPModelUtils.removeParticipantsFromThread(mConvThread, users);
         } else {
-            long oldCbcId = participantInfo.getCbcId();
+            long oldCbcId = HOPParticipantInfo.getCbcId();
 
-            participantInfo.getParticipants().removeAll(users);
-            participantInfo.setCbcId(OPModelUtils.getWindowId(participantInfo.getParticipants()));
-            ConversationManager.getInstance().onConversationParticipantsChange(this, oldCbcId,
-                                                                               participantInfo
+            HOPParticipantInfo.getParticipants().removeAll(users);
+            HOPParticipantInfo.setCbcId(HOPModelUtils.getWindowId(HOPParticipantInfo.getParticipants()));
+            HOPConversationManager.getInstance().onConversationParticipantsChange(this, oldCbcId,
+                                                                               HOPParticipantInfo
                                                                                    .getCbcId());
-            OPConversationEvent event = OPConversationEvent.newContactsChangeEvent(
+            HOPConversationEvent event = HOPConversationEvent.newContactsChangeEvent(
                 getConversationId(),
                 getCurrentCbcId(),
                 null,
-                OPModelUtils.getUserIds(users));
+                HOPModelUtils.getUserIds(users));
             onNewEvent(event);
-            OPDataManager.getInstance().updateConversation(this);
+            HOPDataManager.getInstance().updateConversation(this);
 
-            ConversationManager.getInstance().notifyContactsChanged(this);
+            HOPConversationManager.getInstance().notifyContactsChanged(this);
         }
     }
 
     void onMessageReceived(OPConversationThread thread, OPMessage message) {
             OPContact opContact = message.getFrom();
-            OPUser sender = OPDataManager.getInstance().
+            HOPContact sender = HOPDataManager.getInstance().
                 getUserByPeerUri(opContact.getPeerURI());
         if (message.getMessageType().equals(OPMessage.TYPE_TEXT)) {
             if (sender == null) {
                 List<OPIdentityContact> contacts = thread.getIdentityContactList(opContact);
-                sender = OPDataManager.getInstance().getUser(opContact, contacts);
+                sender = HOPDataManager.getInstance().getUser(opContact, contacts);
             }
             message.setSenderId(sender.getUserId());
             if (!TextUtils.isEmpty(message.getReplacesMessageId())) {
-                OPDataManager.getInstance().updateMessage(message, this);
+                HOPDataManager.getInstance().updateMessage(message, this);
             } else {
-                OPDataManager.getInstance().saveMessage(message, conversationId,
-                                                        participantInfo);
+                HOPDataManager.getInstance().saveMessage(message, conversationId,
+                                                        HOPParticipantInfo);
             }
             selectActiveThread(thread);
         }
@@ -342,7 +344,7 @@ public class OPConversation extends Observable {
      * @return ID array of the participants, excluding yourself
      */
     public long[] getParticipantIDs() {
-        return OPModelUtils.getUserIds(participantInfo.getParticipants());
+        return HOPModelUtils.getUserIds(HOPParticipantInfo.getParticipants());
     }
 
     /**
@@ -350,19 +352,19 @@ public class OPConversation extends Observable {
      *
      * @param users new users list
      */
-    public void onContactsChanged(List<OPUser> users) {
+    public void onContactsChanged(List<HOPContact> users) {
         switch (type){
         case thread:{
-            long cbcId = OPModelUtils.getWindowId(users);
+            long cbcId = HOPModelUtils.getWindowId(users);
             if (cbcId == getCurrentCbcId()) {
                 return;
             }
 
-            List<OPUser> addedUsers = new ArrayList<>();
-            List<OPUser> removedUsers = new ArrayList<>();
-            OPModelUtils.findChangedUsers(participantInfo.getParticipants(), users,
-                                          addedUsers,
-                                          removedUsers);
+            List<HOPContact> addedUsers = new ArrayList<>();
+            List<HOPContact> removedUsers = new ArrayList<>();
+            HOPModelUtils.findChangedUsers(HOPParticipantInfo.getParticipants(), users,
+                                           addedUsers,
+                                           removedUsers);
             if (!addedUsers.isEmpty()) {
                 addParticipants(addedUsers);
             }
@@ -381,10 +383,10 @@ public class OPConversation extends Observable {
      */
     public boolean onContactsChanged(OPConversationThread conversationThread) {
 
-        List<OPUser> currentUsers = participantInfo.getParticipants();
-        List<OPUser> newUsers = conversationThread.getParticipantInfo().getParticipants();
-        List<OPUser> addedUsers = new ArrayList<OPUser>();
-        List<OPUser> deletedUsers = new ArrayList<OPUser>();
+        List<HOPContact> currentUsers = HOPParticipantInfo.getParticipants();
+        List<HOPContact> newUsers = conversationThread.getParticipantInfo().getParticipants();
+        List<HOPContact> addedUsers = new ArrayList<HOPContact>();
+        List<HOPContact> deletedUsers = new ArrayList<HOPContact>();
 
         CollectionUtils.diff(currentUsers, newUsers, addedUsers, deletedUsers);
         if (addedUsers.isEmpty() && deletedUsers.isEmpty()) {
@@ -392,25 +394,25 @@ public class OPConversation extends Observable {
             return false;
         }
 
-        long oldCbcId = participantInfo.getCbcId();
+        long oldCbcId = HOPParticipantInfo.getCbcId();
         mConvThread = conversationThread;
-        participantInfo = conversationThread.getParticipantInfo();
-        ConversationManager.getInstance().onConversationParticipantsChange(this, oldCbcId,
-                                                                           participantInfo
+        HOPParticipantInfo = conversationThread.getParticipantInfo();
+        HOPConversationManager.getInstance().onConversationParticipantsChange(this, oldCbcId,
+                                                                           HOPParticipantInfo
                                                                                .getCbcId());
-        OPConversationEvent event = OPConversationEvent.
+        HOPConversationEvent event = HOPConversationEvent.
             newContactsChangeEvent(getConversationId(),
                                    getCurrentCbcId(),
-                                   OPModelUtils.getUserIds(addedUsers),
-                                   OPModelUtils.getUserIds(deletedUsers));
+                                   HOPModelUtils.getUserIds(addedUsers),
+                                   HOPModelUtils.getUserIds(deletedUsers));
         onNewEvent(event);
-        OPDataManager.getInstance().updateConversation(this);
+        HOPDataManager.getInstance().updateConversation(this);
         return true;
     }
 
-    public static OPConversation onConversationParticipantsChanged(OPConversation conversation,
-                                                            List<OPUser> newParticipants) {
-        return ConversationManager.getInstance().onConversationParticipantsChanged(conversation,newParticipants);
+    public static HOPConversation onConversationParticipantsChanged(HOPConversation conversation,
+                                                            List<HOPContact> newParticipants) {
+        return HOPConversationManager.getInstance().onConversationParticipantsChanged(conversation,newParticipants);
     }
 
 
@@ -449,7 +451,7 @@ public class OPConversation extends Observable {
      * view is open
      */
     public void markAllMessagesRead() {
-        OPDataManager.getInstance().markMessagesRead(this);
+        HOPDataManager.getInstance().markMessagesRead(this);
         if (mConvThread != null) {
             mConvThread.markAllMessagesRead();
         }
@@ -467,10 +469,10 @@ public class OPConversation extends Observable {
         }
     }
 
-    public void onMessagePushed(String messageId,OPUser user){
+    public void onMessagePushed(String messageId,HOPContact user){
 
     }
-    public void onMessagePushFailure(String messageId,OPUser user){
+    public void onMessagePushFailure(String messageId,HOPContact user){
 
     }
 }

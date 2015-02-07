@@ -31,12 +31,12 @@ package com.openpeer.javaapi;
 
 import android.util.Log;
 
-import com.openpeer.sdk.app.OPDataManager;
+import com.openpeer.sdk.app.HOPDataManager;
+import com.openpeer.sdk.model.HOPContact;
 import com.openpeer.sdk.model.GroupChatMode;
-import com.openpeer.sdk.model.OPUser;
-import com.openpeer.sdk.model.ParticipantInfo;
+import com.openpeer.sdk.model.HOPParticipantInfo;
 import com.openpeer.sdk.model.ThreadMetaData;
-import com.openpeer.sdk.utils.OPModelUtils;
+import com.openpeer.sdk.utils.HOPModelUtils;
 
 import java.util.List;
 
@@ -45,19 +45,19 @@ public class OPConversationThread {
     private static final String TAG = OPConversationThread.class
             .getSimpleName();
 
-    ParticipantInfo mParticipantInfo;
+    HOPParticipantInfo mHOPParticipantInfo;
     GroupChatMode mConversationType;
 
-    public ParticipantInfo getParticipantInfo() {
-        if (mParticipantInfo == null) {
-            List<OPUser> users = OPModelUtils.getParticipantsOfThread(this);
-            mParticipantInfo = new ParticipantInfo(OPModelUtils.getWindowId(users), users);
+    public HOPParticipantInfo getParticipantInfo() {
+        if (mHOPParticipantInfo == null) {
+            List<HOPContact> users = HOPModelUtils.getParticipantsOfThread(this);
+            mHOPParticipantInfo = new HOPParticipantInfo(HOPModelUtils.getWindowId(users), users);
         }
-        return mParticipantInfo;
+        return mHOPParticipantInfo;
     }
 
-    public void setParticipantInfo(ParticipantInfo mParticipants) {
-        this.mParticipantInfo = mParticipants;
+    public void setParticipantInfo(HOPParticipantInfo mParticipants) {
+        this.mHOPParticipantInfo = mParticipants;
     }
 
     public GroupChatMode getConverationType() {
@@ -77,7 +77,7 @@ public class OPConversationThread {
     public OPMessage getMessageById(String messageID) {
         OPMessage message = getMessage(messageID);
         OPContact from = message.getFrom();
-        OPUser user = OPDataManager.getInstance().getUser(from,
+        HOPContact user = HOPDataManager.getInstance().getUser(from,
                 getIdentityContactList(from));
         message.setSenderId(user.getUserId());
         return message;

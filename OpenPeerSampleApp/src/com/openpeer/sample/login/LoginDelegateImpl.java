@@ -33,15 +33,15 @@ import com.openpeer.javaapi.IdentityStates;
 import com.openpeer.javaapi.OPAccount;
 import com.openpeer.javaapi.OPIdentity;
 import com.openpeer.sample.events.SignoutCompleteEvent;
-import com.openpeer.sdk.app.LoginDelegate;
-import com.openpeer.sdk.app.LoginManager;
+import com.openpeer.sdk.login.HOPLoginDelegate;
+import com.openpeer.sdk.login.HOPLoginManager;
 
 /**
  * The listener monitor the Account/Identity login state changes and show appropriate UI
  * indications. Activity should register this to the
  * LoginManager upon creation and unregister upon destroy
  */
-public class LoginDelegateImpl implements LoginDelegate {
+public class LoginDelegateImpl implements HOPLoginDelegate {
     LoginViewHandler viewHandler;//The actual activity that implements the same interface
 
     private static LoginDelegateImpl instance;
@@ -68,7 +68,7 @@ public class LoginDelegateImpl implements LoginDelegate {
             break;
         case AccountState_WaitingForBrowserWindowToBeLoaded:
             if (viewHandler != null) {
-                viewHandler.loadAccountLoginUrl(LoginManager.getAccountLoginUrl());
+                viewHandler.loadAccountLoginUrl(HOPLoginManager.getAccountLoginUrl());
                 return true;
             }
             return false;
@@ -107,7 +107,7 @@ public class LoginDelegateImpl implements LoginDelegate {
             return true;
         case IdentityState_WaitingForBrowserWindowToBeLoaded:{
             if (viewHandler != null) {
-                viewHandler.loadIdentityLoginUrl(identity,LoginManager.getIdentityLoginUrl());
+                viewHandler.loadIdentityLoginUrl(identity, HOPLoginManager.getIdentityLoginUrl());
                 return true;
             }
             return false;

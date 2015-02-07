@@ -31,8 +31,7 @@ package com.openpeer.sample.conversation;
 
 import android.database.Cursor;
 
-import com.openpeer.sdk.app.OPDataManager;
-import com.openpeer.sdk.datastore.DatabaseContracts.MessageEntry;
+import com.openpeer.sdk.app.HOPDataManager;
 import com.openpeer.sdk.datastore.DatabaseContracts.WindowViewEntry;
 
 public class ChatInfo {
@@ -159,7 +158,7 @@ public class ChatInfo {
     public String getAvatarUri(int width, int height) {
         // todo: Support proper selection of avatar url
         long rolodexId = mRolodexIDs[0];
-        String uri = OPDataManager.getInstance().getAvatarUri(rolodexId,
+        String uri = HOPDataManager.getInstance().getAvatarUri(rolodexId,
                                                                        width, height);
         return uri;
     }

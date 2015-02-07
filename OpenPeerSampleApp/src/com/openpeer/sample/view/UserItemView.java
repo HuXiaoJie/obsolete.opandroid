@@ -41,14 +41,14 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.openpeer.sample.R;
-import com.openpeer.sdk.model.OPUser;
+import com.openpeer.sdk.model.HOPContact;
 import com.squareup.picasso.Picasso;
 
 import butterknife.ButterKnife;
 import butterknife.InjectView;
 
 public class UserItemView extends FrameLayout implements ItemViewInterface {
-    OPUser mUser;
+    HOPContact mUser;
     @InjectView(R.id.imageView)
     ImageView imageView;
     @InjectView(R.id.textView)
@@ -78,12 +78,12 @@ public class UserItemView extends FrameLayout implements ItemViewInterface {
 
     @Override
     public void update(Object user) {
-        mUser = (OPUser) user;
+        mUser = (HOPContact) user;
         String avatarUri = mUser.getAvatarUri();
         if(!TextUtils.isEmpty(avatarUri)) {
             Picasso.with(getContext()).load(avatarUri).into(imageView);
         }
-        textView.setText(((OPUser) user).getName());
+        textView.setText(((HOPContact) user).getName());
         removeView.setVisibility(mDeleteMode ? VISIBLE : GONE);
     }
 }

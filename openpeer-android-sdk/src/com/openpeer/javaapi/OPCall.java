@@ -33,12 +33,10 @@ import java.util.List;
 
 import android.text.format.Time;
 
-import com.openpeer.sdk.app.OPDataManager;
-import com.openpeer.sdk.model.OPUser;
+import com.openpeer.sdk.app.HOPDataManager;
+import com.openpeer.sdk.model.HOPContact;
 
 public class OPCall {
-    public static final int DIRECTION_OUTGOING = 0;
-    public static final int DIRECTION_INCOMING = 1;
 
     public long getCbcId() {
         return mCbcId;
@@ -72,9 +70,9 @@ public class OPCall {
      * 
      * @return
      */
-    public OPUser getPeerUser() {
+    public HOPContact getPeerUser() {
         OPContact contact = getPeer();
-        return OPDataManager.getInstance().getUser(contact,
+        return HOPDataManager.getInstance().getUser(contact,
                 getIdentityContactList(contact));
     }
 
@@ -94,7 +92,7 @@ public class OPCall {
 
     // BEGINNING OF JNI -- BE CAREFUL OF ANY SIGNATURE CHANGES
     private long nativeClassPointer;
-    private OPUser mUser;
+
 
     public static native String toString(CallStates state);
 

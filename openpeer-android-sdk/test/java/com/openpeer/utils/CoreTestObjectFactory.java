@@ -39,10 +39,10 @@ import com.openpeer.javaapi.OPContact;
 import com.openpeer.javaapi.OPIdentity;
 import com.openpeer.javaapi.OPIdentityContact;
 import com.openpeer.javaapi.OPRolodexContact;
+import com.openpeer.sdk.model.HOPContact;
 import com.openpeer.sdk.model.GroupChatMode;
-import com.openpeer.sdk.model.OPConversation;
-import com.openpeer.sdk.model.OPConversationEvent;
-import com.openpeer.sdk.model.OPUser;
+import com.openpeer.sdk.model.HOPConversation;
+import com.openpeer.sdk.model.HOPConversationEvent;
 
 import org.mockito.Mockito;
 
@@ -85,12 +85,12 @@ public class CoreTestObjectFactory {
         return account;
     }
 
-    public static OPUser getMockHomeUser() {
+    public static HOPContact getMockHomeUser() {
         List<OPIdentityContact> identityContacts = new ArrayList<OPIdentityContact>();
         OPContact contact = getHomeOPContact();
         identityContacts.add(getCurrentUserIdentityContact());
 
-        OPUser user = new OPUser(contact, identityContacts);
+        HOPContact user = new HOPContact(contact, identityContacts);
         user.setUserId(1);
         return user;
     }
@@ -201,22 +201,22 @@ public class CoreTestObjectFactory {
         return contact;
     }
 
-    public static OPUser getUser1() {
+    public static HOPContact getUser1() {
         List<OPIdentityContact> identityContacts = new ArrayList<OPIdentityContact>();
 
         OPContact contact = getMockContact();
         identityContacts.add(getIdentityContact());
-        OPUser user = new OPUser(contact, identityContacts);
+        HOPContact user = new HOPContact(contact, identityContacts);
         user.setUserId(2);
         return user;
     }
 
-    public static OPUser getUser2() {
+    public static HOPContact getUser2() {
         List<OPIdentityContact> identityContacts = new ArrayList<OPIdentityContact>();
 
         OPContact contact = getMockContact1();
         identityContacts.add(getIdentityContact1());
-        OPUser user = new OPUser(contact, identityContacts);
+        HOPContact user = new HOPContact(contact, identityContacts);
         user.setUserId(3);
         return user;
     }
@@ -275,20 +275,20 @@ public class CoreTestObjectFactory {
         return contact1;
     }
 
-    public static OPConversation getMockConversation() {
-        List<OPUser> users = new ArrayList<OPUser>();
-        OPUser user1 = getUser1();
+    public static HOPConversation getMockConversation() {
+        List<HOPContact> users = new ArrayList<HOPContact>();
+        HOPContact user1 = getUser1();
 
-        OPUser user2 = getUser2();
+        HOPContact user2 = getUser2();
         users.add(user1);
         users.add(user2);
 
-        OPConversation conversation = Mockito.mock(OPConversation.class);
+        HOPConversation conversation = Mockito.mock(HOPConversation.class);
         Mockito.when(conversation.getParticipants()).thenReturn(users);
-        Mockito.when(conversation.getCurrentWindowId()).thenReturn(2530l);
+        Mockito.when(conversation.getCurrentCbcId()).thenReturn(2530l);
         Mockito.when(conversation.getType()).thenReturn(GroupChatMode.contact);
         Mockito.when(conversation.getConversationId()).thenReturn("contextId-01");
-        OPConversationEvent lastEvent = new OPConversationEvent(conversation, OPConversationEvent
+        HOPConversationEvent lastEvent = new HOPConversationEvent(conversation, HOPConversationEvent
             .EventTypes.ContactsChange, "no description");
         Mockito.when(conversation.getLastEvent()).thenReturn(lastEvent);
         return conversation;
@@ -302,7 +302,7 @@ public class CoreTestObjectFactory {
         Mockito.when(call.getCaller()).thenReturn(contact);
         Mockito.when(call.getCallee()).thenReturn(contactSelf);
         List<OPIdentityContact> identityContacts = new ArrayList<OPIdentityContact>();
-        OPUser user = getUser1();
+        HOPContact user = getUser1();
         Mockito.when(call.getPeerUser()).thenReturn(user);
         return call;
     }

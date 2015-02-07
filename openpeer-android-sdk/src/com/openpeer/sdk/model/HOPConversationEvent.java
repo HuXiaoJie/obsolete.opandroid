@@ -31,7 +31,7 @@ package com.openpeer.sdk.model;
 /**
  *
  */
-public class OPConversationEvent<T> {
+public class HOPConversationEvent<T> {
     String conversationId;
     private EventTypes eventType;
     private T event;
@@ -51,10 +51,10 @@ public class OPConversationEvent<T> {
         this.cbcId = cbcId;
     }
 
-    public static OPConversationEvent newContactsChangeEvent(String conversationId,
+    public static HOPConversationEvent newContactsChangeEvent(String conversationId,
                                                              long cbcId, long[] added,
                                                              long[] removed) {
-        OPConversationEvent<ContactsChange> changeEvent = new OPConversationEvent<ContactsChange>
+        HOPConversationEvent<ContactsChange> changeEvent = new HOPConversationEvent<ContactsChange>
             (conversationId,
                                                                                                   EventTypes.ContactsChange,
                                                                                                   null,
@@ -81,16 +81,16 @@ public class OPConversationEvent<T> {
      * @param type
      * @param event        TODO
      */
-    public OPConversationEvent(OPConversation conversation, EventTypes type, T event) {
+    public HOPConversationEvent(HOPConversation conversation, EventTypes type, T event) {
         this(conversation.getConversationId(), type, event, conversation.getCurrentCbcId(),
              System.currentTimeMillis());
     }
 
-    public OPConversationEvent(String conversationId,
-                               EventTypes event,
-                               T description,
-                               long cbcId,
-                               long time) {
+    public HOPConversationEvent(String conversationId,
+                                EventTypes event,
+                                T description,
+                                long cbcId,
+                                long time) {
         super();
         this.conversationId = conversationId;
         this.eventType = event;

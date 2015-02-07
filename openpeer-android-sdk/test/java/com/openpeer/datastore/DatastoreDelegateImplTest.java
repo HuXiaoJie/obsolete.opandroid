@@ -35,11 +35,11 @@ import com.openpeer.javaapi.OPCall;
 import com.openpeer.javaapi.OPIdentity;
 import com.openpeer.javaapi.OPLogger;
 import com.openpeer.javaapi.OPRolodexContact;
-import com.openpeer.sdk.app.OPDataManager;
+import com.openpeer.sdk.app.HOPDataManager;
+import com.openpeer.sdk.model.HOPContact;
 import com.openpeer.sdk.model.GroupChatMode;
-import com.openpeer.sdk.model.OPConversation;
-import com.openpeer.sdk.model.OPUser;
-import com.openpeer.sdk.model.ParticipantInfo;
+import com.openpeer.sdk.model.HOPConversation;
+import com.openpeer.sdk.model.HOPParticipantInfo;
 import com.openpeer.utils.CoreTestObjectFactory;
 
 import org.junit.After;
@@ -65,13 +65,13 @@ public class DatastoreDelegateImplTest {
     @Before
     public void setup() {
         Application application = Robolectric.application;
-        OPUser user = new OPUser();
+        HOPContact user = new HOPContact();
         user.setUserId(1);
         delegate = OPDatastoreDelegateImpl.getInstance();
         delegate.init(application);
         delegate.setupForTest();
         OPLogger.setIsUnitTest(true);
-        OPDataManager.getInstance().init(delegate);
+        HOPDataManager.getInstance().init(delegate);
     }
 
     @After
@@ -94,7 +94,7 @@ public class DatastoreDelegateImplTest {
     public void testSaveCall() {
 
         OPCall call = CoreTestObjectFactory.getMockCall();
-        OPConversation conversation = CoreTestObjectFactory.getMockConversation();
+        HOPConversation conversation = CoreTestObjectFactory.getMockConversation();
         long id = delegate.saveCall(call.getCallID(), conversation.getConversationId(),1 ,0 ,"audio" );
         Assert.assertEquals(1, id);
     }
@@ -117,13 +117,13 @@ public class DatastoreDelegateImplTest {
 
     @Test
     public void testSaveConversation() {
-        List<OPUser> users = new ArrayList<OPUser>();
-        OPUser user1 = CoreTestObjectFactory.getUser1();
-        OPUser user2 = CoreTestObjectFactory.getUser2();
+        List<HOPContact> users = new ArrayList<HOPContact>();
+        HOPContact user1 = CoreTestObjectFactory.getUser1();
+        HOPContact user2 = CoreTestObjectFactory.getUser2();
         users.add(user1);
         users.add(user2);
-        ParticipantInfo info=new ParticipantInfo(2530l,users);
-        OPConversation conversation = new OPConversation(info, "123", GroupChatMode.contact);
+        HOPParticipantInfo info=new HOPParticipantInfo(2530l,users);
+        HOPConversation conversation = new HOPConversation(info, "123", GroupChatMode.contact);
         long id = delegate.saveConversation(conversation);
         Assert.assertEquals(id, 1);
     }

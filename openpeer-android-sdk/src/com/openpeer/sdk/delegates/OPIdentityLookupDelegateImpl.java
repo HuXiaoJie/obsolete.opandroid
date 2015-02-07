@@ -30,15 +30,13 @@
 package com.openpeer.sdk.delegates;
 
 import java.util.Hashtable;
-import java.util.List;
 
 import android.util.Log;
 
 import com.openpeer.javaapi.OPIdentity;
-import com.openpeer.javaapi.OPIdentityContact;
 import com.openpeer.javaapi.OPIdentityLookup;
 import com.openpeer.javaapi.OPIdentityLookupDelegate;
-import com.openpeer.sdk.app.OPDataManager;
+import com.openpeer.sdk.app.HOPDataManager;
 
 /**
  * Default implementatiion of OPIdentityLookupDelegate. Handles identity lookup result and save it to datastore.
@@ -73,7 +71,7 @@ public class OPIdentityLookupDelegateImpl extends OPIdentityLookupDelegate {
 		String url = mIdentity.getIdentityURI();
 		Log.d(TAG, "onIdentityLookupCompleted " + lookup);
 
-		OPDataManager.getInstance().onIdentityLookupCompleted(url, lookup);
+		HOPDataManager.getInstance().onIdentityLookupCompleted(url, lookup);
 		instances.remove(url);
 
 	}

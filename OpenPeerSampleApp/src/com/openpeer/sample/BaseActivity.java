@@ -47,15 +47,14 @@ import com.openpeer.sample.events.SignoutCompleteEvent;
 import com.openpeer.sample.login.LoginDelegateImpl;
 import com.openpeer.sample.login.LoginViewHandler;
 import com.openpeer.sample.push.HackApiService;
-import com.openpeer.sample.push.OPPushManager;
+import com.openpeer.sample.push.PushManager;
 import com.openpeer.sample.push.parsepush.PFPushService;
 import com.openpeer.sample.util.SettingsHelper;
-import com.openpeer.sdk.app.LoginManager;
-import com.openpeer.sdk.app.OPDataManager;
-import com.openpeer.sdk.app.OPHelper;
-import com.openpeer.sdk.app.OPIdentityLoginWebViewClient;
-import com.openpeer.sdk.app.OPIdentityLoginWebview;
-import com.urbanairship.push.PushManager;
+import com.openpeer.sdk.app.HOPDataManager;
+import com.openpeer.sdk.app.HOPHelper;
+import com.openpeer.sdk.login.HOPIdentityLoginWebViewClient;
+import com.openpeer.sdk.login.HOPLoginManager;
+import com.openpeer.sdk.login.HOPIdentityLoginWebview;
 
 import java.util.Hashtable;
 
@@ -74,20 +73,20 @@ public class BaseActivity extends BaseFragmentActivity implements LoginViewHandl
     public void onResume() {
         super.onResume();
         if (mStack == 0) {
-            OPHelper.getInstance().onEnteringForeground();
-            LoginManager.getInstance().onEnteringForeground();
+            HOPHelper.getInstance().onEnteringForeground();
+            HOPLoginManager.getInstance().onEnteringForeground();
             BackgroundingManager.onEnteringForeground();
         }
         mStack++;
 
-        if (OPHelper.getInstance().isSigningOut()) {
+        if (HOPHelper.getInstance().isSigningOut()) {
             showSignoutView();
-        } else if (!OPDataManager.getInstance().isAccountReady()) {
+        } else if (!HOPDataManager.getInstance().isAccountReady()) {
 
-            if (!LoginManager.getInstance().loginPerformed()) {
+            if (!HOPLoginManager.getInstance().loginPerformed()) {
                 LoginDelegateImpl.getInstance().registerViewHandler(this);
-                LoginManager.getInstance().startLogin();
-            } else if (!LoginManager.getInstance().isLoggingIn()) {
+                HOPLoginManager.getInstance().startLogin();
+            } else if (!HOPLoginManager.getInstance().isLoggingIn()) {
                 AlertDialog.Builder builder = new AlertDialog.Builder(this);
                 builder.setMessage(
                     "Looks like you're disconnected. Do you want to login?")
@@ -99,7 +98,7 @@ public class BaseActivity extends BaseFragmentActivity implements LoginViewHandl
                                                                int which) {
                                                LoginDelegateImpl.getInstance()
                                                    .registerViewHandler(BaseActivity.this);
-                                               LoginManager.getInstance().startLogin();
+                                               HOPLoginManager.getInstance().startLogin();
                                                dialog.dismiss();
                                            }
                                        })
@@ -133,7 +132,7 @@ public class BaseActivity extends BaseFragmentActivity implements LoginViewHandl
         super.onPause();
         mStack--;
         if (mStack == 0) {
-            OPHelper.getInstance().onEnteringBackground();
+            HOPHelper.getInstance().onEnteringBackground();
             BackgroundingManager.onEnteringBackground();
         }
         EventBus.getDefault().unregister(this);
@@ -159,7 +158,7 @@ public class BaseActivity extends BaseFragmentActivity implements LoginViewHandl
     WebView mAccountLoginWebView;
     ViewGroup mLoginViewContainer;
     ProgressDialog progressDialog;
-    Hashtable<Long, OPIdentityLoginWebview> mIdentityWebviews = new Hashtable<Long, OPIdentityLoginWebview>();
+    Hashtable<Long, HOPIdentityLoginWebview> mIdentityWebviews = new Hashtable<Long, HOPIdentityLoginWebview>();
 
 
     ViewGroup getLoginViewContainer() {
@@ -180,11 +179,11 @@ public class BaseActivity extends BaseFragmentActivity implements LoginViewHandl
         progressDialog.show();
     }
 
-    OPIdentityLoginWebview getIdentityWebview(OPIdentity identity) {
-        OPIdentityLoginWebview view = mIdentityWebviews.get(identity.getID());
+    HOPIdentityLoginWebview getIdentityWebview(OPIdentity identity) {
+        HOPIdentityLoginWebview view = mIdentityWebviews.get(identity.getID());
         if (view == null) {
-            view = new OPIdentityLoginWebview(getLoginViewContainer().getContext());
-            OPIdentityLoginWebViewClient client = new OPIdentityLoginWebViewClient(identity);
+            view = new HOPIdentityLoginWebview(getLoginViewContainer().getContext());
+            HOPIdentityLoginWebViewClient client = new HOPIdentityLoginWebViewClient(identity);
             view.setClient(client);
             setupWebView(view);
             getLoginViewContainer().addView(view, new ViewGroup.LayoutParams(
@@ -250,15 +249,15 @@ public class BaseActivity extends BaseFragmentActivity implements LoginViewHandl
             PFPushService.getInstance().init();
         }
         if(SettingsHelper.getInstance().isUAPushEnabled()) {
-            PushManager.enablePush();
+            com.urbanairship.push.PushManager.enablePush();
 
             // TODO: move it to proper place after login refactoring.
-            String apid = PushManager.shared().getAPID();
+            String apid = com.urbanairship.push.PushManager.shared().getAPID();
             if (!TextUtils.isEmpty(apid)) {
-                OPPushManager.getInstance()
+                PushManager.getInstance()
                     .associateDeviceToken(
-                        OPDataManager.getInstance().getCurrentUser().getPeerUri(),
-                        PushManager.shared().getAPID(),
+                        HOPDataManager.getInstance().getCurrentUser().getPeerUri(),
+                        com.urbanairship.push.PushManager.shared().getAPID(),
                         new Callback<HackApiService.HackAssociateResult>() {
                             @Override
                             public void success(
@@ -279,7 +278,7 @@ public class BaseActivity extends BaseFragmentActivity implements LoginViewHandl
     @Override
     public void showIdentityLoginWebView(OPIdentity identity) {
         hideProgressView();
-        OPIdentityLoginWebview view = getIdentityWebview(identity);
+        HOPIdentityLoginWebview view = getIdentityWebview(identity);
         view.setVisibility(View.VISIBLE);
         view.bringToFront();
     }
@@ -303,7 +302,7 @@ public class BaseActivity extends BaseFragmentActivity implements LoginViewHandl
 
     @Override
     public void closeIdentityLoginWebView(OPIdentity identity) {
-        OPIdentityLoginWebview view = getIdentityWebview(identity);
+        HOPIdentityLoginWebview view = getIdentityWebview(identity);
         if (view != null) {
             getLoginViewContainer().removeView(view);
         }
@@ -343,7 +342,7 @@ public class BaseActivity extends BaseFragmentActivity implements LoginViewHandl
     @Override
     public void onIdentityShutdown(OPIdentity identity) {
         hideProgressView();
-        OPIdentityLoginWebview view = getIdentityWebview(identity);
+        HOPIdentityLoginWebview view = getIdentityWebview(identity);
         if (view != null) {
             getLoginViewContainer().removeView(view);
         }

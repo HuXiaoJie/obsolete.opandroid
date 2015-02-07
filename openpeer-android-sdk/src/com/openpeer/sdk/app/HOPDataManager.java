@@ -65,13 +65,13 @@ import com.openpeer.sdk.datastore.OPModelCursorHelper;
 import com.openpeer.sdk.delegates.OPIdentityLookupDelegateImpl;
 import com.openpeer.sdk.model.CallEvent;
 import com.openpeer.sdk.model.CallSystemMessage;
+import com.openpeer.sdk.model.HOPContact;
 import com.openpeer.sdk.model.GroupChatMode;
+import com.openpeer.sdk.model.HOPConversation;
+import com.openpeer.sdk.model.HOPConversationEvent;
+import com.openpeer.sdk.model.HOPParticipantInfo;
 import com.openpeer.sdk.model.MessageEditState;
 import com.openpeer.sdk.model.MessageEvent;
-import com.openpeer.sdk.model.OPConversation;
-import com.openpeer.sdk.model.OPConversationEvent;
-import com.openpeer.sdk.model.OPUser;
-import com.openpeer.sdk.model.ParticipantInfo;
 
 import static com.openpeer.sdk.datastore.DatabaseContracts.COLUMN_PEER_URI;
 
@@ -79,10 +79,10 @@ import static com.openpeer.sdk.datastore.DatabaseContracts.COLUMN_PEER_URI;
  * Hold reference to objects that cannot be constructed from database,
  * and manages contacts data change.
  */
-public class OPDataManager {
-    private static final String TAG = OPDataManager.class.getSimpleName();
+public class HOPDataManager {
+    private static final String TAG = HOPDataManager.class.getSimpleName();
 
-    private static OPDataManager instance;
+    private static HOPDataManager instance;
 
     private OPAccount mAccount;
     private Hashtable<Long, OPIdentity> mIdentities;
@@ -93,8 +93,8 @@ public class OPDataManager {
     /**
      * Users cache using peer uri as index
      */
-    private Hashtable<String, OPUser> mUsers = new Hashtable<String, OPUser>();
-    private Hashtable<Long, OPUser> mUsersById = new Hashtable<Long, OPUser>();
+    private Hashtable<String, HOPContact> mUsers = new Hashtable<String, HOPContact>();
+    private Hashtable<Long, HOPContact> mUsersById = new Hashtable<Long, HOPContact>();
 
     private ContentUriResolver mContentUriProvider;
 
@@ -115,9 +115,9 @@ public class OPDataManager {
         }
     }
 
-    public static OPDataManager getInstance() {
+    public static HOPDataManager getInstance() {
         if (instance == null) {
-            instance = new OPDataManager();
+            instance = new HOPDataManager();
         }
         return instance;
     }
@@ -187,10 +187,10 @@ public class OPDataManager {
         }
 
         OPIdentityLookup identityLookup = OPIdentityLookup.create(
-            OPDataManager.getInstance().getSharedAccount(),
+            HOPDataManager.getInstance().getSharedAccount(),
             mIdentityLookupDelegate,
             inputLookupList,
-            OPSdkConfig.getInstance()
+            HOPSettingsHelper.getInstance()
                 .getIdentityProviderDomain());//
         // "identity-v1-rel-lespaul-i.hcs.io");
         if (identityLookup != null) {
@@ -258,14 +258,14 @@ public class OPDataManager {
      *
      */
     public void afterSignout() {
-        OPDataManager.getInstance().onSignOut();
+        HOPDataManager.getInstance().onSignOut();
     }
 
     public void setContentUriProvider(ContentUriResolver provider) {
         mContentUriProvider = provider;
     }
 
-    public OPUser getCurrentUser() {
+    public HOPContact getCurrentUser() {
         if (getCurrentUserId() != 0) {
 
             return getUserById(getCurrentUserId());
@@ -384,8 +384,8 @@ public class OPDataManager {
     }
 
 
-    public OPUser getUserByPeerUri(String peerUri) {
-        OPUser user = mUsers.get(peerUri);
+    public HOPContact getUserByPeerUri(String peerUri) {
+        HOPContact user = mUsers.get(peerUri);
         if (user != null) {
             return user;
         }
@@ -405,14 +405,14 @@ public class OPDataManager {
     }
 
 
-    public OPUser getUser(OPContact contact,
+    public HOPContact getUser(OPContact contact,
                           List<OPIdentityContact> identityContacts) {
         String peerUri = contact.getPeerURI();
-        OPUser user = mUsers.get(peerUri);
+        HOPContact user = mUsers.get(peerUri);
         if (user != null) {
             return user;
         }
-        user = new OPUser(contact, identityContacts);
+        user = new HOPContact(contact, identityContacts);
         long contactRecordId = 0;
         if (identityContacts == null || identityContacts.size() == 0) {
             OPLogger.error(OPLogLevel.LogLevel_Basic,
@@ -472,28 +472,28 @@ public class OPDataManager {
     }
 
 
-    public List<OPUser> getUsers(long[] userIDs) {
-        List<OPUser> users = new ArrayList<OPUser>();
+    public List<HOPContact> getUsers(long[] userIDs) {
+        List<HOPContact> users = new ArrayList<HOPContact>();
         for (long userId : userIDs) {
-            OPUser user = getUserById(userId);
+            HOPContact user = getUserById(userId);
             users.add(user);
         }
         return users;
     }
 
 
-    public List<OPUser> getUsersByCbcId(long cbcId) {
+    public List<HOPContact> getUsersByCbcId(long cbcId) {
         Cursor cursor = query(DatabaseContracts.ParticipantEntry.TABLE_NAME,
                               new String[]{DatabaseContracts.ParticipantEntry.COLUMN_CONTACT_ID},
                               DatabaseContracts.ParticipantEntry.COLUMN_CBC_ID + "=" + cbcId,
                               null);
         if (cursor != null) {
             if (cursor.getCount() > 0) {
-                List<OPUser> users = new ArrayList<>(cursor.getCount());
+                List<HOPContact> users = new ArrayList<>(cursor.getCount());
                 cursor.moveToFirst();
                 while (!cursor.isAfterLast()) {
                     long userId = cursor.getLong(0);
-                    OPUser user = getUserById(userId);
+                    HOPContact user = getUserById(userId);
                     if (user != null) {
                         users.add(user);
                     }
@@ -506,8 +506,8 @@ public class OPDataManager {
         return null;
     }
 
-    public OPUser getUserById(long id) {
-        OPUser user = mUsersById.get(id);
+    public HOPContact getUserById(long id) {
+        HOPContact user = mUsersById.get(id);
         if (user != null) {
             return user;
         }
@@ -522,14 +522,14 @@ public class OPDataManager {
         return user;
     }
 
-    public OPConversation getConversation(GroupChatMode type, ParticipantInfo participantInfo,
+    public HOPConversation getConversation(GroupChatMode type, HOPParticipantInfo HOPParticipantInfo,
                                           String conversationId) {
         String where = null;
         String args[] = null;
         switch (type){
         case contact:{
             where = DatabaseContracts.ConversationEntry.COLUMN_PARTICIPANTS + "=" +
-                participantInfo.getCbcId() +
+                HOPParticipantInfo.getCbcId() +
 
                 " and " + DatabaseContracts.ConversationEntry.COLUMN_TYPE + "=?";
             args = new String[]{type.name()};
@@ -546,14 +546,14 @@ public class OPDataManager {
             break;
         }
         Cursor cursor = query(DatabaseContracts.ConversationEntry.TABLE_NAME, null, where, args);
-        OPConversation conversation = null;
+        HOPConversation conversation = null;
         if (cursor.getCount() == 1) {
             cursor.moveToFirst();
             // We always use existing conversationId
             conversationId = cursor.getString(cursor.getColumnIndex(DatabaseContracts
                                                                         .ConversationEntry
                                                                         .COLUMN_CONVERSATION_ID));
-            conversation = new OPConversation(participantInfo, conversationId, type);
+            conversation = new HOPConversation(HOPParticipantInfo, conversationId, type);
             conversation.setId(cursor.getLong(0));
             conversation.setCbcId(cursor.getLong(cursor.getColumnIndex(DatabaseContracts
                                                                            .ConversationEntry
@@ -570,17 +570,17 @@ public class OPDataManager {
         return conversation;
     }
 
-    public List<OPConversationEvent> getConversationEvents(OPConversation conversation) {
-        List<OPConversationEvent> events = null;
+    public List<HOPConversationEvent> getConversationEvents(HOPConversation conversation) {
+        List<HOPConversationEvent> events = null;
         Cursor cursor = query(DatabaseContracts.ConversationEventEntry.TABLE_NAME, null,
                               DatabaseContracts.ConversationEventEntry.COLUMN_CONVERSATION_ID +
                                   "=?", new String[]{conversation.getConversationId()});
         if (cursor.getCount() > 0) {
-            events = new ArrayList<OPConversationEvent>();
+            events = new ArrayList<HOPConversationEvent>();
             cursor.moveToFirst();
             while (!cursor.isLast()) {
-                OPConversationEvent event = new OPConversationEvent(conversation,
-                                                                    OPConversationEvent
+                HOPConversationEvent event = new HOPConversationEvent(conversation,
+                                                                    HOPConversationEvent
                                                                         .EventTypes.valueOf
                                                                         (cursor.getString(cursor
                                                                                               .getColumnIndex(DatabaseContracts.ConversationEventEntry.COLUMN_EVENT))),
@@ -653,7 +653,7 @@ public class OPDataManager {
     }
 
 
-    public void markMessagesRead(OPConversation conversation) {
+    public void markMessagesRead(HOPConversation conversation) {
         ContentValues values = new ContentValues();
         values.put(DatabaseContracts.MessageEntry.COLUMN_MESSAGE_READ, 1);
         String where = DatabaseContracts.MessageEntry.COLUMN_MESSAGE_READ + "=0 ";
@@ -665,7 +665,7 @@ public class OPDataManager {
     }
 
 
-    public int updateMessage(OPMessage message, OPConversation conversation) {
+    public int updateMessage(OPMessage message, HOPConversation conversation) {
         int count = 0;
 
         MessageEvent event = null;
@@ -713,7 +713,7 @@ public class OPDataManager {
 
 
     public Uri saveMessage(OPMessage message, String conversationId,
-                           ParticipantInfo participantInfo) {
+                           HOPParticipantInfo HOPParticipantInfo) {
         ContentValues values = new ContentValues();
         values.put(DatabaseContracts.MessageEntry.COLUMN_MESSAGE_ID, message.getMessageId());
         values.put(DatabaseContracts.MessageEntry.COLUMN_MESSAGE_TEXT, message.getMessage());
@@ -722,7 +722,7 @@ public class OPDataManager {
         values.put(DatabaseContracts.MessageEntry.COLUMN_SENDER_ID, message.getSenderId());
 
         values.put(DatabaseContracts.MessageEntry.COLUMN_CONTEXT_ID, conversationId);
-        values.put(DatabaseContracts.MessageEntry.COLUMN_CBC_ID, participantInfo.getCbcId());
+        values.put(DatabaseContracts.MessageEntry.COLUMN_CBC_ID, HOPParticipantInfo.getCbcId());
         values.put(DatabaseContracts.MessageEntry.COLUMN_MESSAGE_READ, message.isRead());
         values.put(DatabaseContracts.MessageEntry.COLUMN_EDIT_STATUS,
                    message.getEditState().ordinal());
@@ -906,7 +906,7 @@ public class OPDataManager {
     }
 
 
-    public long saveConversation(OPConversation conversation) {
+    public long saveConversation(HOPConversation conversation) {
         long id = 0;
         String where = conversation.getType() == GroupChatMode.contact ? DatabaseContracts
             .ConversationEntry
@@ -938,7 +938,7 @@ public class OPDataManager {
         return id;
     }
 
-    public long updateConversation(OPConversation conversation) {
+    public long updateConversation(HOPConversation conversation) {
         ContentValues values = new ContentValues();
         values.put(DatabaseContracts.ConversationEntry.COLUMN_PARTICIPANTS,
                    conversation.getCurrentCbcId());
@@ -955,7 +955,7 @@ public class OPDataManager {
         return count;
     }
 
-    public long saveConversationEvent(OPConversationEvent event) {
+    public long saveConversationEvent(HOPConversationEvent event) {
         ContentValues values = new ContentValues();
         values.put(DatabaseContracts.ConversationEventEntry.COLUMN_CONVERSATION_ID,
                    event.getConversationId());
@@ -1052,7 +1052,7 @@ public class OPDataManager {
         return false;
     }
 
-    private OPUser saveUser(OPUser user, long associatedIdentityId) {
+    private HOPContact saveUser(HOPContact user, long associatedIdentityId) {
 
         OPContact opContact = user.getOPContact();
         List<OPIdentityContact> identityContacts = user
@@ -1221,10 +1221,10 @@ public class OPDataManager {
      * @param cursor
      * @return
      */
-    private OPUser fromDetailCursor(Cursor cursor) {
+    private HOPContact fromDetailCursor(Cursor cursor) {
 
         if (cursor != null & cursor.getCount() > 0) {
-            OPUser user = new OPUser();
+            HOPContact user = new HOPContact();
             List<OPIdentityContact> contacts = new ArrayList<OPIdentityContact>();
             cursor.moveToFirst();
 
@@ -1322,13 +1322,13 @@ public class OPDataManager {
      *
      * @param user
      */
-    private void cacheUser(OPUser user) {
+    private void cacheUser(HOPContact user) {
         mUsers.put(user.getPeerUri(), user);
         mUsersById.put(user.getUserId(), user);
     }
 
 
-    public void saveParticipants(long windowId, List<OPUser> userList) {
+    public void saveParticipants(long windowId, List<HOPContact> userList) {
         long id = simpleQueryForId(DatabaseContracts.ParticipantEntry.TABLE_NAME,
                                    DatabaseContracts.ParticipantEntry.COLUMN_CBC_ID + "=" +
                                        windowId, null);
@@ -1339,7 +1339,7 @@ public class OPDataManager {
         // now insert the participants
         ContentValues contentValues[] = new ContentValues[userList.size()];
         for (int i = 0; i < userList.size(); i++) {
-            OPUser user = userList.get(i);
+            HOPContact user = userList.get(i);
             contentValues[i] = new ContentValues();
             contentValues[i].put(DatabaseContracts.ParticipantEntry.COLUMN_CBC_ID, windowId);
             contentValues[i].put(
@@ -1503,7 +1503,7 @@ public class OPDataManager {
                 String peerfile = contact.getPeerFilePublic()
                     .getPeerFileString();
                 OPContact opContact = OPContact
-                    .createFromPeerFilePublic(OPDataManager
+                    .createFromPeerFilePublic(HOPDataManager
                                                   .getInstance().getSharedAccount(),
                                               peerfile);
                 String peerUri = opContact.getPeerURI();
@@ -1592,7 +1592,7 @@ public class OPDataManager {
             long rolodexId = cursor.getLong(0);
             long opId = cursor.getLong(1);
             if (opId > 0) {
-                OPUser user = mUsersById.get(opId);
+                HOPContact user = mUsersById.get(opId);
                 if (user != null) {
                     mUsersById.remove(opId);
                     mUsers.remove(user.getPeerUri());
@@ -1690,7 +1690,7 @@ public class OPDataManager {
 
     private ContentResolver getContentResolver() {
         if (mContext == null) {
-            mContext = OPHelper.getInstance().getApplicationContext();
+            mContext = HOPHelper.getInstance().getApplicationContext();
         }
         return mContext.getContentResolver();
     }

@@ -31,9 +31,9 @@ package com.openpeer.javaapi;
 
 import android.text.format.Time;
 
-import com.openpeer.sdk.app.OPDataManager;
+import com.openpeer.sdk.app.HOPDataManager;
+import com.openpeer.sdk.model.HOPContact;
 import com.openpeer.sdk.model.MessageEditState;
-import com.openpeer.sdk.model.OPUser;
 
 public class OPMessage {
     public static final int DS_DISCOVERING = 0;
@@ -183,8 +183,8 @@ public class OPMessage {
      *
      * @return
      */
-    public OPUser getFromUser() {
-        return OPDataManager.getInstance().getUserById(mSenderId);
+    public HOPContact getFromUser() {
+        return HOPDataManager.getInstance().getUserById(mSenderId);
     }
 
     /**

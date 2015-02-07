@@ -43,11 +43,9 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 
-import com.openpeer.javaapi.OPAccount;
 import com.openpeer.sample.contacts.ContactsFragment;
 import com.openpeer.sample.conversation.ChatsFragment;
 import com.openpeer.sample.conversation.DiscoveryFragment;
-import com.openpeer.sdk.app.OPDataManager;
 
 public class MainActivity extends BaseActivity implements ChatsFragment.ChatsViewListener {
     TabsAdapter mTabsAdapter;

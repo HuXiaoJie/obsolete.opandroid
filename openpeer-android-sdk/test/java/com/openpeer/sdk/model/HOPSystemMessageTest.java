@@ -29,11 +29,21 @@ package com.openpeer.sdk.model;
  * of the authors and should not be interpreted as representing official policies,
  * either expressed or implied, of the FreeBSD Project.
  */
+
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.robolectric.RobolectricTestRunner;
+import org.robolectric.annotation.Config;
 
-public class OPUserTest {
+@Config(emulateSdk = 17)
+@RunWith(RobolectricTestRunner.class)
+public class HOPSystemMessageTest {
     @Test
-    public void testGetPreferredIdentityContact(){
-
+    public void testConstruct() {
+        String messageStr = "{\"system\":{\"callStatus\":{\"$id\":\"adf\",\"status\":\"placed\",\"mediaType\":\"audio\", \"callee\":\"peer://opp.me/kadjfadkfj\",\"error\":{\"$id\":404}}}}";
+        HOPSystemMessage<CallSystemMessage> HOPSystemMessage = HOPSystemMessage.parseSystemMessage(messageStr);
+        assert (HOPSystemMessage.system!=null);
+        assert (HOPSystemMessage.system.callStatus!=null);
+        assert (HOPSystemMessage.system.callStatus.id.equals("adf"));
     }
 }

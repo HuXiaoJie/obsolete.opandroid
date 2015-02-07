@@ -38,10 +38,10 @@ import android.util.Log;
 import com.openpeer.javaapi.OPContact;
 import com.openpeer.javaapi.OPContactProfileInfo;
 import com.openpeer.javaapi.OPConversationThread;
-import com.openpeer.sdk.app.OPDataManager;
-import com.openpeer.sdk.model.OPUser;
+import com.openpeer.sdk.app.HOPDataManager;
+import com.openpeer.sdk.model.HOPContact;
 
-public class OPModelUtils {
+public class HOPModelUtils {
 
     /**
      * Calculate a unique window id for contacts based group chat mode
@@ -52,7 +52,7 @@ public class OPModelUtils {
      */
     public static long getWindowId(long userIds[]) {
         long tmp[] = new long[userIds.length + 1];
-        tmp[userIds.length] = OPDataManager.getInstance().getCurrentUserId();
+        tmp[userIds.length] = HOPDataManager.getInstance().getCurrentUserId();
         System.arraycopy(userIds, 0, tmp, 0, userIds.length);
         Arrays.sort(tmp);
         String arr[] = new String[tmp.length];
@@ -72,7 +72,7 @@ public class OPModelUtils {
      *            List of participants
      * @return
      */
-    public static long getWindowId(List<OPUser> users) {
+    public static long getWindowId(List<HOPContact> users) {
 
         return getWindowId(getUserIdsArray(users));
     }
@@ -80,10 +80,10 @@ public class OPModelUtils {
     public static long getWindowIdForThread(OPConversationThread mConvThread) {
 
         List<OPContact> contacts = mConvThread.getContacts();
-        List<OPUser> users = new ArrayList<OPUser>();
+        List<HOPContact> users = new ArrayList<HOPContact>();
         for (OPContact contact : contacts) {
             if (!contact.isSelf()) {
-                OPUser user = OPDataManager.getInstance().getUser(
+                HOPContact user = HOPDataManager.getInstance().getUser(
                         contact,
                         mConvThread.getIdentityContactList(contact));
                 // This function will also set the userId so don't worry
@@ -93,38 +93,38 @@ public class OPModelUtils {
         return getWindowId(users);
     }
 
-    public static long[] getUserIdsArray(List<OPUser> users){
+    public static long[] getUserIdsArray(List<HOPContact> users){
         long userIds[] = new long[users.size()];
         for (int i = 0; i < userIds.length; i++) {
-            OPUser user = users.get(i);
+            HOPContact user = users.get(i);
             userIds[i] = user.getUserId();
         }
         return userIds;
     }
 
-    public static void findChangedUsers(List<OPUser> mParticipants,
-                                        List<OPUser> currentParticipants,
-                                        List<OPUser> newContacts,
-                                        List<OPUser> deletedContacts){
+    public static void findChangedUsers(List<HOPContact> mParticipants,
+                                        List<HOPContact> currentParticipants,
+                                        List<HOPContact> newHOPContacts,
+                                        List<HOPContact> deletedHOPContacts){
 
-        for (OPUser user : mParticipants) {
+        for (HOPContact user : mParticipants) {
             if (!currentParticipants.contains(user)) {
-                deletedContacts.add(user);
+                deletedHOPContacts.add(user);
             }
         }
-        for (OPUser user : currentParticipants) {
+        for (HOPContact user : currentParticipants) {
             if (!mParticipants.contains(user)) {
-                newContacts.add(user);
+                newHOPContacts.add(user);
             }
         }
     }
 
-    public static List<OPUser> getParticipantsOfThread(OPConversationThread thread){
-        List<OPUser> users = new ArrayList<>();
+    public static List<HOPContact> getParticipantsOfThread(OPConversationThread thread){
+        List<HOPContact> users = new ArrayList<>();
         List<OPContact> contacts = thread.getContacts();
         for (OPContact contact : contacts) {
             if (!contact.isSelf()) {
-                OPUser user = OPDataManager.getInstance().getUser(
+                HOPContact user = HOPDataManager.getInstance().getUser(
                     contact,
                     thread.getIdentityContactList(contact));
                 // This function will also set the userId so don't worry
@@ -134,38 +134,38 @@ public class OPModelUtils {
         return users;
     }
 
-    public static void addParticipantsToThread(OPConversationThread thread, List<OPUser> users){
+    public static void addParticipantsToThread(OPConversationThread thread, List<HOPContact> users){
         thread.addContacts(getProfileInfo(users));
     }
-    public static void removeParticipantsFromThread(OPConversationThread thread,List<OPUser> users){
+    public static void removeParticipantsFromThread(OPConversationThread thread,List<HOPContact> users){
         List<OPContact> contacts = new ArrayList<>(users.size());
-        for (OPUser user : users) {
+        for (HOPContact user : users) {
             contacts.add(user.getOPContact());
         }
         thread.removeContacts(contacts);
     }
 
-    public static long[] getUserIds(List<OPUser> users){
+    public static long[] getUserIds(List<HOPContact> users){
         long IDs[] = new long[users.size()];
         for (int i = 0; i < IDs.length; i++) {
-            OPUser user = users.get(i);
+            HOPContact user = users.get(i);
             IDs[i] = user.getUserId();
         }
         return IDs;
     }
 
-    public static String[] getPeerUris(List<OPUser> users){
+    public static String[] getPeerUris(List<HOPContact> users){
         String[] peerUris = new String[users.size()];
         int i = 0;
-        for (OPUser user : users) {
+        for (HOPContact user : users) {
             peerUris[i++] = user.getPeerUri();
         }
         return peerUris;
     }
 
-    public static List<OPContactProfileInfo> getProfileInfo(List<OPUser> users) {
+    public static List<OPContactProfileInfo> getProfileInfo(List<HOPContact> users) {
         List<OPContactProfileInfo> contactProfiles = new ArrayList<>();
-        for (OPUser user : users) {
+        for (HOPContact user : users) {
             if (!user.getOPContact().isSelf()) {
                 OPContactProfileInfo info = new OPContactProfileInfo();
 

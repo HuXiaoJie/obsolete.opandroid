@@ -27,12 +27,13 @@
  *  of the authors and should not be interpreted as representing official policies,
  *  either expressed or implied, of the FreeBSD Project.
  *******************************************************************************/
-package com.openpeer.sdk.app;
+package com.openpeer.sdk.login;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 
 import com.openpeer.javaapi.OPIdentity;
+import com.openpeer.sdk.app.HOPSettingsHelper;
 import com.openpeer.sdk.utils.StringUtils;
 
 import android.graphics.Bitmap;
@@ -41,7 +42,7 @@ import android.webkit.WebResourceResponse;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 
-public class OPIdentityLoginWebViewClient extends WebViewClient {
+public class HOPIdentityLoginWebViewClient extends WebViewClient {
 
     OPIdentity mIdentity;
 
@@ -51,7 +52,7 @@ public class OPIdentityLoginWebViewClient extends WebViewClient {
 
     boolean mInnerFrameLoaded;
 
-    public OPIdentityLoginWebViewClient(OPIdentity identity) {
+    public HOPIdentityLoginWebViewClient(OPIdentity identity) {
         mIdentity = identity;
     }
 
@@ -110,7 +111,7 @@ public class OPIdentityLoginWebViewClient extends WebViewClient {
     @Override
     public void onPageFinished(WebView view, String url) {
         Log.d("login", "IdentityLoginWebview onPageFinished " + url);
-        if (url.contains(OPSdkConfig.getInstance().getOuterFrameUrl())) {
+        if (url.contains(HOPSettingsHelper.getInstance().getOuterFrameUrl())) {
             Log.d("login",
                     "IdentityLoginWebview onPageFinished setting data encoding to hex");
             view.loadUrl("javascript:window.init({datapassEncoding: \"hex\"});");

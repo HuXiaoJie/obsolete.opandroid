@@ -1,8 +1,10 @@
 package com.openpeer.sdk.model;
 
+import android.text.format.Time;
+
 import com.openpeer.javaapi.OPMessage;
 import com.openpeer.javaapi.OPSystemMessage;
-import com.openpeer.sdk.app.OPDataManager;
+import com.openpeer.sdk.app.HOPDataManager;
 import com.openpeer.sdk.utils.JSONUtils;
 
 import org.json.JSONArray;
@@ -15,7 +17,7 @@ import java.util.UUID;
  * {"system":{"callStatus":{"$id":"adf","status":"placed","mediaType":"audio",
  * "callee":"peer://opp.me/kadjfadkfj","error":{"$id":404}}}
  */
-public class SystemMessage {
+public class HOPSystemMessage {
     public static final String KEY_ROOT = "system";
     public static final String KEY_CALL_STATUS = "callStatus";
     public static final String KEY_CONTACTS_REMOVED = "contactsRemoved";
@@ -28,7 +30,7 @@ public class SystemMessage {
         JSONObject system = contactsRemovedMessage(removedContacts);
         if (system != null) {
             OPMessage message = new OPMessage(
-                OPDataManager.getInstance().getCurrentUserId(),
+                HOPDataManager.getInstance().getCurrentUserId(),
                 OPSystemMessage.getMessageType(),
                 system.toString(),
                 System.currentTimeMillis(),
@@ -51,6 +53,36 @@ public class SystemMessage {
             e.printStackTrace();
             return null;
         }
+    }
+
+    public static OPMessage getCallSystemMessage(String status, HOPCall call) {
+        int callClosedReason = -1;
+        switch (status){
+        case CallSystemMessage.STATUS_HUNGUP:
+            if (Time.isEpoch(call.getAnswerTime())) {
+                callClosedReason = 404;
+            } else {
+                callClosedReason = call.getClosedReason();
+            }
+            break;
+        }
+
+        String mediaType = call.hasVideo() ? CallSystemMessage.MEDIATYPE_VIDEO :
+            CallSystemMessage.MEDIATYPE_AUDIO;
+        JSONObject callSystemMessage = HOPSystemMessage.CallSystemMessage(
+            call.getCallID(),
+            status,
+            mediaType,
+            call.getPeerUser().getPeerUri(),
+            callClosedReason);
+
+        OPMessage message = new OPMessage(
+            HOPDataManager.getInstance().getCurrentUserId(),
+            OPSystemMessage.getMessageType(),
+            callSystemMessage.toString(),
+            System.currentTimeMillis(),
+            UUID.randomUUID().toString());
+        return message;
     }
 
     public static JSONObject CallSystemMessage(String id,
@@ -102,7 +134,7 @@ public class SystemMessage {
     static OPMessage getSystemMessage(JSONObject system) {
         if (system != null) {
             OPMessage message = new OPMessage(
-                OPDataManager.getInstance().getCurrentUserId(),
+                HOPDataManager.getInstance().getCurrentUserId(),
                 OPSystemMessage.getMessageType(),
                 system.toString(),
                 System.currentTimeMillis(),

@@ -36,22 +36,21 @@ import android.util.Log;
 
 import com.openpeer.javaapi.OPMessage;
 import com.openpeer.sample.OPNotificationBuilder;
-import com.openpeer.sdk.app.OPDataManager;
-import com.openpeer.sdk.model.ConversationManager;
+import com.openpeer.sdk.app.HOPDataManager;
+import com.openpeer.sdk.model.HOPContact;
+import com.openpeer.sdk.model.HOPConversationManager;
 import com.openpeer.sdk.model.GroupChatMode;
+import com.openpeer.sdk.model.HOPConversation;
+import com.openpeer.sdk.model.HOPParticipantInfo;
 import com.openpeer.sdk.model.MessageEditState;
-import com.openpeer.sdk.model.OPConversation;
-import com.openpeer.sdk.model.OPUser;
-import com.openpeer.sdk.model.ParticipantInfo;
-import com.openpeer.sdk.utils.OPModelUtils;
-import com.urbanairship.push.PushNotificationBuilder;
+import com.openpeer.sdk.utils.HOPModelUtils;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-public class OPPushNotificationBuilder implements PushNotificationBuilder {
-    static final String TAG = OPPushNotificationBuilder.class.getSimpleName();
+public class PushNotificationBuilder implements com.urbanairship.push.PushNotificationBuilder {
+    static final String TAG = PushNotificationBuilder.class.getSimpleName();
 
     static final String KEY_PEER_URI = "peerURI";
     static final String KEY_MESSAGE_TYPE = "messageType";
@@ -73,12 +72,12 @@ public class OPPushNotificationBuilder implements PushNotificationBuilder {
         String conversationType = extras.get(KEY_CONVERSATION_TYPE);
         String conversationId = extras.get(KEY_CONVERSATION_ID);
         // If message is already received, ignore notification
-        if (null != OPDataManager.getInstance().getMessage(messageId)) {
+        if (null != HOPDataManager.getInstance().getMessage(messageId)) {
             Log.e(TAG, "received push for message that is already received "
                 + messageId);
             return null;
         }
-        OPUser sender = OPDataManager.getInstance().getUserByPeerUri(senderUri);
+        HOPContact sender = HOPDataManager.getInstance().getUserByPeerUri(senderUri);
         if (sender == null) {
             Log.e("test", "Couldn't find user for peer " + senderUri);
             return null;
@@ -90,12 +89,12 @@ public class OPPushNotificationBuilder implements PushNotificationBuilder {
                                           messageId,
                                           MessageEditState.Normal);
         String peerURIsString = extras.get("peerURIs");
-        List<OPUser> users = new ArrayList<>();
+        List<HOPContact> users = new ArrayList<>();
         users.add(sender);
         if (!TextUtils.isEmpty(peerURIsString)) {
             String peerURIs[] = TextUtils.split(peerURIsString, ",");
             for (String uri : peerURIs) {
-                OPUser user = OPDataManager.getInstance().getUserByPeerUri(uri);
+                HOPContact user = HOPDataManager.getInstance().getUserByPeerUri(uri);
                 if (user == null) {
                     //TODO: error handling
                     Log.e(TAG, "peerUri user not found " + uri);
@@ -105,13 +104,14 @@ public class OPPushNotificationBuilder implements PushNotificationBuilder {
                 }
             }
         }
-        ParticipantInfo participantInfo = new ParticipantInfo(OPModelUtils.getWindowId(users),
+        HOPParticipantInfo HOPParticipantInfo = new HOPParticipantInfo(HOPModelUtils.getWindowId
+            (users),
                                                               users);
         //Make sure conversation is saved in db.
-        OPConversation conversation = ConversationManager.getInstance().getConversation
-            (GroupChatMode.valueOf(conversationType), participantInfo, conversationId, true);
-        OPDataManager.getInstance().saveMessage(message,
-                                                conversationId, participantInfo);
+        HOPConversation conversation = HOPConversationManager.getInstance().getConversation
+            (GroupChatMode.valueOf(conversationType), HOPParticipantInfo, conversationId, true);
+        HOPDataManager.getInstance().saveMessage(message,
+                                                conversationId, HOPParticipantInfo);
         //For contact based conversation, teh conversation id might be different.
         return OPNotificationBuilder.buildNotificationForMessage(
             new long[]{sender.getUserId()}, message, conversationType, conversation.getConversationId());
@@ -120,10 +120,10 @@ public class OPPushNotificationBuilder implements PushNotificationBuilder {
     @Override
     public int getNextId(String alert, Map<String, String> extras) {
         String senderUri = extras.get(KEY_PEER_URI);
-        OPUser sender = OPDataManager.getInstance().getUserByPeerUri(
+        HOPContact sender = HOPDataManager.getInstance().getUserByPeerUri(
             senderUri);
         if (sender != null) {
-            return (int) OPModelUtils.getWindowId(new long[]{
+            return (int) HOPModelUtils.getWindowId(new long[]{
                 sender.getUserId()});
         }
         return 0;

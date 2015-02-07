@@ -10,10 +10,10 @@ import com.openpeer.sample.OPApplication;
 import com.openpeer.sample.OPNotificationBuilder;
 import com.openpeer.sample.conversation.CallActivity;
 import com.openpeer.sample.events.CallStateChangeEvent;
-import com.openpeer.sdk.model.CallDelegate;
-import com.openpeer.sdk.model.CallManager;
+import com.openpeer.sdk.model.HOPCallDelegate;
+import com.openpeer.sdk.model.HOPCallManager;
 
-public class CallDelegateImpl implements CallDelegate {
+public class CallDelegateImpl implements HOPCallDelegate {
     private static CallDelegateImpl instance;
 
     public static CallDelegateImpl getInstance() {
@@ -43,7 +43,7 @@ public class CallDelegateImpl implements CallDelegate {
             String callId = call.getCallID();
             OPNotificationBuilder.cancelNotificationForCall(callId);
 
-            if (!CallManager.getInstance().hasCalls() &&
+            if (!HOPCallManager.getInstance().hasCalls() &&
                 BackgroundingManager.isBackgroundingPending()) {
                 BackgroundingManager.onEnteringBackground();
             }

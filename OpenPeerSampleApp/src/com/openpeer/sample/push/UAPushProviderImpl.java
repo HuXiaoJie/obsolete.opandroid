@@ -31,7 +31,6 @@ package com.openpeer.sample.push;
 
 import android.util.Base64;
 
-import com.openpeer.sdk.utils.OPModelUtils;
 import com.urbanairship.AirshipConfigOptions;
 import com.urbanairship.UAirship;
 

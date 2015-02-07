@@ -43,52 +43,52 @@ import com.openpeer.javaapi.OPConversationThreadDelegate;
 import com.openpeer.javaapi.OPLogLevel;
 import com.openpeer.javaapi.OPLogger;
 import com.openpeer.javaapi.OPMessage;
-import com.openpeer.sdk.app.OPDataManager;
-import com.openpeer.sdk.app.OPSdkConfig;
-import com.openpeer.sdk.utils.OPModelUtils;
+import com.openpeer.sdk.app.HOPDataManager;
+import com.openpeer.sdk.app.HOPSettingsHelper;
+import com.openpeer.sdk.utils.HOPModelUtils;
 
 import java.util.Hashtable;
 import java.util.List;
 
-public class ConversationManager implements OPConversationThreadDelegate {
-    private static ConversationManager instance;
-    private Hashtable<Long, OPConversation> cbcIdToConversationTable;
-    private Hashtable<String, OPConversation> conversationTable;//conversationId to conversation
-    private ConversationDelegate mConversationDelegate;
+public class HOPConversationManager implements OPConversationThreadDelegate {
+    private static HOPConversationManager instance;
+    private Hashtable<Long, HOPConversation> cbcIdToConversationTable;
+    private Hashtable<String, HOPConversation> conversationTable;//conversationId to conversation
+    private HOPConversationDelegate mHOPConversationDelegate;
 
-    public static ConversationManager getInstance() {
+    public static HOPConversationManager getInstance() {
         if (instance == null) {
-            instance = new ConversationManager();
+            instance = new HOPConversationManager();
         }
         return instance;
     }
 
-    private ConversationManager() {
+    private HOPConversationManager() {
     }
 
-    public void registerDelegate(ConversationDelegate listener) {
-        mConversationDelegate = listener;
+    public void registerDelegate(HOPConversationDelegate listener) {
+        mHOPConversationDelegate = listener;
     }
 
-    public void unregisterDelegate(ConversationDelegate listener) {
-        mConversationDelegate = null;
+    public void unregisterDelegate(HOPConversationDelegate listener) {
+        mHOPConversationDelegate = null;
     }
 
-    void cacheCbcToConversation(long cbcId, OPConversation conversation) {
+    void cacheCbcToConversation(long cbcId, HOPConversation conversation) {
         if (cbcIdToConversationTable == null) {
             cbcIdToConversationTable = new Hashtable<>();
         }
         cbcIdToConversationTable.put(cbcId, conversation);
     }
 
-    void cacheConversation(OPConversation conversation) {
+    void cacheConversation(HOPConversation conversation) {
         if (conversationTable == null) {
             conversationTable = new Hashtable<>();
         }
         conversationTable.put(conversation.getConversationId(), conversation);
     }
 
-    void onConversationParticipantsChange(OPConversation conversation, long oldCbcId,
+    void onConversationParticipantsChange(HOPConversation conversation, long oldCbcId,
                                           long newCbcId) {
         if (oldCbcId != 0 && cbcIdToConversationTable != null) {
             cbcIdToConversationTable.remove(oldCbcId);
@@ -96,15 +96,15 @@ public class ConversationManager implements OPConversationThreadDelegate {
         cacheCbcToConversation(newCbcId, conversation);
     }
 
-    OPConversation getConversation(OPConversationThread thread, boolean createNew) {
+    HOPConversation getConversation(OPConversationThread thread, boolean createNew) {
         OPConversationThread t = getCachedThread(thread.getThreadID());
         thread = t == null ? thread : t;
-        OPConversation conversation = getConversation(thread.getConverationType(),
+        HOPConversation conversation = getConversation(thread.getConverationType(),
                                                       thread.getParticipantInfo(),
                                                       thread.getConversationId(), false);
 
         if (conversation == null && createNew) {
-            conversation = new OPConversation(thread.getParticipantInfo(),
+            conversation = new HOPConversation(thread.getParticipantInfo(),
                                               thread.getConversationId(),
                                               thread.getConverationType()
             );
@@ -116,27 +116,27 @@ public class ConversationManager implements OPConversationThreadDelegate {
         return conversation;
     }
 
-    public OPConversation getConversation(GroupChatMode type, ParticipantInfo participantInfo,
+    public HOPConversation getConversation(GroupChatMode type, HOPParticipantInfo HOPParticipantInfo,
                                           String conversationId,
                                           boolean createNew) {
-        OPConversation conversation = null;
+        HOPConversation conversation = null;
         switch (type){
         case contact:{
-            long cbcId = participantInfo.getCbcId();
+            long cbcId = HOPParticipantInfo.getCbcId();
             conversation = getConversationByCbcId(cbcId);
             if (conversation == null || conversation.getType() != GroupChatMode.contact) {
-                conversation = OPDataManager.getInstance().getConversation
-                    (type, participantInfo, conversationId);
+                conversation = HOPDataManager.getInstance().getConversation
+                    (type, HOPParticipantInfo, conversationId);
                 if (conversation != null) {
-                    conversation.setParticipants(participantInfo.getParticipants());
+                    conversation.setParticipants(HOPParticipantInfo.getParticipants());
                     if (!conversation.amIRemoved()) {
                         //For contact based conversation, teh conversation id might be different.
                         conversation.setThread(getThread(type,
                                                          conversation.getConversationId(),
-                                                         participantInfo,
+                                                         HOPParticipantInfo,
                                                          true));
                     }
-                    cacheCbcToConversation(participantInfo.getCbcId(), conversation);
+                    cacheCbcToConversation(HOPParticipantInfo.getCbcId(), conversation);
                     cacheConversation(conversation);
                 }
             }
@@ -147,17 +147,17 @@ public class ConversationManager implements OPConversationThreadDelegate {
                 conversation = getConversationById(conversationId);
 
                 if (conversation == null) {
-                    conversation = OPDataManager.getInstance().getConversation
-                        (type, participantInfo, conversationId);
+                    conversation = HOPDataManager.getInstance().getConversation
+                        (type, HOPParticipantInfo, conversationId);
                     if (conversation != null) {
                         conversation.setThread(getThread(type, conversation.getConversationId(),
-                                                         participantInfo,
+                                                         HOPParticipantInfo,
                                                          true));
 
-                        if (conversation.getCurrentCbcId() != participantInfo.getCbcId()) {
-                            conversation.setParticipantInfo(participantInfo);
+                        if (conversation.getCurrentCbcId() != HOPParticipantInfo.getCbcId()) {
+                            conversation.setParticipantInfo(HOPParticipantInfo);
                         }
-                        cacheCbcToConversation(participantInfo.getCbcId(), conversation);
+                        cacheCbcToConversation(HOPParticipantInfo.getCbcId(), conversation);
                         cacheConversation(conversation);
                     }
                 }
@@ -168,24 +168,24 @@ public class ConversationManager implements OPConversationThreadDelegate {
             return null;
         }
         if (conversation == null && createNew) {
-            conversation = new OPConversation(participantInfo, conversationId, type);
+            conversation = new HOPConversation(HOPParticipantInfo, conversationId, type);
 
-            conversation.setThread(getThread(type, conversationId, participantInfo, true));
-            cacheCbcToConversation(participantInfo.getCbcId(), conversation);
+            conversation.setThread(getThread(type, conversationId, HOPParticipantInfo, true));
+            cacheCbcToConversation(HOPParticipantInfo.getCbcId(), conversation);
             cacheConversation(conversation);
             conversation.save();
         }
         return conversation;
     }
 
-    public OPConversation getConversationById(String id) {
+    public HOPConversation getConversationById(String id) {
         if (conversationTable == null) {
             return null;
         }
         return conversationTable.get(id);
     }
 
-    OPConversation getConversationByCbcId(long id) {
+    HOPConversation getConversationByCbcId(long id) {
         if (cbcIdToConversationTable != null) {
             return cbcIdToConversationTable.get(id);
         }
@@ -220,8 +220,8 @@ public class ConversationManager implements OPConversationThreadDelegate {
     }
 
     public OPConversationThread getThread(GroupChatMode conversationType, String conversationId,
-                                          ParticipantInfo participantInfo, boolean createNew) {
-        if (!OPDataManager.getInstance().isAccountReady()) {
+                                          HOPParticipantInfo HOPParticipantInfo, boolean createNew) {
+        if (!HOPDataManager.getInstance().isAccountReady()) {
             return null;
         }
 
@@ -232,15 +232,15 @@ public class ConversationManager implements OPConversationThreadDelegate {
         String metaData = ThreadMetaData.newMetaData(conversationType.toString()).toJsonBlob();
         if (thread == null && createNew) {
             thread = OPConversationThread.create(
-                OPDataManager.getInstance().getSharedAccount(),
-                OPDataManager.getInstance().getSelfContacts(),
-                OPModelUtils.getProfileInfo(participantInfo.getParticipants()),
+                HOPDataManager.getInstance().getSharedAccount(),
+                HOPDataManager.getInstance().getSelfContacts(),
+                HOPModelUtils.getProfileInfo(HOPParticipantInfo.getParticipants()),
                 conversationId,
                 metaData);
-            thread.setParticipantInfo(participantInfo);
+            thread.setParticipantInfo(HOPParticipantInfo);
 
             cacheThread(thread);
-            cacheCbcToThread(participantInfo.getCbcId(), thread);
+            cacheCbcToThread(HOPParticipantInfo.getCbcId(), thread);
         }
         return thread;
     }
@@ -249,8 +249,8 @@ public class ConversationManager implements OPConversationThreadDelegate {
         //TODO: implement proper logic
     }
 
-    void notifyContactsChanged(OPConversation conversation) {
-        mConversationDelegate.onConversationContactsChanged(conversation);
+    void notifyContactsChanged(HOPConversation conversation) {
+        mHOPConversationDelegate.onConversationContactsChanged(conversation);
     }
 
     //Beginning of OPConversationThreadDelegate
@@ -258,11 +258,11 @@ public class ConversationManager implements OPConversationThreadDelegate {
     @Override
     public void onConversationThreadNew(
         OPConversationThread thread) {
-        List<OPUser> participants = OPModelUtils.getParticipantsOfThread(thread);
-        long cbcId = OPModelUtils.getWindowId(participants);
-        thread.setParticipantInfo(new ParticipantInfo(cbcId, participants));
+        List<HOPContact> participants = HOPModelUtils.getParticipantsOfThread(thread);
+        long cbcId = HOPModelUtils.getWindowId(participants);
+        thread.setParticipantInfo(new HOPParticipantInfo(cbcId, participants));
 
-        OPDataManager.getInstance().saveParticipants(cbcId, participants);
+        HOPDataManager.getInstance().saveParticipants(cbcId, participants);
         OPLogger.debug(OPLogLevel.LogLevel_Detail, "onConversationThreadNew caching new thread id" +
             " " + thread.getThreadID() + " cbcId " + cbcId);
         cacheThread(thread);
@@ -272,14 +272,14 @@ public class ConversationManager implements OPConversationThreadDelegate {
     @Override
     public void onConversationThreadContactsChanged(OPConversationThread thread) {
 
-        OPDataManager.getInstance().
+        HOPDataManager.getInstance().
             saveParticipants(thread.getParticipantInfo().getCbcId(),
                              thread.getParticipantInfo().getParticipants());
 
         OPConversationThread oldThread = getCachedThread(thread.getThreadID());
         if (oldThread != null) {
             long oldCbcId = oldThread.getParticipantInfo().getCbcId();
-            OPConversation conversation = ConversationManager.getInstance().
+            HOPConversation conversation = HOPConversationManager.getInstance().
                 getConversation(oldThread, false);
             OPLogger.debug(OPLogLevel.LogLevel_Detail,
                            "onConversationThreadContactsChanged find old thread cbcId " + oldCbcId);
@@ -301,25 +301,25 @@ public class ConversationManager implements OPConversationThreadDelegate {
         cacheThread(thread);
     }
 
-    public OPConversation onConversationParticipantsChanged(OPConversation conversation,
-                                                            List<OPUser> newParticipants) {
-        ParticipantInfo mParticipantInfo = new ParticipantInfo(
-            OPModelUtils.getWindowId(newParticipants),
+    public HOPConversation onConversationParticipantsChanged(HOPConversation conversation,
+                                                            List<HOPContact> newParticipants) {
+        HOPParticipantInfo mHOPParticipantInfo = new HOPParticipantInfo(
+            HOPModelUtils.getWindowId(newParticipants),
             newParticipants);
-        OPConversation newConversation = conversation;
-        switch (OPSdkConfig.getInstance().getGroupChatMode()){
+        HOPConversation newConversation = conversation;
+        switch (HOPSettingsHelper.getInstance().getGroupChatMode()){
         case contact:{
-            newConversation = ConversationManager.getInstance().
-                getConversation(GroupChatMode.contact, mParticipantInfo, null, true);
-            newConversation.sendMessage(SystemMessage.getConversationSwitchMessage(
+            newConversation = HOPConversationManager.getInstance().
+                getConversation(GroupChatMode.contact, mHOPParticipantInfo, null, true);
+            newConversation.sendMessage(HOPSystemMessage.getConversationSwitchMessage(
                 conversation.getConversationId(), newConversation.getConversationId()), false);
         }
         break;
         case thread:{
             if (conversation.getType() == GroupChatMode.contact) {
-                newConversation = ConversationManager.getInstance().
-                    getConversation(GroupChatMode.thread, mParticipantInfo, null, true);
-                newConversation.sendMessage(SystemMessage.getConversationSwitchMessage(
+                newConversation = HOPConversationManager.getInstance().
+                    getConversation(GroupChatMode.thread, mHOPParticipantInfo, null, true);
+                newConversation.sendMessage(HOPSystemMessage.getConversationSwitchMessage(
                     conversation.getConversationId(), newConversation.getConversationId()), false);
             } else {
                 conversation.onContactsChanged(newParticipants);
@@ -351,15 +351,15 @@ public class ConversationManager implements OPConversationThreadDelegate {
         ComposingStates state = conversationThread
             .getContactComposingStatus(contact);
         if (state != null) {
-            OPConversation conversation = ConversationManager.getInstance()
+            HOPConversation conversation = HOPConversationManager.getInstance()
                 .getConversation(conversationThread, true);
             if (conversation != null) {
-                OPUser user = OPDataManager.getInstance().getUserByPeerUri(contact.getPeerURI());
+                HOPContact user = HOPDataManager.getInstance().getUserByPeerUri(contact.getPeerURI());
                 if (user == null) {
                     return;
                 }
 
-                mConversationDelegate.onConversationContactStatusChanged(conversation,
+                mHOPConversationDelegate.onConversationContactStatusChanged(conversation,
                                                                          state, user);
             }
         }
@@ -381,19 +381,19 @@ public class ConversationManager implements OPConversationThreadDelegate {
 
             return;
         }
-        OPConversation conversation = ConversationManager.getInstance().getConversation
+        HOPConversation conversation = HOPConversationManager.getInstance().getConversation
             (conversationThread, true);
         if (message.getMessageType().equals(OPMessage.TYPE_TEXT)) {
             conversation.onMessageReceived(conversationThread, message);
         }
-        mConversationDelegate.onConversationMessage(conversation, message);
+        mHOPConversationDelegate.onConversationMessage(conversation, message);
     }
 
     @Override
     public void onConversationThreadMessageDeliveryStateChanged(
         OPConversationThread conversationThread, String messageID,
         MessageDeliveryStates state) {
-        OPDataManager.getInstance().
+        HOPDataManager.getInstance().
             updateMessageDeliveryStatus(messageID,
                                         conversationThread.getConversationId(),
                                         state);
@@ -404,22 +404,22 @@ public class ConversationManager implements OPConversationThreadDelegate {
         OPConversationThread conversationThread,
         final String messageID,
         OPContact contact) {
-        OPConversation conversation = ConversationManager.getInstance()
+        HOPConversation conversation = HOPConversationManager.getInstance()
             .getConversation(conversationThread, true);
         OPMessage message = conversationThread.getMessageById(messageID);
 
-        OPUser user = OPDataManager.getInstance().getUserByPeerUri(contact.getPeerURI());
-        mConversationDelegate.onConversationPushMessage(conversation, message, user);
+        HOPContact user = HOPDataManager.getInstance().getUserByPeerUri(contact.getPeerURI());
+        mHOPConversationDelegate.onConversationPushMessage(conversation, message, user);
     }
 
     @Override
     public void onConversationThreadContactConnectionStateChanged(
         OPConversationThread conversationThread, OPContact contact,
         ContactConnectionStates state) {
-        OPConversation conversation = ConversationManager.getInstance()
+        HOPConversation conversation = HOPConversationManager.getInstance()
             .getConversation(conversationThread, true);
-        OPUser user = OPDataManager.getInstance().getUserByPeerUri(contact.getPeerURI());
-        mConversationDelegate.onConversationContactConnectionStateChanged(conversation, user,
+        HOPContact user = HOPDataManager.getInstance().getUserByPeerUri(contact.getPeerURI());
+        mHOPConversationDelegate.onConversationContactConnectionStateChanged(conversation, user,
                                                                           state);
     }
     //End of OPConversationThreadDelegate

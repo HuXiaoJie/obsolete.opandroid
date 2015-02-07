@@ -46,9 +46,9 @@ import com.openpeer.sample.IntentData;
 import com.openpeer.sample.R;
 import com.openpeer.sample.contacts.ProfilePickerActivity;
 import com.openpeer.sample.view.UserItemView;
-import com.openpeer.sdk.app.OPDataManager;
-import com.openpeer.sdk.model.OPUser;
-import com.openpeer.sdk.utils.OPModelUtils;
+import com.openpeer.sdk.app.HOPDataManager;
+import com.openpeer.sdk.model.HOPContact;
+import com.openpeer.sdk.utils.HOPModelUtils;
 
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
@@ -56,7 +56,6 @@ import java.util.List;
 
 import butterknife.ButterKnife;
 import butterknife.InjectView;
-import butterknife.OnClick;
 import butterknife.OnItemClick;
 
 public class ParticipantsManagementFragment extends BaseFragment {
@@ -88,26 +87,26 @@ public class ParticipantsManagementFragment extends BaseFragment {
     public void onViewCreated(View view, Bundle savedInstanceState) {
         ButterKnife.inject(this,view);
         mAdapter = new ParticipantsAdapter();
-        mAdapter.mUserList = OPDataManager.getInstance().getUsers(participantIds);
+        mAdapter.mUserList = HOPDataManager.getInstance().getUsers(participantIds);
         mAdapter.participantsView = new WeakReference<>(this);
         participantsView.setAdapter(mAdapter);
     }
 
-    public List<OPUser> getParticipants() {
+    public List<HOPContact> getParticipants() {
         return mAdapter.mUserList;
     }
 
     static class ParticipantsAdapter extends BaseAdapter {
         boolean mDeleteMode;
-        List<OPUser> mUserList;
+        List<HOPContact> mUserList;
         WeakReference<ParticipantsManagementFragment> participantsView;
 
         public void onItemClick(int position) {
             Object object = getItem(position);
-            if (object instanceof OPUser) {
+            if (object instanceof HOPContact) {
                 if (mDeleteMode) {
-                    List<OPUser> users = new ArrayList<>();
-                    users.add((OPUser) object);
+                    List<HOPContact> users = new ArrayList<>();
+                    users.add((HOPContact) object);
                     mUserList.remove(object);
                     if (mUserList.size() == 1) {
                         mDeleteMode = false;
@@ -160,7 +159,7 @@ public class ParticipantsManagementFragment extends BaseFragment {
         public View getView(int position, View convertView, ViewGroup parent) {
             Object object = getItem(position);
             if (convertView == null) {
-                if (object instanceof OPUser) {
+                if (object instanceof HOPContact) {
                     convertView = new UserItemView(parent.getContext());
                 } else if (object instanceof DummyAddAction) {
                     return View.inflate(parent.getContext(), R.layout.view_add, null);
@@ -169,7 +168,7 @@ public class ParticipantsManagementFragment extends BaseFragment {
                 }
                 ((UserItemView) convertView).setDeleteMode(mDeleteMode);
                 ((UserItemView) convertView).update(object);
-            } else if (object instanceof OPUser) {
+            } else if (object instanceof HOPContact) {
 
                 ((UserItemView) convertView).setDeleteMode(mDeleteMode);
                 ((UserItemView) convertView).update(object);
@@ -194,7 +193,7 @@ public class ParticipantsManagementFragment extends BaseFragment {
     void launchProfilePicker() {
         Intent intent = new Intent(getActivity(), ProfilePickerActivity.class);
         intent.putExtra(IntentData.ARG_PEER_USER_IDS,
-                        OPModelUtils.getUserIdsArray(mAdapter.mUserList));
+                        HOPModelUtils.getUserIdsArray(mAdapter.mUserList));
         startActivityForResult(intent, IntentData.REQUEST_CODE_ADD_CONTACTS);
     }
 
@@ -204,7 +203,7 @@ public class ParticipantsManagementFragment extends BaseFragment {
         super.onActivityResult(requestCode, resultCode, data);
         if (resultCode == Activity.RESULT_OK) {
             long userIds[] = data.getLongArrayExtra(IntentData.ARG_PEER_USER_IDS);
-            List<OPUser> users = OPDataManager.getInstance().getUsers(userIds);
+            List<HOPContact> users = HOPDataManager.getInstance().getUsers(userIds);
             mAdapter.mUserList.addAll(users);
             mAdapter.notifyDataSetChanged();
         }
@@ -213,9 +212,9 @@ public class ParticipantsManagementFragment extends BaseFragment {
     void setActivityResult() {
         Intent intent = new Intent();
 
-        List<OPUser> users = getParticipants();
+        List<HOPContact> users = getParticipants();
         if (users != null && !users.isEmpty()) {
-            intent.putExtra(IntentData.ARG_PEER_USER_IDS, OPModelUtils.getUserIdsArray(users));
+            intent.putExtra(IntentData.ARG_PEER_USER_IDS, HOPModelUtils.getUserIdsArray(users));
             getActivity().setResult(Activity.RESULT_OK, intent);
         }
     }

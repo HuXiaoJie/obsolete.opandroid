@@ -53,8 +53,9 @@ import com.openpeer.javaapi.VideoOrientations;
 import com.openpeer.sdk.delegates.OPCacheDelegateImpl;
 import com.openpeer.sdk.delegates.OPSettingsDelegateImpl;
 import com.openpeer.sdk.delegates.OPStackMessageQueueDelegateImpl;
-import com.openpeer.sdk.model.CallManager;
-import com.openpeer.sdk.model.ConversationManager;
+import com.openpeer.sdk.login.HOPLoginManager;
+import com.openpeer.sdk.model.HOPCallManager;
+import com.openpeer.sdk.model.HOPConversationManager;
 
 /**
  * Helper class for openpeer sdk initialization and state changes. The object will hold reference
@@ -62,8 +63,8 @@ import com.openpeer.sdk.model.ConversationManager;
  * 
  *
  */
-public class OPHelper {
-    private static final String TAG = OPHelper.class.getSimpleName();
+public class HOPHelper {
+    private static final String TAG = HOPHelper.class.getSimpleName();
     private static final String DEFAULT_LOG_SERVER = "LOG.OPP.ME:8115";
     private static final String DEFAULT_LOG_FILE = "/storage/emulated/0/hflog";
     public static final int MODE_CONTACTS_BASED = 0;
@@ -72,7 +73,7 @@ public class OPHelper {
     private boolean mAppInBackground;
     private boolean isSigningOut;
 
-    private static OPHelper instance;
+    private static HOPHelper instance;
     Context mContext;
     private OPStackMessageQueue mStackMessageQueue;
     private OPCacheDelegate mCacheDelegate;
@@ -81,9 +82,9 @@ public class OPHelper {
         return mContext;
     }
 
-    public static OPHelper getInstance() {
+    public static HOPHelper getInstance() {
         if (instance == null) {
-            instance = new OPHelper();
+            instance = new HOPHelper();
         }
         return instance;
     }
@@ -96,7 +97,7 @@ public class OPHelper {
 
             String deviceId = Secure.getString(mContext.getContentResolver(),
                     Secure.ANDROID_ID);
-            String instanceId = OPSdkConfig.getInstance().getInstanceId();
+            String instanceId = HOPSettingsHelper.getInstance().getInstanceId();
             String telnetLogString = deviceId + "-" + instanceId + "\n";
             OPLogger.installOutgoingTelnetLogger(url, true, telnetLogString);
         } else {
@@ -177,10 +178,10 @@ public class OPHelper {
         }
         OPSettings.setup(mSettingsDelegate);
 
-        OPSdkConfig.getInstance().init(context);
+        HOPSettingsHelper.getInstance().init(context);
 
-        OPSdkConfig.getInstance().applySystemSettings(context);
-        OPSdkConfig.getInstance().applyApplicationSettings();
+        HOPSettingsHelper.getInstance().applySystemSettings(context);
+        HOPSettingsHelper.getInstance().applyApplicationSettings();
         OPSettings.setUInt(
             "openpeer/stack/finder-connection-send-ping-keep-alive-after-in-seconds",
             0);
@@ -260,7 +261,7 @@ public class OPHelper {
      */
     public void onSignOut() {
         isSigningOut = true;
-        OPDataManager.getInstance().onSignOut();
+        HOPDataManager.getInstance().onSignOut();
     }
 
     public boolean isSigningOut() {
@@ -273,14 +274,14 @@ public class OPHelper {
     public void onAccountShutdown() {
         Intent intent = new Intent();
         if (isSigningOut) {
-            CallManager.clearOnSignout();
-            ConversationManager.clearOnSignout();
+            HOPCallManager.clearOnSignout();
+            HOPConversationManager.clearOnSignout();
             mCacheDelegate.clear(null);
-            LoginManager.getInstance().onSignoutComplete();
-            OPDataManager.getInstance().afterSignout();
-            LoginManager.getInstance().afterSignout();
+            HOPLoginManager.getInstance().onSignoutComplete();
+            HOPDataManager.getInstance().afterSignout();
+            HOPLoginManager.getInstance().afterSignout();
         } else {
-            LoginManager.getInstance().onAccountShutdown();
+            HOPLoginManager.getInstance().onAccountShutdown();
             intent.setAction(IntentData.ACTION_ACCOUNT_SHUTDOWN);
         }
         mContext.sendBroadcast(intent);

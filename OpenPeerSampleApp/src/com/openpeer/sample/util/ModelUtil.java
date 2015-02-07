@@ -30,8 +30,8 @@ package com.openpeer.sample.util;
 
 import java.util.List;
 
-import com.openpeer.sdk.app.OPDataManager;
-import com.openpeer.sdk.model.OPUser;
+import com.openpeer.sdk.app.HOPDataManager;
+import com.openpeer.sdk.model.HOPContact;
 
 /**
  *
@@ -44,10 +44,10 @@ public class ModelUtil {
             for (int i = 0; i < ids.length; i++) {
                 lIds[i] = Long.parseLong(ids[i]);
             }
-            List<OPUser> users = OPDataManager.getInstance()
+            List<HOPContact> users = HOPDataManager.getInstance()
                     .getUsers(lIds);
             StringBuilder sb = new StringBuilder();
-            for (OPUser user : users) {
+            for (HOPContact user : users) {
                 sb.append(user.getName() + ",");
             }
             sb.deleteCharAt(sb.length() - 1);
@@ -55,9 +55,9 @@ public class ModelUtil {
         }
         return null;
     }
-    public static String getNamesStringFromUsers(List<OPUser> users){
+    public static String getNamesStringFromUsers(List<HOPContact> users){
         StringBuilder sb = new StringBuilder();
-        for (OPUser user : users) {
+        for (HOPContact user : users) {
             sb.append(user.getName() + ",");
         }
         sb.deleteCharAt(sb.length() - 1);

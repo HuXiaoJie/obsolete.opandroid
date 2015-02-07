@@ -27,16 +27,45 @@
  *  of the authors and should not be interpreted as representing official policies,
  *  either expressed or implied, of the FreeBSD Project.
  *******************************************************************************/
-package com.openpeer.sample.delegates;
+package com.openpeer.sdk.model;
 
-import com.openpeer.javaapi.OPStackMessageQueueDelegate;
+public class CallMediaStatus {
+	boolean Muted;
+	boolean Capturing = true;
+	boolean SpeakerOn;
+	private boolean mFrontCamera = true;
 
-public class OPStackMessageQueueDelegateImplementation extends OPStackMessageQueueDelegate{
+	public boolean isMuted() {
+		return Muted;
+	}
 
-	@Override
-	public void onStackMessageQueueWakeUpCustomThreadAndProcessOnCustomThread() {
+	public void setMuted(boolean muted) {
+		Muted = muted;
+	}
+
+	public boolean isCapturing() {
+		return Capturing;
+	}
+
+	public void setCapturing(boolean capturing) {
+		Capturing = capturing;
+	}
+
+	public boolean isSpeakerOn() {
+		return SpeakerOn;
+	}
+
+	public void setSpeakerOn(boolean speakerOn) {
+		SpeakerOn = speakerOn;
+	}
+
+	public boolean useFrontCamera() {
 		// TODO Auto-generated method stub
+		return mFrontCamera;
+	}
 
+	public void setUseFrontCamera(boolean useFront) {
+		mFrontCamera = useFront;
 	}
 
 }

@@ -38,10 +38,9 @@ import com.openpeer.javaapi.MessageDeliveryStates;
 import com.openpeer.javaapi.OPLogLevel;
 import com.openpeer.javaapi.OPLogger;
 import com.openpeer.javaapi.OPMessage;
-import com.openpeer.sdk.app.OPDataManager;
-import com.openpeer.sdk.model.OPConversation;
-import com.openpeer.sdk.model.OPUser;
-import com.openpeer.sdk.model.PushServiceInterface;
+import com.openpeer.sdk.app.HOPDataManager;
+import com.openpeer.sdk.model.HOPContact;
+import com.openpeer.sdk.model.HOPConversation;
 
 import java.util.List;
 
@@ -64,10 +63,10 @@ public class UAPushService implements PushServiceInterface {
     }
 
     @Override
-    public void onConversationThreadPushMessage(final OPConversation conversation,
-                                                final OPMessage message, final OPUser contact) {
-        OPPushManager.getInstance().getDeviceToken(
-            contact.getPeerUri(), new Callback<PushToken>() {
+    public void onConversationThreadPushMessage(final HOPConversation conversation,
+                                                final OPMessage message, final HOPContact HOPContact) {
+        PushManager.getInstance().getDeviceToken(
+            HOPContact.getPeerUri(), new Callback<PushToken>() {
 
                 @Override
                 public void success(PushToken token,
@@ -75,15 +74,15 @@ public class UAPushService implements PushServiceInterface {
                     OPLogger.debug(OPLogLevel.LogLevel_Detail,
                                    "onConversationThreadPushMessage push message "
                                        + message);
-                    List<OPUser> participants = conversation.getParticipants();
+                    List<HOPContact> participants = conversation.getParticipants();
                     String peerURIs = "";
 
                     String peerUris[] = new String[participants.size() - 1];
                     //We only put the peerURIs other than myself and the recipient
                     if (participants.size() > 1) {
                         int i = 0;
-                        for (OPUser user : participants) {
-                            if (!user.equals(contact)) {
+                        for (HOPContact user : participants) {
+                            if (!user.equals(HOPContact)) {
                                 peerUris[i] = user.getPeerUri();
                                 i++;
                             }
@@ -92,15 +91,15 @@ public class UAPushService implements PushServiceInterface {
                     }
                     UAPushMessage uaPushMessage = UAPushMessage.fromOPMessage(
                         new PushExtra
-                            (OPDataManager.getInstance().getCurrentUser().getPeerUri(),
-                             OPDataManager.getInstance().getCurrentUser().getName(),
+                            (HOPDataManager.getInstance().getCurrentUser().getPeerUri(),
+                             HOPDataManager.getInstance().getCurrentUser().getName(),
                              peerURIs,
                              message.getMessageType(),
                              message.getMessageId(),
                              message.getMessageId(),
                              conversation.getType().toString(),
                              conversation.getConversationId(),
-                             OPDataManager.getInstance().getSharedAccount().getLocationID(),
+                             HOPDataManager.getInstance().getSharedAccount().getLocationID(),
                              message.getTime().toMillis(false) / 1000 + ""),
                         message.getMessage(),
                         token);
@@ -111,7 +110,7 @@ public class UAPushService implements PushServiceInterface {
                                         public void success(
                                             PushResult pushResult,
                                             Response response) {
-                                            OPDataManager.getInstance().updateMessageDeliveryStatus(
+                                            HOPDataManager.getInstance().updateMessageDeliveryStatus(
                                                 message.getMessageId(),
                                                 conversation.getConversationId(),
                                                 MessageDeliveryStates.MessageDeliveryState_Sent);

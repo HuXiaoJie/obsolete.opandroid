@@ -11,53 +11,53 @@ import com.openpeer.sample.events.ConversationComposingStatusChangeEvent;
 import com.openpeer.sample.events.ConversationContactsChangeEvent;
 import com.openpeer.sample.events.ConversationSwitchEvent;
 import com.openpeer.sample.events.ConversationTopicChangeEvent;
-import com.openpeer.sdk.app.OPDataManager;
-import com.openpeer.sdk.model.CallManager;
+import com.openpeer.sdk.app.HOPDataManager;
+import com.openpeer.sdk.model.HOPCallManager;
 import com.openpeer.sdk.model.CallSystemMessage;
-import com.openpeer.sdk.model.ConversationDelegate;
-import com.openpeer.sdk.model.ConversationManager;
-import com.openpeer.sdk.model.OPConversation;
-import com.openpeer.sdk.model.OPUser;
-import com.openpeer.sdk.model.SystemMessage;
+import com.openpeer.sdk.model.HOPContact;
+import com.openpeer.sdk.model.HOPConversationDelegate;
+import com.openpeer.sdk.model.HOPConversationManager;
+import com.openpeer.sdk.model.HOPConversation;
+import com.openpeer.sdk.model.HOPSystemMessage;
 import com.openpeer.sdk.utils.JSONUtils;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-public class ConversationDelegateImpl implements ConversationDelegate {
+public class HOPConversationDelegateImpl implements HOPConversationDelegate {
 
-    private static ConversationDelegateImpl instance;
+    private static HOPConversationDelegateImpl instance;
 
-    public static ConversationDelegateImpl getInstance() {
+    public static HOPConversationDelegateImpl getInstance() {
         if (instance == null) {
-            instance = new ConversationDelegateImpl();
+            instance = new HOPConversationDelegateImpl();
         }
         return instance;
     }
 
-    private ConversationDelegateImpl() {
+    private HOPConversationDelegateImpl() {
     }
 
     @Override
-    public void onConversationContactStatusChanged(OPConversation conversation,
+    public void onConversationContactStatusChanged(HOPConversation conversation,
                                                    ComposingStates composingStates,
-                                                   OPUser contact) {
+                                                   HOPContact HOPContact) {
         new ConversationComposingStatusChangeEvent(conversation,
-                                                   contact,
+                                                   HOPContact,
                                                    composingStates).post();
     }
 
     @Override
-    public boolean onConversationMessage(OPConversation conversation, OPMessage message) {
+    public boolean onConversationMessage(HOPConversation conversation, OPMessage message) {
         if (message.getMessageType().equals(OPMessage.TYPE_JSON_SYSTEM_MESSAGE)) {
             OPContact opContact = message.getFrom();
-            OPUser sender = OPDataManager.getInstance().
+            HOPContact sender = HOPDataManager.getInstance().
                 getUserByPeerUri(opContact.getPeerURI());
             String messageText = message.getMessage();
             try {
                 JSONObject systemObject = new JSONObject(messageText).getJSONObject
-                    (SystemMessage.KEY_ROOT);
+                    (HOPSystemMessage.KEY_ROOT);
 
                 handleSystemMessage(conversation, sender, systemObject,
                                     message.getTime().toMillis(false));
@@ -70,72 +70,72 @@ public class ConversationDelegateImpl implements ConversationDelegate {
     }
 
     @Override
-    public boolean onConversationPushMessage(OPConversation conversation, OPMessage message,
-                                             OPUser contact) {
+    public boolean onConversationPushMessage(HOPConversation conversation, OPMessage message,
+                                             HOPContact HOPContact) {
         OPApplication.getPushService().onConversationThreadPushMessage(conversation, message,
-                                                                        contact);
+                                                                       HOPContact);
         return true;
     }
 
 
     @Override
-    public boolean onConversationContactsChanged(OPConversation conversation) {
+    public boolean onConversationContactsChanged(HOPConversation conversation) {
         new ConversationContactsChangeEvent(conversation).post();
         return true;
     }
 
 
     @Override
-    public void onConversationMessageDeliveryStateChanged(OPConversation conversation, OPMessage
+    public void onConversationMessageDeliveryStateChanged(HOPConversation conversation, OPMessage
         message) {
 
     }
 
     @Override
-    public void onConversationContactConnectionStateChanged(OPConversation conversation,
-                                                            OPUser contact,
+    public void onConversationContactConnectionStateChanged(HOPConversation conversation,
+                                                            HOPContact HOPContact,
                                                             ContactConnectionStates state) {
 
     }
 
-    public boolean onConversationTopicChanged(OPConversation conversation, String newTopic) {
+    public boolean onConversationTopicChanged(HOPConversation conversation, String newTopic) {
         new ConversationTopicChangeEvent(conversation, newTopic).post();
         return true;
     }
 
-    public boolean onCallSystemMessageReceived(OPConversation conversation,
+    public boolean onCallSystemMessageReceived(HOPConversation conversation,
                                                CallSystemMessage message,
-                                               OPUser sender) {
+                                               HOPContact sender) {
         return false;
     }
 
-    public void handleSystemMessage(OPConversation conversation, OPUser sender, JSONObject systemMessage,
+    public void handleSystemMessage(HOPConversation conversation, HOPContact sender, JSONObject systemMessage,
                                     long time) {
         try {
-            if (systemMessage.has(SystemMessage.KEY_CALL_STATUS)) {
+            if (systemMessage.has(HOPSystemMessage.KEY_CALL_STATUS)) {
                 JSONObject callSystemMessage = systemMessage
-                    .getJSONObject(SystemMessage.KEY_CALL_STATUS);
-                CallManager.getInstance().
+                    .getJSONObject(HOPSystemMessage.KEY_CALL_STATUS);
+                HOPCallManager.getInstance().
                     handleCallSystemMessage(callSystemMessage,
                                             sender,
                                             conversation.getConversationId(),
                                             time);
 
-            } else if (systemMessage.has(SystemMessage.KEY_CONTACTS_REMOVED)) {
+            } else if (systemMessage.has(HOPSystemMessage.KEY_CONTACTS_REMOVED)) {
                 JSONArray contactsRemovedMessage = systemMessage
-                    .getJSONArray(SystemMessage.KEY_CONTACTS_REMOVED);
-                String selfPeerUri = OPDataManager.getInstance().getCurrentUser().getPeerUri();
+                    .getJSONArray(HOPSystemMessage.KEY_CONTACTS_REMOVED);
+                String selfPeerUri = HOPDataManager.getInstance().getCurrentUser().getPeerUri();
                 for (String peerUri : (String[]) JSONUtils.toArray(contactsRemovedMessage)) {
                     if (peerUri.equals(selfPeerUri)) {
                         conversation.setDisabled(true);
                         new ConversationContactsChangeEvent(conversation).post();
                     }
                 }
-            } else if (systemMessage.has(SystemMessage.KEY_CONVERSATION_SWITCH)) {
+            } else if (systemMessage.has(HOPSystemMessage.KEY_CONVERSATION_SWITCH)) {
                 JSONObject object = systemMessage.
-                    getJSONObject(SystemMessage.KEY_CONVERSATION_SWITCH);
-                OPConversation from = ConversationManager.getInstance().getConversationById(
-                    object.getString(SystemMessage.KEY_FROM_CONVERSATION_ID));
+                    getJSONObject(HOPSystemMessage.KEY_CONVERSATION_SWITCH);
+                HOPConversation from = HOPConversationManager.getInstance().getConversationById(
+                    object.getString(HOPSystemMessage.KEY_FROM_CONVERSATION_ID));
 
                 if (from != null && conversation != null) {
                     new ConversationSwitchEvent(from, conversation).post();

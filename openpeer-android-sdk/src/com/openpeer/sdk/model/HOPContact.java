@@ -36,9 +36,9 @@ import java.util.List;
 import com.openpeer.javaapi.OPContact;
 import com.openpeer.javaapi.OPIdentityContact;
 import com.openpeer.javaapi.OPRolodexContact;
-import com.openpeer.sdk.app.OPDataManager;
+import com.openpeer.sdk.app.HOPDataManager;
 
-public class OPUser {
+public class HOPContact {
     private long mUserId;// locally maintained user id
     private List<OPIdentityContact> mIdentityContacts;
     private List<OPRolodexContact> mRolodexContacts;
@@ -76,7 +76,7 @@ public class OPUser {
             OPIdentityContact contact = getPreferredContact();
 
             mOPContact = OPContact.createFromPeerFilePublic(
-                OPDataManager.getInstance().getSharedAccount(),
+                HOPDataManager.getInstance().getSharedAccount(),
                 contact.getPeerFilePublic().getPeerFileString());
         }
         return mOPContact;
@@ -96,13 +96,13 @@ public class OPUser {
      * @param contact
      * @param iContacts
      */
-    public OPUser(OPContact contact, List<OPIdentityContact> iContacts) {
+    public HOPContact(OPContact contact, List<OPIdentityContact> iContacts) {
         this.mOPContact = contact;
         this.mIdentityContacts = iContacts;
         mPeerUri = mOPContact.getPeerURI();
     }
 
-    public OPUser() {
+    public HOPContact() {
     }
 
     /**
@@ -198,7 +198,7 @@ public class OPUser {
     }
 
     public boolean isSelf() {
-        return mUserId == OPDataManager.getInstance().getCurrentUserId();
+        return mUserId == HOPDataManager.getInstance().getCurrentUserId();
     }
 
     public boolean isOpenPeer() {
@@ -212,7 +212,7 @@ public class OPUser {
     }
     @Override
     public boolean equals(Object o) {
-        return o instanceof OPUser && ((OPUser) o).getUserId() == this.mUserId;
+        return o instanceof HOPContact && ((HOPContact) o).getUserId() == this.mUserId;
     }
 
 }

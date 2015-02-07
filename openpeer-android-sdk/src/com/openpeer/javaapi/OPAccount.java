@@ -32,7 +32,7 @@ package com.openpeer.javaapi;
 
 import java.util.List;
 
-import com.openpeer.sdk.app.OPSdkConfig;
+import com.openpeer.sdk.app.HOPSettingsHelper;
 
 public class OPAccount {
     /*
@@ -91,9 +91,9 @@ public class OPAccount {
         return login(accountDelegate,
                 conversationThreadDelegate,
                 callDelegate,
-                OPSdkConfig.getInstance().getOuterFrameUrl(),
-                OPSdkConfig.getInstance().getGrantId(),
-                OPSdkConfig.getInstance().getIdentityProviderDomain(),
+                HOPSettingsHelper.getInstance().getOuterFrameUrl(),
+                HOPSettingsHelper.getInstance().getGrantId(),
+                HOPSettingsHelper.getInstance().getIdentityProviderDomain(),
                 false);
     }
 
@@ -116,7 +116,7 @@ public class OPAccount {
         return relogin(accountDelegate,
                 conversationThreadDelegate,
                 callDelegate,
-                OPSdkConfig.getInstance().getOuterFrameUrl(),
+                HOPSettingsHelper.getInstance().getOuterFrameUrl(),
                 reloginInformation);
 
     }

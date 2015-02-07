@@ -42,7 +42,7 @@ import android.widget.Toast;
 
 import com.openpeer.sample.R;
 import com.openpeer.sample.conversation.ConversationActivity;
-import com.openpeer.sdk.app.OPDataManager;
+import com.openpeer.sdk.app.HOPDataManager;
 import com.openpeer.sdk.model.GroupChatMode;
 import com.squareup.picasso.Picasso;
 
@@ -79,7 +79,7 @@ public class ContactItemView extends RelativeLayout {
         rolodexId = cursor.getLong(0);
         mUserId = cursor.getLong(1);
         mTitleView.setText(cursor.getString(2));
-        String avatar = OPDataManager.getInstance().getAvatarUri(
+        String avatar = HOPDataManager.getInstance().getAvatarUri(
             rolodexId, 48, 48);
         Picasso.with(getContext()).load(avatar).into(mImageView);
 

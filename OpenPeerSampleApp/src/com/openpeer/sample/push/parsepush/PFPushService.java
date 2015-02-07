@@ -32,33 +32,24 @@
 
 package com.openpeer.sample.push.parsepush;
 
-import android.content.pm.ApplicationInfo;
-import android.content.pm.PackageManager;
-import android.nfc.Tag;
 import android.os.Build;
-import android.os.Bundle;
 import android.text.TextUtils;
 import android.util.Log;
 
 import com.openpeer.javaapi.MessageDeliveryStates;
 import com.openpeer.javaapi.OPMessage;
 import com.openpeer.sample.OPApplication;
-import com.openpeer.sample.push.PushExtra;
-import com.openpeer.sdk.app.OPDataManager;
-import com.openpeer.sdk.model.OPConversation;
-import com.openpeer.sdk.model.OPUser;
-import com.openpeer.sdk.model.PushServiceInterface;
-import com.openpeer.sdk.model.SystemMessage;
+import com.openpeer.sdk.app.HOPDataManager;
+import com.openpeer.sdk.model.HOPContact;
+import com.openpeer.sdk.model.HOPConversation;
+import com.openpeer.sample.push.PushServiceInterface;
+import com.openpeer.sdk.model.HOPSystemMessage;
 import com.parse.FunctionCallback;
 import com.parse.Parse;
 import com.parse.ParseCloud;
 import com.parse.ParseException;
 import com.parse.ParseInstallation;
-import com.parse.ParseObject;
-import com.parse.ParsePush;
-import com.parse.ParseQuery;
 import com.parse.SaveCallback;
-import com.parse.SendCallback;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -101,7 +92,7 @@ public class PFPushService implements PushServiceInterface {
     }
 
     public boolean init() {
-        OPUser currentUser = OPDataManager.getInstance().getCurrentUser();
+        HOPContact currentUser = HOPDataManager.getInstance().getCurrentUser();
         if (currentUser != null) {
             ParseInstallation.getCurrentInstallation().put(KEY_PEER_URI, currentUser.getPeerUri());
             ParseInstallation.getCurrentInstallation().put(KEY_OS_VERSION,
@@ -123,20 +114,20 @@ public class PFPushService implements PushServiceInterface {
     }
 
     @Override
-    public void onConversationThreadPushMessage(final OPConversation conversation,
-                                                final OPMessage message, final OPUser contact) {
+    public void onConversationThreadPushMessage(final HOPConversation conversation,
+                                                final OPMessage message, final HOPContact HOPContact) {
         if (!mInitialized) {
             return;
         }
-        List<OPUser> participants = conversation.getParticipants();
+        List<HOPContact> participants = conversation.getParticipants();
         String peerURIs = "";
 
         String peerUris[] = new String[participants.size() - 1];
         //We only put the peerURIs other than myself and the recipient
         if (participants.size() > 1) {
             int i = 0;
-            for (OPUser user : participants) {
-                if (!user.equals(contact)) {
+            for (HOPContact user : participants) {
+                if (!user.equals(HOPContact)) {
                     peerUris[i] = user.getPeerUri();
                     i++;
                 }
@@ -157,16 +148,16 @@ public class PFPushService implements PushServiceInterface {
 //             message.getTime().toMillis(false) / 1000 + "");
 
         HashMap<String, Object> params = new HashMap<String, Object>();
-        params.put(PFPushMessage.KEY_TO, contact.getPeerUri());
-        params.put(PFPushMessage.KEY_PEER_URI, OPDataManager.getInstance().getCurrentUser()
+        params.put(PFPushMessage.KEY_TO, HOPContact.getPeerUri());
+        params.put(PFPushMessage.KEY_PEER_URI, HOPDataManager.getInstance().getCurrentUser()
             .getPeerUri());
-        params.put(PFPushMessage.KEY_SENDER_NAME, OPDataManager.getInstance().getCurrentUser()
+        params.put(PFPushMessage.KEY_SENDER_NAME, HOPDataManager.getInstance().getCurrentUser()
             .getName());
         params.put(PFPushMessage.KEY_PEER_URIS, peerURIs);
         params.put(PFPushMessage.KEY_MESSAGE_ID, message.getMessageId());
         params.put(PFPushMessage.KEY_CONVERSATION_TYPE, conversation.getType().name());
         params.put(PFPushMessage.KEY_CONVERSATION_ID, conversation.getConversationId());
-        params.put(PFPushMessage.KEY_LOCATION, OPDataManager.getInstance().getSharedAccount()
+        params.put(PFPushMessage.KEY_LOCATION, HOPDataManager.getInstance().getSharedAccount()
             .getLocationID());
         params.put(PFPushMessage.KEY_DATE, message.getTime().toMillis(false) / 1000);
         String messageType = message.getMessageType();
@@ -181,7 +172,7 @@ public class PFPushService implements PushServiceInterface {
             try {
                 JSONObject jsonObject = new JSONObject(message.getMessage().replace("\"$id\"",
                                                                                     "\"id\""));
-                JSONObject systemObject = jsonObject.getJSONObject(SystemMessage.KEY_ROOT);
+                JSONObject systemObject = jsonObject.getJSONObject(HOPSystemMessage.KEY_ROOT);
                 params.put("system", systemObject);
 //                if (systemObject.has(SystemMessage.KEY_CALL_STATUS)) {
 //                    systemObject=systemObject.getJSONObject(SystemMessage.KEY_CALL_STATUS);
@@ -214,7 +205,7 @@ public class PFPushService implements PushServiceInterface {
                     if (e == null) {
                         Log.d("ParsePush", "success " + success);
                         // Push sent successfully
-                        OPDataManager.getInstance()
+                        HOPDataManager.getInstance()
                             .updateMessageDeliveryStatus(
                                 message.getMessageId(),
                                 conversation.getConversationId(),

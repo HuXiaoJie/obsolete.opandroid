@@ -38,7 +38,7 @@ import android.widget.TextView;
 import com.openpeer.javaapi.ComposingStates;
 import com.openpeer.javaapi.OPRolodexContact;
 import com.openpeer.sample.R;
-import com.openpeer.sdk.model.OPUser;
+import com.openpeer.sdk.model.HOPContact;
 
 public class ComposingStatusView extends LinearLayout {
     private OPRolodexContact mContact;
@@ -60,7 +60,7 @@ public class ComposingStatusView extends LinearLayout {
         this(context, attrs, 0);
     }
 
-    public void update(OPUser user, ComposingStates state) {
+    public void update(HOPContact user, ComposingStates state) {
         mTextView.setText(getContext().getString(R.string.msg_typing, user.getName().split(" ")[0]));
     }
 }

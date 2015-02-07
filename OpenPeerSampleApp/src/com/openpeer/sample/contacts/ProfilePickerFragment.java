@@ -62,9 +62,8 @@ import com.openpeer.sample.BaseFragment;
 import com.openpeer.sample.IntentData;
 import com.openpeer.sample.R;
 import com.openpeer.sample.view.ProgressEmptyView;
-import com.openpeer.sdk.app.OPDataManager;
+import com.openpeer.sdk.app.HOPDataManager;
 import com.openpeer.sdk.datastore.DatabaseContracts.RolodexContactEntry;
-import com.openpeer.sdk.datastore.OPContentProvider;
 import com.squareup.picasso.Picasso;
 
 import butterknife.ButterKnife;
@@ -173,7 +172,7 @@ public class ProfilePickerFragment extends BaseFragment implements
             public void update(Cursor cursor) {
                 long rolodexId = cursor.getLong(0);
                 final long userId = cursor.getLong(1);
-                String avatar = OPDataManager.getInstance().getAvatarUri(
+                String avatar = HOPDataManager.getInstance().getAvatarUri(
                         rolodexId, 48, 48);
                 String name = cursor
                         .getString(cursor
@@ -201,7 +200,7 @@ public class ProfilePickerFragment extends BaseFragment implements
 
     @Override
     public void onRefresh() {
-        OPDataManager.getInstance().refreshContacts();
+        HOPDataManager.getInstance().refreshContacts();
         mRootLayout.setRefreshing(false);
     }
 
@@ -250,7 +249,7 @@ public class ProfilePickerFragment extends BaseFragment implements
             }
             emptyView.showProgress();
             return new CursorLoader(getActivity(), // Parent activity context
-                                    OPDataManager.getInstance()
+                                    HOPDataManager.getInstance()
                                         .getContentUri(RolodexContactEntry.URI_PATH_INFO),
 
                                     null, // Projection to return

@@ -1,21 +1,21 @@
 package com.openpeer.sample.events;
 
-import com.openpeer.sdk.model.OPConversation;
+import com.openpeer.sdk.model.HOPConversation;
 
 public class ConversationSwitchEvent extends BaseEvent{
-    OPConversation fromConversation;
-    OPConversation toConversation;
+    HOPConversation fromConversation;
+    HOPConversation toConversation;
 
-    public ConversationSwitchEvent(OPConversation fromConversation, OPConversation toConversation) {
+    public ConversationSwitchEvent(HOPConversation fromConversation, HOPConversation toConversation) {
         this.fromConversation = fromConversation;
         this.toConversation = toConversation;
     }
 
-    public OPConversation getFromConversation() {
+    public HOPConversation getFromConversation() {
         return fromConversation;
     }
 
-    public OPConversation getToConversation() {
+    public HOPConversation getToConversation() {
         return toConversation;
     }
 }

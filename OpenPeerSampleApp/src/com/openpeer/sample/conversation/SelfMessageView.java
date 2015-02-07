@@ -39,14 +39,14 @@ import android.widget.TextView;
 import com.openpeer.javaapi.OPMessage;
 import com.openpeer.sample.R;
 import com.openpeer.sample.util.DateFormatUtils;
-import com.openpeer.sdk.app.OPDataManager;
+import com.openpeer.sdk.app.HOPDataManager;
+import com.openpeer.sdk.model.HOPConversation;
 import com.openpeer.sdk.model.MessageEditState;
-import com.openpeer.sdk.model.OPConversation;
 
 public class SelfMessageView extends RelativeLayout {
     private static final long FREEZING_PERIOD = 60 * 60 * 1000l;
     OPMessage mMessage;
-    OPConversation mSession;
+    HOPConversation mSession;
     TextView title;
 
     TextView time;
@@ -131,7 +131,7 @@ public class SelfMessageView extends RelativeLayout {
     /**
      * @param session
      */
-    public void setSession(OPConversation session) {
+    public void setSession(HOPConversation session) {
         mSession = session;
     }
 
@@ -140,7 +140,7 @@ public class SelfMessageView extends RelativeLayout {
     }
 
     public void onDeleteSelected() {
-        OPMessage message = new OPMessage(OPDataManager.getInstance().getCurrentUserId(),
+        OPMessage message = new OPMessage(HOPDataManager.getInstance().getCurrentUserId(),
                 OPMessage.TYPE_TEXT,
                 "",
                 System.currentTimeMillis(),

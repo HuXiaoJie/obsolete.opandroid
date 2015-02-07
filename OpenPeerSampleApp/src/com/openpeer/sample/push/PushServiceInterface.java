@@ -30,13 +30,15 @@
  *  ******************************************************************************
  */
 
-package com.openpeer.sdk.model;
+package com.openpeer.sample.push;
 
 import com.openpeer.javaapi.OPMessage;
+import com.openpeer.sdk.model.HOPContact;
+import com.openpeer.sdk.model.HOPConversation;
 
 public interface PushServiceInterface {
     public void onConversationThreadPushMessage(
-        OPConversation conversation,
+        HOPConversation conversation,
         final OPMessage message,
-        OPUser contact);
+        HOPContact HOPContact);
 }

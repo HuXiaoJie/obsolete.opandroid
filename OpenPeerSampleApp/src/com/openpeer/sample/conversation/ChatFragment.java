@@ -75,17 +75,17 @@ import com.openpeer.sample.events.ConversationComposingStatusChangeEvent;
 import com.openpeer.sample.events.ConversationContactsChangeEvent;
 import com.openpeer.sample.events.ConversationSwitchEvent;
 import com.openpeer.sample.events.ConversationTopicChangeEvent;
-import com.openpeer.sdk.app.OPDataManager;
+import com.openpeer.sdk.app.HOPDataManager;
 import com.openpeer.sdk.datastore.DatabaseContracts.MessageEntry;
 import com.openpeer.sdk.datastore.OPModelCursorHelper;
-import com.openpeer.sdk.model.ConversationManager;
+import com.openpeer.sdk.model.HOPContact;
+import com.openpeer.sdk.model.HOPConversationManager;
 import com.openpeer.sdk.model.GroupChatMode;
-import com.openpeer.sdk.model.OPConversation;
-import com.openpeer.sdk.model.OPConversationEvent;
-import com.openpeer.sdk.model.OPUser;
-import com.openpeer.sdk.model.ParticipantInfo;
+import com.openpeer.sdk.model.HOPConversation;
+import com.openpeer.sdk.model.HOPConversationEvent;
+import com.openpeer.sdk.model.HOPParticipantInfo;
+import com.openpeer.sdk.utils.HOPModelUtils;
 import com.openpeer.sdk.utils.NoDuplicateArrayList;
-import com.openpeer.sdk.utils.OPModelUtils;
 
 import java.util.List;
 import java.util.Timer;
@@ -105,14 +105,14 @@ public class ChatFragment extends BaseFragment implements
     private MessagesAdaptor mAdapter;
     Loader mLoader;
 
-    private OPConversation mConversation;
+    private HOPConversation mConversation;
     private CallInfoView mCallInfoView;
     boolean mTyping;
     private OPMessage mEditingMessage;
 
     String mConversationId;
     String mType;
-    ParticipantInfo mParticipantInfo;
+    HOPParticipantInfo mHOPParticipantInfo;
     Menu mOptionsMenu;
 
     public static ChatFragment newTestInstance() {
@@ -136,19 +136,19 @@ public class ChatFragment extends BaseFragment implements
             mConversationId = savedInstanceState.getString(IntentData.ARG_CONVERSATION_ID);
             mType = savedInstanceState.getString(IntentData.ARG_CONVERSATION_TYPE);
         }
-        long cbcId = OPModelUtils.getWindowId(userIds);
+        long cbcId = HOPModelUtils.getWindowId(userIds);
         OPNotificationBuilder.cancelNotificationForChat((int) cbcId);
-        List<OPUser> participants = OPDataManager.getInstance().getUsers(userIds);
-        mParticipantInfo = new ParticipantInfo(cbcId, participants);
+        List<HOPContact> participants = HOPDataManager.getInstance().getUsers(userIds);
+        mHOPParticipantInfo = new HOPParticipantInfo(cbcId, participants);
         setHasOptionsMenu(true);
-        if (OPDataManager.getInstance().isAccountReady()) {
+        if (HOPDataManager.getInstance().isAccountReady()) {
             setup();
         }
     }
 
     void setup() {
-        mConversation = ConversationManager.getInstance().getConversation(GroupChatMode.valueOf(mType),
-                                                                     mParticipantInfo,
+        mConversation = HOPConversationManager.getInstance().getConversation(GroupChatMode.valueOf(mType),
+                                                                             mHOPParticipantInfo,
                                                                      mConversationId, true);
 
         mConversationId = mConversation.getConversationId();
@@ -172,7 +172,7 @@ public class ChatFragment extends BaseFragment implements
     public void onResume() {
         super.onResume();
 
-        if (!OPDataManager.getInstance().isAccountReady() || mConversation == null) {
+        if (!HOPDataManager.getInstance().isAccountReady() || mConversation == null) {
             return;
         }
         // All following stuff can only be done if the account is in ready state
@@ -200,7 +200,7 @@ public class ChatFragment extends BaseFragment implements
         if (mCallInfoView.isShown()) {
             mCallInfoView.unbind();
         }
-        if (!OPDataManager.getInstance().isAccountReady()) {
+        if (!HOPDataManager.getInstance().isAccountReady()) {
             return;
         }
         if (mConversation != null) {
@@ -210,7 +210,7 @@ public class ChatFragment extends BaseFragment implements
     }
 
     void updateUsersView() {
-        List<OPUser> users = mParticipantInfo.getParticipants();
+        List<HOPContact> users = mHOPParticipantInfo.getParticipants();
         if (users.size() == 1) {
             getActivity().getActionBar().setTitle(users.get(0).getName());
         } else {
@@ -259,7 +259,7 @@ public class ChatFragment extends BaseFragment implements
 
             @Override
             public void onClick(View arg0) {
-                if (!OPDataManager.getInstance().isAccountReady()) {
+                if (!HOPDataManager.getInstance().isAccountReady()) {
                     BaseActivity.showInvalidStateWarning(getActivity());
                     return;
                 }
@@ -270,7 +270,7 @@ public class ChatFragment extends BaseFragment implements
                 }
                 OPMessage msg = null;
                 // we use 0 for home user
-                msg = new OPMessage(OPDataManager.getInstance().getCurrentUserId(),
+                msg = new OPMessage(HOPDataManager.getInstance().getCurrentUserId(),
                                     OPMessage.TYPE_TEXT,
                                     mComposeBox.getText().toString(),
                                     System.currentTimeMillis(),
@@ -353,7 +353,7 @@ public class ChatFragment extends BaseFragment implements
         int myLastReadMessagePosition = -1;
         int myLastDeliveredMessagePosition = -1;
         int myLastSentMessagePosition = -1;
-        private NoDuplicateArrayList<OPUser> composingStates = new NoDuplicateArrayList<OPUser>();
+        private NoDuplicateArrayList<HOPContact> composingStates = new NoDuplicateArrayList<HOPContact>();
 
         private boolean isStatus(int position) {
             return position > super.getCount() - 1;
@@ -363,11 +363,11 @@ public class ChatFragment extends BaseFragment implements
             super(context, c);
         }
 
-        public void notifyDataSetChanged(ComposingStates state, OPUser contact) {
+        public void notifyDataSetChanged(ComposingStates state, HOPContact HOPContact) {
             if (state == ComposingStates.ComposingState_Composing) {
-                composingStates.add(contact);
+                composingStates.add(HOPContact);
             } else {
-                composingStates.remove(contact);
+                composingStates.remove(HOPContact);
             }
             notifyDataSetChanged();
 
@@ -421,13 +421,13 @@ public class ChatFragment extends BaseFragment implements
                 || OPMessage.TYPE_INERNAL_CALL_VIDEO.equals(type)) {
                 return VIEWTYPE_CALL_VIEW;
             }
-            if (OPConversationEvent.EventTypes.ContactsChange.toString().equals(type)) {
+            if (HOPConversationEvent.EventTypes.ContactsChange.toString().equals(type)) {
                 return VIEWTYPE_CONVERSATION_EVENT_VIEW;
             }
 
             long sender_id = cursor.getLong(cursor
                                                 .getColumnIndex(MessageEntry.COLUMN_SENDER_ID));
-            if (sender_id == OPDataManager.getInstance().getCurrentUserId()) {
+            if (sender_id == HOPDataManager.getInstance().getCurrentUserId()) {
                 return VIEWTYPE_SELF_MESSAGE_VIEW;
             }
             return VIEWTYPE_RECIEVED_MESSAGE_VIEW;
@@ -445,7 +445,7 @@ public class ChatFragment extends BaseFragment implements
                     convertView = new ComposingStatusView(parent.getContext());
                 }
                 ((ComposingStatusView) convertView).update(
-                    (OPUser) getItem(position), null);
+                    (HOPContact) getItem(position), null);
 
                 return convertView;
 
@@ -595,7 +595,7 @@ public class ChatFragment extends BaseFragment implements
                 //TODO: error handling
                 return true;
             }
-            if (!OPDataManager.getInstance().isAccountReady()) {
+            if (!HOPDataManager.getInstance().isAccountReady()) {
                 BaseActivity.showInvalidStateWarning(getActivity());
                 return true;
             }
@@ -629,19 +629,19 @@ public class ChatFragment extends BaseFragment implements
     @Override
     public void onSaveInstanceState(Bundle outState) {
         outState.putLongArray(IntentData.ARG_PEER_USER_IDS,
-                              OPModelUtils.getUserIds(mParticipantInfo.getParticipants()));
+                              HOPModelUtils.getUserIds(mHOPParticipantInfo.getParticipants()));
         if (!TextUtils.isEmpty(mConversationId)) {
             outState.putString(IntentData.ARG_CONVERSATION_ID, mConversationId);
         }
         outState.putString(IntentData.ARG_CONVERSATION_TYPE, mType);
-        outState.putLong(IntentData.ARG_CONVERSATION_TYPE, mParticipantInfo.getCbcId());
+        outState.putLong(IntentData.ARG_CONVERSATION_TYPE, mHOPParticipantInfo.getCbcId());
         super.onSaveInstanceState(outState);
     }
 
     private void onParticipantsMenuClick() {
         Intent intent = new Intent(getActivity(), ParticipantsManagementActivity.class);
         intent.putExtra(IntentData.ARG_PEER_USER_IDS,
-                        OPModelUtils.getUserIds(mParticipantInfo.getParticipants()));
+                        HOPModelUtils.getUserIds(mHOPParticipantInfo.getParticipants()));
         startActivityForResult(intent, IntentData.REQUEST_CODE_PARTICIPANTS);
     }
 
@@ -654,13 +654,13 @@ public class ChatFragment extends BaseFragment implements
         case IntentData.REQUEST_CODE_PARTICIPANTS:{
             if (resultCode == Activity.RESULT_OK) {
                 long userIds[] = data.getLongArrayExtra(IntentData.ARG_PEER_USER_IDS);
-                List<OPUser> newParticipants = OPDataManager.getInstance().getUsers
+                List<HOPContact> newParticipants = HOPDataManager.getInstance().getUsers
                     (userIds);
-                mConversation = OPConversation.onConversationParticipantsChanged(mConversation,
-                                                                                 newParticipants);
+                mConversation = HOPConversation.onConversationParticipantsChanged(mConversation,
+                                                                                  newParticipants);
                 mConversationId = mConversation.getConversationId();
                 mType = GroupChatMode.thread.toString();
-                mParticipantInfo = mConversation.getParticipantInfo();
+                mHOPParticipantInfo = mConversation.getParticipantInfo();
                 onContactsChanged();
             }
         }
@@ -703,7 +703,7 @@ public class ChatFragment extends BaseFragment implements
                     String topic = editText.getText().toString();
                     if (checkBox.isChecked()) {
                         //TODO: create new session
-                        mConversation = ConversationManager.getInstance().
+                        mConversation = HOPConversationManager.getInstance().
                             getConversation(GroupChatMode.thread,
                                             mConversation.getParticipantInfo(),
                                             null, true);
@@ -777,7 +777,7 @@ public class ChatFragment extends BaseFragment implements
         if (TextUtils.isEmpty(mConversationId)) {
             return null;
         }
-        return OPDataManager.getInstance().getContentUri(
+        return HOPDataManager.getInstance().getContentUri(
             MessageEntry.URI_PATH_INFO_CONTEXT_URI_BASE + mConversationId);
     }
 
@@ -812,16 +812,16 @@ public class ChatFragment extends BaseFragment implements
     }
 
     public void onEvent(ConversationComposingStatusChangeEvent event){
-        OPConversation conversation = event.getConversation();
+        HOPConversation conversation = event.getConversation();
         ComposingStates composingStates = event.getnState();
-        OPUser contact = event.getUser();
+        HOPContact HOPContact = event.getUser();
         if (conversation.getConversationId().equals(mConversationId)) {
-            mAdapter.notifyDataSetChanged(composingStates, contact);
+            mAdapter.notifyDataSetChanged(composingStates, HOPContact);
         }
     }
 
     public boolean onEvent(ConversationContactsChangeEvent event){
-        OPConversation conversation = event.getConversation();
+        HOPConversation conversation = event.getConversation();
         if (conversation.getConversationId().equals(mConversationId)) {
             return onContactsChanged();
         }
@@ -830,7 +830,7 @@ public class ChatFragment extends BaseFragment implements
 
     boolean onContactsChanged(){
         if (mConversation != null) {
-            mParticipantInfo = mConversation.getParticipantInfo();
+            mHOPParticipantInfo = mConversation.getParticipantInfo();
         }
         updateUsersView();
         getLoaderManager().restartLoader(URL_LOADER, null, this);
@@ -838,7 +838,7 @@ public class ChatFragment extends BaseFragment implements
         return true;
     }
     public void onEvent(ConversationTopicChangeEvent event) {
-        OPConversation conversation = event.getConversation();
+        HOPConversation conversation = event.getConversation();
         String newTopic = event.getNewTopic();
         if(conversation.getConversationId().equals(mConversationId)) {
             setTitle(newTopic);
@@ -846,13 +846,13 @@ public class ChatFragment extends BaseFragment implements
     }
 
     public void  onEvent(ConversationSwitchEvent event) {
-        OPConversation fromConversation = event.getFromConversation();
-        OPConversation toConversation = event.getToConversation();
+        HOPConversation fromConversation = event.getFromConversation();
+        HOPConversation toConversation = event.getToConversation();
         if (fromConversation.getConversationId().equals(mConversationId)) {
             mConversation = toConversation;
             mType = toConversation.getType().name();
             mConversationId = toConversation.getConversationId();
-            mParticipantInfo = mConversation.getParticipantInfo();
+            mHOPParticipantInfo = mConversation.getParticipantInfo();
             onContactsChanged();
         }
     }
