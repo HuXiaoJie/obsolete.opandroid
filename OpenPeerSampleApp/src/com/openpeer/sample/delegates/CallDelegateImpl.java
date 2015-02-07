@@ -10,6 +10,7 @@ import com.openpeer.sample.OPApplication;
 import com.openpeer.sample.OPNotificationBuilder;
 import com.openpeer.sample.conversation.CallActivity;
 import com.openpeer.sample.events.CallStateChangeEvent;
+import com.openpeer.sdk.model.HOPCall;
 import com.openpeer.sdk.model.HOPCallDelegate;
 import com.openpeer.sdk.model.HOPCallManager;
 
@@ -27,7 +28,7 @@ public class CallDelegateImpl implements HOPCallDelegate {
     }
 
     @Override
-    public void onCallStateChanged(OPCall call, CallStates state) {
+    public void onCallStateChanged(HOPCall call, CallStates state) {
         switch (state){
         case CallState_Incoming:{
             String callId = call.getCallID();

@@ -32,15 +32,12 @@
 
 package com.openpeer.sdk.model;
 
-import android.text.format.Time;
-
 import com.openpeer.javaapi.CallClosedReasons;
 import com.openpeer.javaapi.CallStates;
 import com.openpeer.javaapi.OPCall;
 import com.openpeer.javaapi.OPCallDelegate;
 import com.openpeer.javaapi.OPConversationThread;
 import com.openpeer.javaapi.OPMessage;
-import com.openpeer.javaapi.OPSystemMessage;
 import com.openpeer.sdk.app.HOPDataManager;
 import com.openpeer.sdk.utils.HOPModelUtils;
 
@@ -48,7 +45,6 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.Hashtable;
-import java.util.UUID;
 
 public class HOPCallManager implements OPCallDelegate {
 

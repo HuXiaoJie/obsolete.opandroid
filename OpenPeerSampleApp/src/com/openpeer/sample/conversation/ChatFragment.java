@@ -78,6 +78,7 @@ import com.openpeer.sample.events.ConversationTopicChangeEvent;
 import com.openpeer.sdk.app.HOPDataManager;
 import com.openpeer.sdk.datastore.DatabaseContracts.MessageEntry;
 import com.openpeer.sdk.datastore.OPModelCursorHelper;
+import com.openpeer.sdk.model.HOPCall;
 import com.openpeer.sdk.model.HOPContact;
 import com.openpeer.sdk.model.HOPConversationManager;
 import com.openpeer.sdk.model.GroupChatMode;
@@ -179,7 +180,7 @@ public class ChatFragment extends BaseFragment implements
 
         // TODO: proper look up
         // OPCall call = mConversation.getCurrentCall();
-        OPCall call = mConversation.getCurrentCall();
+        HOPCall call = mConversation.getCurrentCall();
         if (call != null && (call.getState() == CallStates.CallState_Open
             || call.getState() == CallStates.CallState_Active)) {
             Log.d(TAG, "now show call info");
@@ -599,7 +600,7 @@ public class ChatFragment extends BaseFragment implements
                 BaseActivity.showInvalidStateWarning(getActivity());
                 return true;
             }
-            OPCall call = mConversation.getCurrentCall();
+            HOPCall call = mConversation.getCurrentCall();
             if (mConversation.getCurrentCall() != null) {
                 Intent intent = new Intent(getActivity(), CallActivity.class);
                 intent.putExtra(IntentData.ARG_CALL_ID, call.getCallID());

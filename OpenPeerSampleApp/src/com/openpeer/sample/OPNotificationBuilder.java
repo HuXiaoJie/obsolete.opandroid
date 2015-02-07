@@ -44,6 +44,7 @@ import com.openpeer.sample.conversation.ConversationActivity;
 import com.openpeer.sample.util.CallUtil;
 import com.openpeer.sample.util.SettingsHelper;
 import com.openpeer.sdk.model.CallSystemMessage;
+import com.openpeer.sdk.model.HOPCall;
 
 public class OPNotificationBuilder {
 	private static String TAG = OPNotificationBuilder.class.getSimpleName();
@@ -58,7 +59,7 @@ public class OPNotificationBuilder {
     public static int getNotificationIdForCall(String callId){
         return (callId.hashCode() + NOTIFICATION_ID_BASE_CALL);
     }
-	public static void showNotificationForCall(OPCall call) {
+	public static void showNotificationForCall(HOPCall call) {
 		Intent launchIntent = null;
 		Context context = OPApplication.getInstance();
 		// TODO build proper strings
@@ -72,7 +73,7 @@ public class OPNotificationBuilder {
 				.setSmallIcon(R.drawable.ic_action_call_light);
 		// Create the notification
 		launchIntent = new Intent(context, CallActivity.class);
-		String peerUri = call.getPeer().getPeerURI();
+		String peerUri = call.getPeerUser().getPeerUri();
 		launchIntent.putExtra(IntentData.ARG_PEER_URI, peerUri);
 		// Set the intent to perform when tapped
 

@@ -40,9 +40,10 @@ import android.widget.LinearLayout;
 import com.openpeer.javaapi.CallClosedReasons;
 import com.openpeer.javaapi.OPCall;
 import com.openpeer.sample.R;
+import com.openpeer.sdk.model.HOPCall;
 
 public class CallControlView extends LinearLayout {
-	private OPCall mCall;
+	private HOPCall mCall;
 	private ImageView mAnswerButton;
 	private ImageView mEndButton;
 	private View mPaddingView;
@@ -66,7 +67,7 @@ public class CallControlView extends LinearLayout {
 		mPaddingView = findViewById(R.id.padview);
 	}
 
-	public void bindCall(OPCall call) {
+	public void bindCall(HOPCall call) {
 		mCall = call;
 		mEndButton.setOnClickListener(new View.OnClickListener() {
 			@Override

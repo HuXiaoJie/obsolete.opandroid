@@ -33,7 +33,6 @@ import android.text.TextUtils;
 import android.util.Log;
 
 import com.openpeer.javaapi.ComposingStates;
-import com.openpeer.javaapi.OPCall;
 import com.openpeer.javaapi.OPContact;
 import com.openpeer.javaapi.OPConversationThread;
 import com.openpeer.javaapi.OPIdentityContact;
@@ -174,7 +173,7 @@ public class HOPConversation extends Observable {
         this.lastReadMessageId = readMessageId;
     }
 
-    public OPCall getCurrentCall() {
+    public HOPCall getCurrentCall() {
         return HOPCallManager.getInstance().findCallByCbcId(HOPParticipantInfo.getCbcId());
     }
 
@@ -226,11 +225,11 @@ public class HOPConversation extends Observable {
         HOPModelUtils.addParticipantsToThread(mConvThread, users);
     }
 
-    public OPCall placeCall(HOPContact user,
+    public HOPCall placeCall(HOPContact user,
                             boolean includeAudio, boolean includeVideo) {
 
         OPContact newContact = user.getOPContact();
-        OPCall call = OPCall.placeCall(getThread(true), newContact, includeAudio,
+        HOPCall call = HOPCall.placeCall(getThread(true), newContact, includeAudio,
                                        includeVideo);
         return call;
     }

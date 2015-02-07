@@ -67,9 +67,10 @@ public class HOPCall {
         return call.getClosedReason();
     }
 
-    public static OPCall placeCall(OPConversationThread conversationThread, OPContact toContact,
-                                   boolean includeAudio, boolean includeVideo) {
-        return OPCall.placeCall(conversationThread, toContact, includeAudio, includeVideo);
+    public static HOPCall placeCall(OPConversationThread conversationThread, OPContact toContact,
+                                    boolean includeAudio, boolean includeVideo) {
+        return new HOPCall(OPCall.placeCall(conversationThread, toContact, includeAudio,
+                                            includeVideo));
     }
 
     public Time getClosedTime() {
@@ -94,10 +95,6 @@ public class HOPCall {
 
     public boolean hasVideo() {
         return call.hasVideo();
-    }
-
-    public OPContact getPeer() {
-        return call.getPeer();
     }
 
     public static String toDebugString(OPCall call, boolean includeCommaPrefix) {

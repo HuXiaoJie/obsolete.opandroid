@@ -42,7 +42,6 @@ import android.widget.RelativeLayout;
 
 import com.openpeer.javaapi.CallStates;
 import com.openpeer.javaapi.CameraTypes;
-import com.openpeer.javaapi.OPCall;
 import com.openpeer.javaapi.OPCaptureCapability;
 import com.openpeer.javaapi.OPMediaEngine;
 import com.openpeer.javaapi.VideoOrientations;
@@ -56,6 +55,7 @@ import com.openpeer.sample.util.SettingsHelper;
 import com.openpeer.sample.util.ViewUtils;
 import com.openpeer.sdk.app.HOPDataManager;
 import com.openpeer.sdk.model.CallMediaStatus;
+import com.openpeer.sdk.model.HOPCall;
 import com.openpeer.sdk.model.HOPCallManager;
 import com.openpeer.sdk.model.HOPContact;
 import com.openpeer.sdk.model.HOPConversationManager;
@@ -73,7 +73,7 @@ public class CallFragment extends BaseFragment {
     // TextView mNameView;
     private ImageView mPeerAvatarView;
 
-    private OPCall mCall;
+    private HOPCall mCall;
     private SurfaceView mLocalSurface;
     private SurfaceView mRemoteSurface;
     private RelativeLayout mVideoView;
@@ -86,7 +86,6 @@ public class CallFragment extends BaseFragment {
     private ImageView cameraSwitchButton;
     private ImageView speakerButton;
     private ImageView recordButton;
-    private CallMediaStatus mCallMediaStatus;
     private View mStatusOverlay;
     private View mCallView;
     private Ringtone mRingtone;
@@ -219,55 +218,53 @@ public class CallFragment extends BaseFragment {
         return view;
     }
 
-    void setupMediaControl() {
+    void setupMediaControl(final CallMediaStatus callMediaStatus) {
         audioButton
-                .setImageResource(mCallMediaStatus.isMuted() ? R.drawable.ic_action_mic_muted
+                .setImageResource(callMediaStatus.isMuted() ? R.drawable.ic_action_mic_muted
                         : R.drawable.ic_action_mic);
-        OPMediaEngine.getInstance().setMuteEnabled(mCallMediaStatus.isMuted());
+        OPMediaEngine.getInstance().setMuteEnabled(callMediaStatus.isMuted());
 
         audioButton.setOnClickListener(new View.OnClickListener() {
 
             @Override
             public void onClick(View v) {
-                mCallMediaStatus.setMuted(!mCallMediaStatus.isMuted());
-                audioButton.setImageResource(mCallMediaStatus.isMuted() ? R.drawable.ic_action_mic_muted
+                callMediaStatus.setMuted(!callMediaStatus.isMuted());
+                audioButton.setImageResource(callMediaStatus.isMuted() ? R.drawable.ic_action_mic_muted
                         : R.drawable.ic_action_mic);
-                OPMediaEngine.getInstance().setMuteEnabled(
-                        mCallMediaStatus.isMuted());
+                OPMediaEngine.getInstance().setMuteEnabled(callMediaStatus.isMuted());
             }
         });
 
         speakerButton
-                .setImageResource(mCallMediaStatus.isSpeakerOn() ? R.drawable.ic_action_speaker_on
-                        : R.drawable.ic_action_speaker_off);
+                .setImageResource(callMediaStatus.isSpeakerOn() ? R.drawable.ic_action_speaker_on
+                                      : R.drawable.ic_action_speaker_off);
 
-        OPMediaEngine.getInstance().setLoudspeakerEnabled(
-                mCallMediaStatus.isSpeakerOn());
+        OPMediaEngine.getInstance().setLoudspeakerEnabled(callMediaStatus.isSpeakerOn());
         speakerButton.setOnClickListener(new View.OnClickListener() {
 
             @Override
             public void onClick(View v) {
-                mCallMediaStatus.setSpeakerOn(!mCallMediaStatus.isSpeakerOn());
-                speakerButton.setImageResource(mCallMediaStatus.isSpeakerOn() ? R.drawable.ic_action_speaker_on
+                callMediaStatus.setSpeakerOn(!callMediaStatus.isSpeakerOn());
+                speakerButton.setImageResource(callMediaStatus.isSpeakerOn() ? R.drawable.ic_action_speaker_on
                         : R.drawable.ic_action_speaker_off);
 
                 OPMediaEngine.getInstance().setLoudspeakerEnabled(
-                        mCallMediaStatus.isSpeakerOn());
+                        callMediaStatus.isSpeakerOn());
 
             }
         });
         if (mVideo) {
             videoButton
-                    .setImageResource(mCallMediaStatus.isCapturing() ? R.drawable.ic_action_video_on
+                    .setImageResource(callMediaStatus.isCapturing() ? R.drawable.ic_action_video_on
                             : R.drawable.ic_action_video_off);
             videoButton.setOnClickListener(new View.OnClickListener() {
 
                 @Override
                 public void onClick(View v) {
-                    mCallMediaStatus.setCapturing(!mCallMediaStatus.isCapturing());
-                    videoButton.setImageResource(mCallMediaStatus.isCapturing() ? R.drawable.ic_action_video_on
+                    callMediaStatus.setCapturing(!callMediaStatus.isCapturing());
+                    videoButton.setImageResource(callMediaStatus.isCapturing() ? R.drawable.ic_action_video_on
                             : R.drawable.ic_action_video_off);
-                    if (mCallMediaStatus.isCapturing()) {
+                    if (callMediaStatus.isCapturing()) {
                         OPMediaEngine.getInstance().startVideoCapture();
                     } else {
                         OPMediaEngine.getInstance().stopVideoCapture();
@@ -279,8 +276,8 @@ public class CallFragment extends BaseFragment {
 
                 @Override
                 public void onClick(View v) {
-                    mCallMediaStatus.setUseFrontCamera(!mCallMediaStatus.useFrontCamera());
-                    if (mCallMediaStatus.useFrontCamera()) {
+                    callMediaStatus.setUseFrontCamera(!callMediaStatus.useFrontCamera());
+                    if (callMediaStatus.useFrontCamera()) {
                         OPMediaEngine.getInstance().setCameraType(
                                 CameraTypes.CameraType_Front);
                     } else {
@@ -354,7 +351,7 @@ public class CallFragment extends BaseFragment {
     }
 
     public void onEvent(CallStateChangeEvent event){
-        OPCall call = event.getCall();
+        HOPCall call = event.getCall();
         String callId = call.getCallID();
         CallStates state = event.getState();
         if (callId.equals(mCall.getCallID())) {
@@ -362,7 +359,7 @@ public class CallFragment extends BaseFragment {
         }
     }
 
-    public void onCallStateChanged(OPCall call, final CallStates state) {
+    public void onCallStateChanged(HOPCall call, final CallStates state) {
         Log.d(TAG, "onCallStateChanged " + state.toString() + " call "
                 + call);
         if (getActivity() == null || isDetached()) {
@@ -411,14 +408,19 @@ public class CallFragment extends BaseFragment {
     boolean mVideoPreviewSwitched;
 
     void initMedia(View view) {
-        mCallMediaStatus = HOPCallManager.getInstance().getMediaStateForCall(mPeerId);
+        CallMediaStatus callMediaStatus;
+        if (mCall != null) {
+            callMediaStatus = mCall.getCallMediaStatus();
+        } else {
+            callMediaStatus = new CallMediaStatus();
+        }
         OPMediaEngine.getInstance().setEcEnabled(true);
         OPMediaEngine.getInstance().setAgcEnabled(true);
         OPMediaEngine.getInstance().setNsEnabled(false);
         OPMediaEngine.getInstance().setMuteEnabled(false);
         OPMediaEngine.getInstance().setLoudspeakerEnabled(false);
         if (mVideo) {
-            if (mCallMediaStatus.useFrontCamera()) {
+            if (callMediaStatus.useFrontCamera()) {
                 OPMediaEngine.getInstance().setCameraType(
                     CameraTypes.CameraType_Front);
             } else {
@@ -436,7 +438,7 @@ public class CallFragment extends BaseFragment {
 
             setPreview(OPMediaEngine.getInstance().getCameraType(), 0);
         }
-        setupMediaControl();
+        setupMediaControl(callMediaStatus);
 
     }
 
