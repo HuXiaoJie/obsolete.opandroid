@@ -29,6 +29,7 @@
 package com.openpeer.sdk.model;
 
 import com.openpeer.javaapi.ComposingStates;
+import com.openpeer.javaapi.ContactConnectionStates;
 import com.openpeer.javaapi.MessageDeliveryStates;
 import com.openpeer.javaapi.OPContact;
 import com.openpeer.javaapi.OPConversationThread;
@@ -40,19 +41,24 @@ import org.json.JSONObject;
  * UI listener of session state changes
  */
 public interface ConversationDelegate {
-    public void onContactComposingStateChanged(OPConversation conversation,
+    public void onConversationContactStatusChanged(OPConversation conversation,
                                                ComposingStates state, OPUser user);
 
-    public boolean onNewMessage(OPConversation conversation, OPMessage message);
-    public boolean onCallSystemMessageReceived(OPConversation conversation, CallSystemMessage message,
-                                               OPUser sender);
+    public boolean onConversationMessage(OPConversation conversation, OPMessage message);
 
-    public boolean onPushMessageRequired(OPConversation conversation, OPMessage message);
+//    public boolean onCallSystemMessageReceived(OPConversation conversation,
+//                                               CallSystemMessage message,
+//                                               OPUser sender);
 
-    public boolean onContactsChanged(OPConversation conversation);
+    public boolean onConversationPushMessage(OPConversation conversation, OPMessage message,
+                                             OPUser user);
 
-    public boolean onConversationTopicChanged(OPConversation conversation, String newTopic);
+    public boolean onConversationContactsChanged(OPConversation conversation);
 
-    public boolean onConversationSwitch(OPConversation fromConversation, OPConversation
-        toConversationId);
+    public void onConversationMessageDeliveryStateChanged(OPConversation conversation,
+                                                          OPMessage message);
+
+    public void onConversationContactConnectionStateChanged(OPConversation conversation,
+                                                            OPUser contact,
+                                                            ContactConnectionStates state);
 }

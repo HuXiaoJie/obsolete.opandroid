@@ -51,8 +51,8 @@ import com.openpeer.sample.util.SettingsHelper;
 import com.openpeer.sdk.app.LoginManager;
 import com.openpeer.sdk.app.OPHelper;
 import com.openpeer.sdk.model.CallManager;
-import com.openpeer.sdk.model.ConversationManager;
 import com.openpeer.sdk.model.OPConversation;
+import com.openpeer.sdk.model.PushServiceInterface;
 import com.urbanairship.AirshipConfigOptions;
 import com.urbanairship.Logger;
 import com.urbanairship.UAirship;
@@ -65,6 +65,11 @@ public class OPApplication extends Application {
     private static OPApplication instance;
     boolean DEVELOPER_MODE = false;
     private AppReceiver mReceiver = new AppReceiver();
+    static PushServiceInterface pushService;
+
+    public static PushServiceInterface getPushService() {
+        return pushService;
+    }
 
     static {
         try {
@@ -123,7 +128,7 @@ public class OPApplication extends Application {
         SettingsHelper.getInstance().initLoggers();
         if (SettingsHelper.getInstance().isParsePushEnabled()) {
             PFPushService.getInstance().init();
-            ConversationManager.getInstance().registerPushService(PFPushService.getInstance());
+            pushService = PFPushService.getInstance();
         } else if (SettingsHelper.getInstance().isUAPushEnabled()) {
             AirshipConfigOptions options = AirshipConfigOptions
                 .loadDefaultOptions(this);
@@ -131,7 +136,7 @@ public class OPApplication extends Application {
             PushManager.shared().setNotificationBuilder(
                 new OPPushNotificationBuilder());
             PushManager.shared().setIntentReceiver(PushIntentReceiver.class);
-            ConversationManager.getInstance().registerPushService(UAPushService.getInstance());
+           pushService = UAPushService.getInstance();
             Logger.logLevel = Log.VERBOSE;
         }
         OPConversation.registerDelegate(ConversationDelegateImpl.getInstance());
