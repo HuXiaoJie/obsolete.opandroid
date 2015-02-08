@@ -7,6 +7,7 @@ import com.openpeer.javaapi.OPLogLevel;
 import com.openpeer.javaapi.OPLogger;
 import com.openpeer.javaapi.OPMessage;
 import com.openpeer.sample.OPApplication;
+import com.openpeer.sample.conversation.ConversationSwitchSystemMessage;
 import com.openpeer.sample.events.ConversationComposingStatusChangeEvent;
 import com.openpeer.sample.events.ConversationContactsChangeEvent;
 import com.openpeer.sample.events.ConversationSwitchEvent;
@@ -131,11 +132,11 @@ public class HOPConversationDelegateImpl implements HOPConversationDelegate {
                         new ConversationContactsChangeEvent(conversation).post();
                     }
                 }
-            } else if (systemMessage.has(HOPSystemMessage.KEY_CONVERSATION_SWITCH)) {
+            } else if (systemMessage.has(ConversationSwitchSystemMessage.KEY_CONVERSATION_SWITCH)) {
                 JSONObject object = systemMessage.
-                    getJSONObject(HOPSystemMessage.KEY_CONVERSATION_SWITCH);
+                    getJSONObject(ConversationSwitchSystemMessage.KEY_CONVERSATION_SWITCH);
                 HOPConversation from = HOPConversationManager.getInstance().getConversationById(
-                    object.getString(HOPSystemMessage.KEY_FROM_CONVERSATION_ID));
+                    object.getString(ConversationSwitchSystemMessage.KEY_FROM_CONVERSATION_ID));
 
                 if (from != null && conversation != null) {
                     new ConversationSwitchEvent(from, conversation).post();

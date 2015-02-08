@@ -85,6 +85,7 @@ import com.openpeer.sdk.model.GroupChatMode;
 import com.openpeer.sdk.model.HOPConversation;
 import com.openpeer.sdk.model.HOPConversationEvent;
 import com.openpeer.sdk.model.HOPParticipantInfo;
+import com.openpeer.sdk.model.HOPSystemMessage;
 import com.openpeer.sdk.utils.HOPModelUtils;
 import com.openpeer.sdk.utils.NoDuplicateArrayList;
 
@@ -659,8 +660,14 @@ public class ChatFragment extends BaseFragment implements
                     (userIds);
                 mConversation = HOPConversation.onConversationParticipantsChanged(mConversation,
                                                                                   newParticipants);
-                mConversationId = mConversation.getConversationId();
-                mType = GroupChatMode.thread.toString();
+                String newConversationId = mConversation.getConversationId();
+                if (!mConversationId.equals(newConversationId)) {
+                    mConversation.sendMessage(
+                        ConversationSwitchSystemMessage.getConversationSwitchMessage
+                            (mConversationId, newConversationId), false);
+                    mConversationId = mConversation.getConversationId();
+                    mType = GroupChatMode.thread.toString();
+                }
                 mHOPParticipantInfo = mConversation.getParticipantInfo();
                 onContactsChanged();
             }

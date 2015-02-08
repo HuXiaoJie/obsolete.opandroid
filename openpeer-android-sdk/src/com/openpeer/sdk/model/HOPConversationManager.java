@@ -311,16 +311,12 @@ public class HOPConversationManager implements OPConversationThreadDelegate {
         case contact:{
             newConversation = HOPConversationManager.getInstance().
                 getConversation(GroupChatMode.contact, mHOPParticipantInfo, null, true);
-            newConversation.sendMessage(HOPSystemMessage.getConversationSwitchMessage(
-                conversation.getConversationId(), newConversation.getConversationId()), false);
         }
         break;
         case thread:{
             if (conversation.getType() == GroupChatMode.contact) {
                 newConversation = HOPConversationManager.getInstance().
                     getConversation(GroupChatMode.thread, mHOPParticipantInfo, null, true);
-                newConversation.sendMessage(HOPSystemMessage.getConversationSwitchMessage(
-                    conversation.getConversationId(), newConversation.getConversationId()), false);
             } else {
                 conversation.onContactsChanged(newParticipants);
             }

@@ -14,6 +14,7 @@ import com.openpeer.javaapi.OPMessage;
 import com.openpeer.sample.BackgroundingManager;
 import com.openpeer.sample.OPNotificationBuilder;
 import com.openpeer.sample.conversation.ConversationActivity;
+import com.openpeer.sample.conversation.ConversationSwitchSystemMessage;
 import com.openpeer.sample.events.ConversationSwitchEvent;
 import com.openpeer.sdk.app.HOPDataManager;
 import com.openpeer.sdk.model.CallSystemMessage;
@@ -139,9 +140,9 @@ public class PFPushReceiver extends ParsePushBroadcastReceiver {
                             conversationType,
                             conversation.getConversationId(),
                             HOPModelUtils.getUserIds(HOPParticipantInfo.getParticipants())));
-                } else if (systemObject.has(HOPSystemMessage.KEY_CONVERSATION_SWITCH)) {
+                } else if (systemObject.has(ConversationSwitchSystemMessage.KEY_CONVERSATION_SWITCH)) {
                     String fromConversationId = systemObject.getJSONObject(
-                        HOPSystemMessage.KEY_CONVERSATION_SWITCH).getString(HOPSystemMessage.KEY_FROM_CONVERSATION_ID);
+                        ConversationSwitchSystemMessage.KEY_CONVERSATION_SWITCH).getString(ConversationSwitchSystemMessage.KEY_FROM_CONVERSATION_ID);
                     HOPConversation fromConversation = HOPConversationManager.getInstance()
                         .getConversationById(fromConversationId);
                     if (fromConversation != null) {

@@ -21,10 +21,6 @@ public class HOPSystemMessage {
     public static final String KEY_ROOT = "system";
     public static final String KEY_CALL_STATUS = "callStatus";
     public static final String KEY_CONTACTS_REMOVED = "contactsRemoved";
-    public static final String KEY_CONVERSATION_SWITCH = "conversationSwitch";
-
-    public static final String KEY_FROM_CONVERSATION_ID = "from";
-    public static final String KEY_TO_CONVERSATION_ID = "to";
 
     public static OPMessage getContactsRemovedSystemMessage(String removedContacts[]) {
         JSONObject system = contactsRemovedMessage(removedContacts);
@@ -73,7 +69,7 @@ public class HOPSystemMessage {
             call.getCallID(),
             status,
             mediaType,
-            call.getPeerUser().getPeerUri(),
+            call.getPeer().getPeerUri(),
             callClosedReason);
 
         OPMessage message = new OPMessage(
@@ -110,33 +106,18 @@ public class HOPSystemMessage {
         }
     }
 
-    public static OPMessage getConversationSwitchMessage(String fromConversationId,
-                                                         String toConversationId) {
-        try {
-            JSONObject object = new JSONObject();
-            object.put(KEY_FROM_CONVERSATION_ID, fromConversationId);
-            object.put(KEY_TO_CONVERSATION_ID, toConversationId);
-            JSONObject object1 = new JSONObject();
-            object1.put(KEY_CONVERSATION_SWITCH, object);
-            return getSystemMessage(getSystemObject(object1));
-        } catch(JSONException e) {
-
-        }
-        return null;
-    }
-
     static JSONObject getSystemObject(JSONObject object) throws JSONException {
         JSONObject systemObject = new JSONObject();
         systemObject.put(KEY_ROOT, object);
         return systemObject;
     }
 
-    static OPMessage getSystemMessage(JSONObject system) {
+    public static OPMessage getSystemMessage(JSONObject system) throws JSONException{
         if (system != null) {
             OPMessage message = new OPMessage(
                 HOPDataManager.getInstance().getCurrentUserId(),
                 OPSystemMessage.getMessageType(),
-                system.toString(),
+                getSystemObject(system).toString(),
                 System.currentTimeMillis(),
                 UUID.randomUUID().toString());
             return message;
