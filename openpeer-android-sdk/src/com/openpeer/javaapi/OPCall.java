@@ -29,63 +29,9 @@
  *******************************************************************************/
 package com.openpeer.javaapi;
 
-import java.util.List;
-
 import android.text.format.Time;
 
-import com.openpeer.sdk.app.HOPDataManager;
-import com.openpeer.sdk.model.HOPContact;
-
 public class OPCall {
-
-    public long getCbcId() {
-        return mCbcId;
-    }
-
-    public void setCbcId(long cbcId) {
-        this.mCbcId = cbcId;
-    }
-
-    long mCbcId;
-    /**
-     * Helper function. Get the caller/callee OPContact.
-     * 
-     * @return
-     */
-    public OPContact getPeer() {
-        OPContact peer = getCaller();
-        if (peer.isSelf()) {
-            return getCallee();
-        } else {
-            return peer;
-        }
-    }
-
-    public boolean isOutgoing(){
-        return getCaller().isSelf();
-    }
-
-    /**
-     * Helper function to retrieve the peer user information.
-     * 
-     * @return
-     */
-    public HOPContact getPeerUser() {
-        OPContact contact = getPeer();
-        return HOPDataManager.getInstance().getUser(contact,
-                getIdentityContactList(contact));
-    }
-
-    /**
-     * Helper function. Retrieve identity contact list of the peer
-     * 
-     * @param contact
-     * @return
-     */
-    public List<OPIdentityContact> getIdentityContactList(OPContact contact) {
-        // TODO Auto-generated method stub
-        return getConversationThread().getIdentityContactList(contact);
-    }
 
     public OPCall() {
     }

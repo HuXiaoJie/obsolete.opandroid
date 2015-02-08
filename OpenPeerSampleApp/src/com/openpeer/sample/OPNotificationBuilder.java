@@ -37,7 +37,6 @@ import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 
-import com.openpeer.javaapi.OPCall;
 import com.openpeer.javaapi.OPMessage;
 import com.openpeer.sample.conversation.CallActivity;
 import com.openpeer.sample.conversation.ConversationActivity;
@@ -68,12 +67,12 @@ public class OPNotificationBuilder {
 
 		Notification.Builder builder = new Notification.Builder(context)
 				.setAutoCancel(true)
-				.setContentTitle(call.getPeerUser().getName())
+				.setContentTitle(call.getPeer().getName())
 				.setContentText(message)
 				.setSmallIcon(R.drawable.ic_action_call_light);
 		// Create the notification
 		launchIntent = new Intent(context, CallActivity.class);
-		String peerUri = call.getPeerUser().getPeerUri();
+		String peerUri = call.getPeer().getPeerUri();
 		launchIntent.putExtra(IntentData.ARG_PEER_URI, peerUri);
 		// Set the intent to perform when tapped
 

@@ -39,7 +39,6 @@ import com.openpeer.javaapi.OPCallDelegate;
 import com.openpeer.javaapi.OPConversationThread;
 import com.openpeer.javaapi.OPMessage;
 import com.openpeer.sdk.app.HOPDataManager;
-import com.openpeer.sdk.utils.HOPModelUtils;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -80,7 +79,6 @@ public class HOPCallManager implements OPCallDelegate {
         HOPCall call = findCallById(opcall.getCallID());
         if (call == null) {
             call = new HOPCall(opcall);
-            call.setCbcId(HOPModelUtils.getWindowIdForThread(thread));
         }
         HOPConversation conversation = HOPConversationManager.getInstance().getConversation
             (thread, true);
@@ -88,7 +86,7 @@ public class HOPCallManager implements OPCallDelegate {
         switch (state){
         case CallState_Preparing:{
             //Handle racing condition. SImply hangup the existing call for now.
-            HOPCall oldCall = findCallForPeer(call.getPeerUser().getUserId());
+            HOPCall oldCall = findCallForPeer(call.getPeer().getUserId());
             if (oldCall != null) {
                 call.hangup(CallClosedReasons.CallClosedReason_NotAcceptableHere);
             } else {
@@ -96,7 +94,7 @@ public class HOPCallManager implements OPCallDelegate {
                 HOPDataManager.getInstance().saveCall(
                     call.getCallID(),
                     conversation.getConversationId(),
-                    call.getPeerUser().getUserId(),
+                    call.getPeer().getUserId(),
                     direction,
                     call.hasVideo() ? CallSystemMessage.MEDIATYPE_VIDEO : CallSystemMessage
                         .MEDIATYPE_AUDIO);
@@ -167,7 +165,7 @@ public class HOPCallManager implements OPCallDelegate {
         if (mUserIdToCalls == null) {
             mUserIdToCalls = new Hashtable<>();
         }
-        mUserIdToCalls.put(call.getPeerUser().getUserId(), call);
+        mUserIdToCalls.put(call.getPeer().getUserId(), call);
     }
 
     public void handleCallSystemMessage(JSONObject message, HOPContact user, String conversationId,
@@ -200,10 +198,10 @@ public class HOPCallManager implements OPCallDelegate {
     }
 
     private void removeCallCache(HOPCall call) {
-        long userId = call.getPeerUser().getUserId();
+        long userId = call.getPeer().getUserId();
         if (mIdToCalls != null) {
             mIdToCalls.remove(call.getCallID());
-            mUserIdToCalls.remove(call.getPeerUser().getUserId());
+            mUserIdToCalls.remove(call.getPeer().getUserId());
 
             if (mIdToCalls.isEmpty()) {
                 mIdToCalls = null;

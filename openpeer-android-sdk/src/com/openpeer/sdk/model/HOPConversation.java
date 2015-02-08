@@ -229,7 +229,7 @@ public class HOPConversation extends Observable {
                             boolean includeAudio, boolean includeVideo) {
 
         OPContact newContact = user.getOPContact();
-        HOPCall call = HOPCall.placeCall(getThread(true), newContact, includeAudio,
+        HOPCall call = HOPCall.placeCall(this, newContact, includeAudio,
                                        includeVideo);
         return call;
     }

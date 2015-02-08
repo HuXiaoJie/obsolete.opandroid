@@ -7,6 +7,7 @@ import com.openpeer.javaapi.OPCall;
 import com.openpeer.javaapi.OPContact;
 import com.openpeer.javaapi.OPConversationThread;
 import com.openpeer.javaapi.OPIdentityContact;
+import com.openpeer.sdk.app.HOPDataManager;
 
 import java.util.List;
 
@@ -15,12 +16,17 @@ public class HOPCall {
     public static final int DIRECTION_INCOMING = 1;
     public static final int DIRECTION_OUTGOING = 0;
     private OPCall call;
-    private HOPContact peer;
     CallMediaStatus callMediaStatus;
+    HOPConversation conversation;
+
+    public void setConversation(HOPConversation conversation) {
+        this.conversation = conversation;
+    }
 
     HOPCall(OPCall call) {
         this.call = call;
         callMediaStatus = new CallMediaStatus();
+        conversation = HOPConversationManager.getInstance().getConversation(call.getConversationThread(), true);
     }
 
     public CallMediaStatus getCallMediaStatus() {
@@ -28,7 +34,7 @@ public class HOPCall {
     }
 
     public long getCbcId() {
-        return call.getCbcId();
+        return conversation.getCurrentCbcId();
     }
 
     public boolean hasAudio() {
@@ -51,12 +57,13 @@ public class HOPCall {
         return call.getCreationTime();
     }
 
-    public void setCbcId(long cbcId) {
-        call.setCbcId(cbcId);
-    }
-
-    public HOPContact getPeerUser() {
-        return call.getPeerUser();
+    public HOPContact getPeer() {
+        OPContact contact = call.getCaller();
+        if (contact.isSelf()) {
+            contact = call.getCallee();
+        }
+        return HOPDataManager.getInstance().getUser(contact,
+                                                    getIdentityContactList(contact));
     }
 
     public void ring() {
@@ -67,9 +74,9 @@ public class HOPCall {
         return call.getClosedReason();
     }
 
-    public static HOPCall placeCall(OPConversationThread conversationThread, OPContact toContact,
+    public static HOPCall placeCall(HOPConversation conversation, OPContact toContact,
                                     boolean includeAudio, boolean includeVideo) {
-        return new HOPCall(OPCall.placeCall(conversationThread, toContact, includeAudio,
+        return new HOPCall(OPCall.placeCall(conversation.getThread(true), toContact, includeAudio,
                                             includeVideo));
     }
 
@@ -86,11 +93,11 @@ public class HOPCall {
     }
 
     public boolean isOutgoing() {
-        return call.isOutgoing();
+        return call.getCaller().isSelf();
     }
 
     public int getCallDirection() {
-        return isOutgoing() ? 0 : 1;
+        return isOutgoing() ? DIRECTION_OUTGOING : DIRECTION_INCOMING;
     }
 
     public boolean hasVideo() {
@@ -109,8 +116,10 @@ public class HOPCall {
         return call.getAnswerTime().toMillis(false);
     }
 
-    public List<OPIdentityContact> getIdentityContactList(OPContact contact) {
-        return call.getIdentityContactList(contact);
+    private List<OPIdentityContact> getIdentityContactList(OPContact contact) {
+        OPConversationThread thread = call.getConversationThread();
+
+        return thread.getIdentityContactList(contact);
     }
 
     public void hangup(int reason) {
@@ -123,5 +132,9 @@ public class HOPCall {
 
     public Time getRingTime() {
         return call.getRingTime();
+    }
+
+    public HOPConversation getConversation() {
+        return conversation;
     }
 }

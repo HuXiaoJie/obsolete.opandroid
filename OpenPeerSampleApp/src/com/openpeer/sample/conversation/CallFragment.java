@@ -112,7 +112,7 @@ public class CallFragment extends BaseFragment {
 
         if(callId!=null){
             mCall= HOPCallManager.getInstance().findCallById(callId);
-            mPeerId = mCall.getPeerUser().getUserId();
+            mPeerId = mCall.getPeer().getUserId();
         } else if (userIDs != null && userIDs.length > 0) {
             mPeerId = userIDs[0];
             mCall = HOPCallManager.getInstance().findCallForPeer(mPeerId);
@@ -205,10 +205,10 @@ public class CallFragment extends BaseFragment {
             }
         }
         mCallControlView.bindCall(mCall);
-        // mNameView.setText(mCall.getPeerUser().getName());
-        String peerName = mCall.getPeerUser().getName();
+        // mNameView.setText(mCall.getPeer().getName());
+        String peerName = mCall.getPeer().getName();
         getActivity().getActionBar().setTitle(peerName);
-        String avatarUri = mCall.getPeerUser().getAvatarUri();
+        String avatarUri = mCall.getPeer().getAvatarUri();
         if (avatarUri != null) {
             Picasso.with(getActivity())
                     .load(avatarUri)
