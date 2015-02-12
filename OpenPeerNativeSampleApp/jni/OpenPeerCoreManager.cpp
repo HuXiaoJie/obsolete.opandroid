@@ -69,12 +69,12 @@ String OpenPeerCoreManager::getObjectClassName (jobject delegate)
 zsLib::Time OpenPeerCoreManager::convertTimeFromJava(jobject timeObject)
 {
 	JNIEnv* jni_env = getEnv();
-    jclass timeCls = findClass("android/text/format/Time");
-    jmethodID timeMethodID = jni_env->GetMethodID(timeCls, "toMillis","(Z)J");
-    jlong longValue = jni_env->CallLongMethod(timeObject, timeMethodID, false);
+	jclass timeCls = findClass("android/text/format/Time");
+	jmethodID timeMethodID = jni_env->GetMethodID(timeCls, "toMillis","(Z)J");
+	jlong longValue = jni_env->CallLongMethod(timeObject, timeMethodID, false);
 
-    Time t = std::chrono::time_point<std::chrono::system_clock>(std::chrono::milliseconds(longValue));
-    return t;
+	Time t = std::chrono::time_point<std::chrono::system_clock>(std::chrono::milliseconds(longValue));
+	return t;
 }
 
 jobject OpenPeerCoreManager::convertTimeFromCore(zsLib::Time coreTime)
@@ -83,12 +83,14 @@ jobject OpenPeerCoreManager::convertTimeFromCore(zsLib::Time coreTime)
 	//Convert and set time from C++ to Android; Fetch methods needed to accomplish this
 	jclass timeCls = findClass("android/text/format/Time");
 	jmethodID timeMethodID = jni_env->GetMethodID(timeCls, "<init>", "()V");
-	jmethodID timeSetMillisMethodID   = jni_env->GetMethodID(timeCls, "set", "(J)V");
-
-	//calculate and set java time
-	long milliseconds_since_epoch = coreTime.time_since_epoch() / std::chrono::milliseconds(1);
 	jobject object = jni_env->NewObject(timeCls, timeMethodID);
-	jni_env->CallVoidMethod(object, timeSetMillisMethodID, milliseconds_since_epoch);
+
+	if (Time() != coreTime){
+		//calculate and set java time
+		long milliseconds_since_epoch = coreTime.time_since_epoch() / std::chrono::milliseconds(1);
+		jmethodID timeSetMillisMethodID   = jni_env->GetMethodID(timeCls, "set", "(J)V");
+		jni_env->CallVoidMethod(object, timeSetMillisMethodID, milliseconds_since_epoch);
+	}
 
 	return object;
 }
@@ -112,12 +114,12 @@ jobject OpenPeerCoreManager::convertSecondsFromCore(zsLib::Seconds coreSeconds)
 zsLib::Seconds OpenPeerCoreManager::convertSecondsFromJava(jobject timeObject)
 {
 	JNIEnv* jni_env = getEnv();
-    jclass timeCls = findClass("android/text/format/Time");
-    jmethodID timeMethodID = jni_env->GetMethodID(timeCls, "toMillis","(Z)J");
-    jlong longValue = jni_env->CallLongMethod(timeObject, timeMethodID, false);
+	jclass timeCls = findClass("android/text/format/Time");
+	jmethodID timeMethodID = jni_env->GetMethodID(timeCls, "toMillis","(Z)J");
+	jlong longValue = jni_env->CallLongMethod(timeObject, timeMethodID, false);
 
-    Seconds s = std::chrono::duration_cast<std::chrono::seconds> (std::chrono::milliseconds(longValue));
-    return s;
+	Seconds s = std::chrono::duration_cast<std::chrono::seconds> (std::chrono::milliseconds(longValue));
+	return s;
 }
 
 void OpenPeerCoreManager::fillJavaTokenFromCoreObject(jobject javaToken, IIdentity::Token coreToken)
