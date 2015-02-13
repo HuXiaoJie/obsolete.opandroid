@@ -31,20 +31,18 @@ package com.openpeer.sdk.login;
 
 import com.openpeer.javaapi.AccountStates;
 import com.openpeer.javaapi.IdentityStates;
-import com.openpeer.javaapi.OPAccount;
-import com.openpeer.javaapi.OPIdentity;
-
-import android.webkit.WebView;
+import com.openpeer.sdk.model.HOPAccount;
+import com.openpeer.sdk.model.HOPAccountIdentity;
 
 public interface HOPLoginDelegate {
-    public boolean onAccountStateChanged(OPAccount account, AccountStates state);
+    public boolean onAccountStateChanged(HOPAccount account, AccountStates state);
 
-    public boolean onIdentityStateChanged(OPIdentity identity, IdentityStates state);
+    public boolean onIdentityStateChanged(HOPAccountIdentity identity, IdentityStates state);
 
-    public boolean onAccountPendingMessageForInnerBrowserWindowFrame(OPAccount account,
+    public boolean onAccountPendingMessageForInnerBrowserWindowFrame(HOPAccount account,
                                                                      String message);
 
-    public boolean onIdentityPendingMessageForInnerBrowserWindowFrame(OPIdentity identity,
+    public boolean onIdentityPendingMessageForInnerBrowserWindowFrame(HOPAccountIdentity identity,
                                                                       String message);
     public void onSignoutComplete();
 }

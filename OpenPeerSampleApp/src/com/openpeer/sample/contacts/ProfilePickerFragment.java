@@ -62,8 +62,9 @@ import com.openpeer.sample.BaseFragment;
 import com.openpeer.sample.IntentData;
 import com.openpeer.sample.R;
 import com.openpeer.sample.view.ProgressEmptyView;
-import com.openpeer.sdk.app.HOPDataManager;
+import com.openpeer.sdk.model.HOPDataManager;
 import com.openpeer.sdk.datastore.DatabaseContracts.RolodexContactEntry;
+import com.openpeer.sdk.model.HOPAccount;
 import com.squareup.picasso.Picasso;
 
 import butterknife.ButterKnife;
@@ -200,7 +201,7 @@ public class ProfilePickerFragment extends BaseFragment implements
 
     @Override
     public void onRefresh() {
-        HOPDataManager.getInstance().refreshContacts();
+        HOPAccount.currentAccount().refreshContacts();
         mRootLayout.setRefreshing(false);
     }
 

@@ -49,7 +49,7 @@ import android.widget.ListView;
 
 import com.openpeer.sample.BaseFragment;
 import com.openpeer.sample.R;
-import com.openpeer.sdk.app.HOPDataManager;
+import com.openpeer.sdk.model.HOPDataManager;
 import com.openpeer.sdk.datastore.DatabaseContracts.WindowViewEntry;
 import com.openpeer.sdk.model.HOPConversation;
 

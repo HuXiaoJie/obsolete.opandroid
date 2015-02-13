@@ -37,7 +37,6 @@ import com.openpeer.javaapi.OPContact;
 import com.openpeer.javaapi.OPConversationThread;
 import com.openpeer.javaapi.OPIdentityContact;
 import com.openpeer.javaapi.OPMessage;
-import com.openpeer.sdk.app.HOPDataManager;
 import com.openpeer.sdk.utils.CollectionUtils;
 import com.openpeer.sdk.utils.HOPModelUtils;
 
@@ -73,15 +72,13 @@ public class HOPConversation extends Observable {
         return quit;
     }
 
-    public void quit() {
+    /**
+     * Not yet supported
+     */
+    private void quit() {
     }
 
     private boolean quit;
-
-    //Start: from ios
-    String title;
-
-    //end: from ios
 
     public boolean amIRemoved() {
         return removed;
@@ -474,4 +471,17 @@ public class HOPConversation extends Observable {
     public void onMessagePushFailure(String messageId,HOPContact user){
 
     }
+
+    public static HOPConversation getConversation(GroupChatMode type, HOPParticipantInfo participantInfo,
+                                                  String conversationId,
+                                                  boolean createNew){
+        return HOPConversationManager.getInstance().getConversation(type,participantInfo,conversationId,createNew);
+    }
+
+    // delegate of conversation thread
+    public List<HOPIdentity> getIdentityContactList(
+        HOPContact contact){
+        return contact.getIdentities();
+    }
+    //end of delegate of conversation thread
 }

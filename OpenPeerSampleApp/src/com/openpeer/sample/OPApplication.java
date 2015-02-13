@@ -49,8 +49,8 @@ import com.openpeer.sample.push.UAPushService;
 import com.openpeer.sample.push.parsepush.PFPushService;
 import com.openpeer.sample.util.SettingsHelper;
 import com.openpeer.sdk.app.HOPHelper;
-import com.openpeer.sdk.login.HOPLoginManager;
-import com.openpeer.sdk.model.HOPCallManager;
+import com.openpeer.sdk.model.HOPLoginManager;
+import com.openpeer.sdk.model.HOPCall;
 import com.openpeer.sdk.model.HOPConversation;
 import com.openpeer.sample.push.PushServiceInterface;
 import com.urbanairship.AirshipConfigOptions;
@@ -126,7 +126,6 @@ public class OPApplication extends Application {
     private void init() {
         SettingsHelper.getInstance().initLoggers();
         if (SettingsHelper.getInstance().isParsePushEnabled()) {
-            PFPushService.getInstance().init();
             pushService = PFPushService.getInstance();
         } else if (SettingsHelper.getInstance().isUAPushEnabled()) {
             AirshipConfigOptions options = AirshipConfigOptions
@@ -139,7 +138,7 @@ public class OPApplication extends Application {
             Logger.logLevel = Log.VERBOSE;
         }
         HOPConversation.registerDelegate(HOPConversationDelegateImpl.getInstance());
-        HOPCallManager.getInstance().registerDelegate(CallDelegateImpl.getInstance());
+        HOPCall.registerDelegate(CallDelegateImpl.getInstance());
         HOPLoginManager.getInstance().registerDelegate(LoginDelegateImpl.getInstance());
     }
 

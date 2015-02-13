@@ -34,6 +34,7 @@ import java.net.URLDecoder;
 
 import com.openpeer.javaapi.OPIdentity;
 import com.openpeer.sdk.app.HOPSettingsHelper;
+import com.openpeer.sdk.model.HOPAccountIdentity;
 import com.openpeer.sdk.utils.StringUtils;
 
 import android.graphics.Bitmap;
@@ -44,15 +45,15 @@ import android.webkit.WebViewClient;
 
 public class HOPIdentityLoginWebViewClient extends WebViewClient {
 
-    OPIdentity mIdentity;
+    HOPAccountIdentity mIdentity;
 
-    public void setIdentity(OPIdentity identity) {
+    public void setIdentity(HOPAccountIdentity identity) {
         mIdentity = identity;
     }
 
     boolean mInnerFrameLoaded;
 
-    public HOPIdentityLoginWebViewClient(OPIdentity identity) {
+    public HOPIdentityLoginWebViewClient(HOPAccountIdentity identity) {
         mIdentity = identity;
     }
 

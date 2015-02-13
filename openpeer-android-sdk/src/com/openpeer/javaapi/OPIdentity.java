@@ -38,7 +38,7 @@ import com.openpeer.sdk.model.IdentityData;
 
 public class OPIdentity {
     /**
-     * Start identity login. This is handled automatically in {@link com.openpeer.sdk.login.HOPLoginManager}. Application should not use this
+     * Start identity login. This is handled automatically in {@link com.openpeer.sdk.model.HOPLoginManager}. Application should not use this
      * method directly
      *
      * @param identityUri
@@ -169,36 +169,6 @@ public class OPIdentity {
         }
 
         super.finalize();
-    }
-
-    public void setIsLoggingIn(boolean b) {
-        IdentityData.getInstance(getID()).setLoggingIn(b);
-    }
-
-    public void setIsAssocaiting(boolean b) {
-        IdentityData.getInstance(getID()).setAssociating(b);
-    }
-
-    public boolean isLoggingIn() {
-        return IdentityData.getInstance(getID()).isLoggingIn();
-    }
-
-    public boolean isAssociating() {
-        return IdentityData.getInstance(getID()).isAssociating();
-    }
-
-    public IdentityStates getPendingState() {
-        return IdentityData.getInstance(getID()).getPendingState();
-    }
-
-    public void setPendingState(IdentityStates pendingState) {
-        IdentityData.getInstance(getID()).setPendingState(pendingState);
-    }
-    public String getPendingCommand(){
-        return IdentityData.getInstance(getID()).getPendingCommand();
-    }
-    public void setPendingCommand(String command){
-        IdentityData.getInstance(getID()).setPendingCommand(command);
     }
 
     /**

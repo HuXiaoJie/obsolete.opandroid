@@ -38,7 +38,8 @@ import android.util.Log;
 import com.openpeer.javaapi.OPContact;
 import com.openpeer.javaapi.OPContactProfileInfo;
 import com.openpeer.javaapi.OPConversationThread;
-import com.openpeer.sdk.app.HOPDataManager;
+import com.openpeer.sdk.model.HOPDataManager;
+import com.openpeer.sdk.model.HOPAccount;
 import com.openpeer.sdk.model.HOPContact;
 
 public class HOPModelUtils {
@@ -52,7 +53,7 @@ public class HOPModelUtils {
      */
     public static long getWindowId(long userIds[]) {
         long tmp[] = new long[userIds.length + 1];
-        tmp[userIds.length] = HOPDataManager.getInstance().getCurrentUserId();
+        tmp[userIds.length] = HOPAccount.selfContactId();
         System.arraycopy(userIds, 0, tmp, 0, userIds.length);
         Arrays.sort(tmp);
         String arr[] = new String[tmp.length];
@@ -77,21 +78,21 @@ public class HOPModelUtils {
         return getWindowId(getUserIdsArray(users));
     }
 
-    public static long getWindowIdForThread(OPConversationThread mConvThread) {
-
-        List<OPContact> contacts = mConvThread.getContacts();
-        List<HOPContact> users = new ArrayList<HOPContact>();
-        for (OPContact contact : contacts) {
-            if (!contact.isSelf()) {
-                HOPContact user = HOPDataManager.getInstance().getUser(
-                        contact,
-                        mConvThread.getIdentityContactList(contact));
-                // This function will also set the userId so don't worry
-                users.add(user);
-            }
-        }
-        return getWindowId(users);
-    }
+//    public static long getWindowIdForThread(OPConversationThread mConvThread) {
+//
+//        List<OPContact> contacts = mConvThread.getContacts();
+//        List<HOPContact> users = new ArrayList<HOPContact>();
+//        for (OPContact contact : contacts) {
+//            if (!contact.isSelf()) {
+//                HOPContact user = HOPDataManager.getInstance().getUser(
+//                        contact,
+//                        mConvThread.getIdentityContactList(contact));
+//                // This function will also set the userId so don't worry
+//                users.add(user);
+//            }
+//        }
+//        return getWindowId(users);
+//    }
 
     public static long[] getUserIdsArray(List<HOPContact> users){
         long userIds[] = new long[users.size()];

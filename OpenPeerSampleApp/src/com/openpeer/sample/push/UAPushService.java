@@ -38,7 +38,8 @@ import com.openpeer.javaapi.MessageDeliveryStates;
 import com.openpeer.javaapi.OPLogLevel;
 import com.openpeer.javaapi.OPLogger;
 import com.openpeer.javaapi.OPMessage;
-import com.openpeer.sdk.app.HOPDataManager;
+import com.openpeer.sdk.model.HOPDataManager;
+import com.openpeer.sdk.model.HOPAccount;
 import com.openpeer.sdk.model.HOPContact;
 import com.openpeer.sdk.model.HOPConversation;
 
@@ -91,15 +92,15 @@ public class UAPushService implements PushServiceInterface {
                     }
                     UAPushMessage uaPushMessage = UAPushMessage.fromOPMessage(
                         new PushExtra
-                            (HOPDataManager.getInstance().getCurrentUser().getPeerUri(),
-                             HOPDataManager.getInstance().getCurrentUser().getName(),
+                            (HOPAccount.selfContact().getPeerUri(),
+                             HOPAccount.selfContact().getName(),
                              peerURIs,
                              message.getMessageType(),
                              message.getMessageId(),
                              message.getMessageId(),
                              conversation.getType().toString(),
                              conversation.getConversationId(),
-                             HOPDataManager.getInstance().getSharedAccount().getLocationID(),
+                             HOPAccount.currentAccount().getLocationID(),
                              message.getTime().toMillis(false) / 1000 + ""),
                         message.getMessage(),
                         token);

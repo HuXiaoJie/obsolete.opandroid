@@ -30,7 +30,7 @@ package com.openpeer.sample.util;
 
 import java.util.List;
 
-import com.openpeer.sdk.app.HOPDataManager;
+import com.openpeer.sdk.model.HOPDataManager;
 import com.openpeer.sdk.model.HOPContact;
 
 /**

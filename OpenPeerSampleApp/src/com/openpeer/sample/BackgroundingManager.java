@@ -33,6 +33,7 @@ import java.util.TimerTask;
 
 import com.openpeer.javaapi.OPBackgrounding;
 import com.openpeer.sample.delegates.BackgroundingCompletionDelegateImpl;
+import com.openpeer.sdk.model.HOPCall;
 import com.openpeer.sdk.model.HOPCallManager;
 
 /**
@@ -63,7 +64,7 @@ public class BackgroundingManager {
     }
 
     public static void onEnteringBackground() {
-        if (HOPCallManager.getInstance().hasCalls()) {
+        if (HOPCall.hasCalls()) {
             mBackgroundingPending = true;
         } else {
             mBackgroundingPending = false;

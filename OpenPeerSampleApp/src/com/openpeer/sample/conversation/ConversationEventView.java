@@ -40,7 +40,7 @@ import com.openpeer.javaapi.OPMessage;
 import com.openpeer.sample.R;
 import com.openpeer.sample.util.DateFormatUtils;
 import com.openpeer.sample.util.ModelUtil;
-import com.openpeer.sdk.app.HOPDataManager;
+import com.openpeer.sdk.model.HOPDataManager;
 import com.openpeer.sdk.model.HOPContact;
 import com.openpeer.sdk.model.HOPConversationEvent;
 

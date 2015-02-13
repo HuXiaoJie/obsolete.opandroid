@@ -65,6 +65,7 @@ import com.openpeer.sample.settings.SettingsDownloader;
 import com.openpeer.sample.util.SettingsHelper;
 import com.openpeer.sdk.app.HOPHelper;
 import com.openpeer.sdk.app.HOPSettingsHelper;
+import com.openpeer.sdk.model.HOPCall;
 import com.openpeer.sdk.model.HOPCallManager;
 
 public class SettingsActivity extends BaseActivity {
@@ -372,7 +373,7 @@ public class SettingsActivity extends BaseActivity {
     }
 
     void doSignout() {
-        if (HOPCallManager.getInstance().hasCalls()) {
+        if (HOPCall.hasCalls()) {
             Toast.makeText(SettingsActivity.this,
                     R.string.msg_cannot_signout_with_call, Toast.LENGTH_LONG)
                     .show();

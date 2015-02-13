@@ -36,9 +36,8 @@ import android.util.Log;
 
 import com.openpeer.javaapi.OPMessage;
 import com.openpeer.sample.OPNotificationBuilder;
-import com.openpeer.sdk.app.HOPDataManager;
+import com.openpeer.sdk.model.HOPDataManager;
 import com.openpeer.sdk.model.HOPContact;
-import com.openpeer.sdk.model.HOPConversationManager;
 import com.openpeer.sdk.model.GroupChatMode;
 import com.openpeer.sdk.model.HOPConversation;
 import com.openpeer.sdk.model.HOPParticipantInfo;
@@ -108,7 +107,7 @@ public class PushNotificationBuilder implements com.urbanairship.push.PushNotifi
             (users),
                                                               users);
         //Make sure conversation is saved in db.
-        HOPConversation conversation = HOPConversationManager.getInstance().getConversation
+        HOPConversation conversation = HOPConversation.getConversation
             (GroupChatMode.valueOf(conversationType), HOPParticipantInfo, conversationId, true);
         HOPDataManager.getInstance().saveMessage(message,
                                                 conversationId, HOPParticipantInfo);

@@ -4,7 +4,6 @@ import android.text.format.Time;
 
 import com.openpeer.javaapi.OPMessage;
 import com.openpeer.javaapi.OPSystemMessage;
-import com.openpeer.sdk.app.HOPDataManager;
 import com.openpeer.sdk.utils.JSONUtils;
 
 import org.json.JSONArray;
@@ -26,7 +25,7 @@ public class HOPSystemMessage {
         JSONObject system = contactsRemovedMessage(removedContacts);
         if (system != null) {
             OPMessage message = new OPMessage(
-                HOPDataManager.getInstance().getCurrentUserId(),
+                HOPAccount.selfContactId(),
                 OPSystemMessage.getMessageType(),
                 system.toString(),
                 System.currentTimeMillis(),
@@ -73,7 +72,7 @@ public class HOPSystemMessage {
             callClosedReason);
 
         OPMessage message = new OPMessage(
-            HOPDataManager.getInstance().getCurrentUserId(),
+            HOPAccount.selfContactId(),
             OPSystemMessage.getMessageType(),
             callSystemMessage.toString(),
             System.currentTimeMillis(),
@@ -115,7 +114,7 @@ public class HOPSystemMessage {
     public static OPMessage getSystemMessage(JSONObject system) throws JSONException{
         if (system != null) {
             OPMessage message = new OPMessage(
-                HOPDataManager.getInstance().getCurrentUserId(),
+                HOPAccount.selfContactId(),
                 OPSystemMessage.getMessageType(),
                 getSystemObject(system).toString(),
                 System.currentTimeMillis(),

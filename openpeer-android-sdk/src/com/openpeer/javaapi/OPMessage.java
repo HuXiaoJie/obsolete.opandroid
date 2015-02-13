@@ -31,7 +31,7 @@ package com.openpeer.javaapi;
 
 import android.text.format.Time;
 
-import com.openpeer.sdk.app.HOPDataManager;
+import com.openpeer.sdk.model.HOPDataManager;
 import com.openpeer.sdk.model.HOPContact;
 import com.openpeer.sdk.model.MessageEditState;
 

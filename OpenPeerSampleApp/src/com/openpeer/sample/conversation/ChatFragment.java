@@ -63,7 +63,6 @@ import android.widget.TextView;
 import com.openpeer.javaapi.CallStates;
 import com.openpeer.javaapi.ComposingStates;
 import com.openpeer.javaapi.MessageDeliveryStates;
-import com.openpeer.javaapi.OPCall;
 import com.openpeer.javaapi.OPMessage;
 import com.openpeer.sample.BaseActivity;
 import com.openpeer.sample.BaseFragment;
@@ -75,9 +74,10 @@ import com.openpeer.sample.events.ConversationComposingStatusChangeEvent;
 import com.openpeer.sample.events.ConversationContactsChangeEvent;
 import com.openpeer.sample.events.ConversationSwitchEvent;
 import com.openpeer.sample.events.ConversationTopicChangeEvent;
-import com.openpeer.sdk.app.HOPDataManager;
+import com.openpeer.sdk.model.HOPDataManager;
 import com.openpeer.sdk.datastore.DatabaseContracts.MessageEntry;
 import com.openpeer.sdk.datastore.OPModelCursorHelper;
+import com.openpeer.sdk.model.HOPAccount;
 import com.openpeer.sdk.model.HOPCall;
 import com.openpeer.sdk.model.HOPContact;
 import com.openpeer.sdk.model.HOPConversationManager;
@@ -85,7 +85,6 @@ import com.openpeer.sdk.model.GroupChatMode;
 import com.openpeer.sdk.model.HOPConversation;
 import com.openpeer.sdk.model.HOPConversationEvent;
 import com.openpeer.sdk.model.HOPParticipantInfo;
-import com.openpeer.sdk.model.HOPSystemMessage;
 import com.openpeer.sdk.utils.HOPModelUtils;
 import com.openpeer.sdk.utils.NoDuplicateArrayList;
 
@@ -143,13 +142,13 @@ public class ChatFragment extends BaseFragment implements
         List<HOPContact> participants = HOPDataManager.getInstance().getUsers(userIds);
         mHOPParticipantInfo = new HOPParticipantInfo(cbcId, participants);
         setHasOptionsMenu(true);
-        if (HOPDataManager.getInstance().isAccountReady()) {
+        if (HOPAccount.isAccountReady()) {
             setup();
         }
     }
 
     void setup() {
-        mConversation = HOPConversationManager.getInstance().getConversation(GroupChatMode.valueOf(mType),
+        mConversation = HOPConversation.getConversation(GroupChatMode.valueOf(mType),
                                                                              mHOPParticipantInfo,
                                                                      mConversationId, true);
 
@@ -164,7 +163,6 @@ public class ChatFragment extends BaseFragment implements
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        // TODO Auto-generated method stub
         View view = inflater.inflate(R.layout.fragment_chat, null);
 
         return setupView(view);
@@ -174,7 +172,7 @@ public class ChatFragment extends BaseFragment implements
     public void onResume() {
         super.onResume();
 
-        if (!HOPDataManager.getInstance().isAccountReady() || mConversation == null) {
+        if (!HOPAccount.isAccountReady() || mConversation == null) {
             return;
         }
         // All following stuff can only be done if the account is in ready state
@@ -202,7 +200,7 @@ public class ChatFragment extends BaseFragment implements
         if (mCallInfoView.isShown()) {
             mCallInfoView.unbind();
         }
-        if (!HOPDataManager.getInstance().isAccountReady()) {
+        if (!HOPAccount.isAccountReady()) {
             return;
         }
         if (mConversation != null) {
@@ -261,7 +259,7 @@ public class ChatFragment extends BaseFragment implements
 
             @Override
             public void onClick(View arg0) {
-                if (!HOPDataManager.getInstance().isAccountReady()) {
+                if (!HOPAccount.isAccountReady()) {
                     BaseActivity.showInvalidStateWarning(getActivity());
                     return;
                 }
@@ -272,7 +270,7 @@ public class ChatFragment extends BaseFragment implements
                 }
                 OPMessage msg = null;
                 // we use 0 for home user
-                msg = new OPMessage(HOPDataManager.getInstance().getCurrentUserId(),
+                msg = new OPMessage(HOPAccount.selfContactId(),
                                     OPMessage.TYPE_TEXT,
                                     mComposeBox.getText().toString(),
                                     System.currentTimeMillis(),
@@ -423,17 +421,16 @@ public class ChatFragment extends BaseFragment implements
                 || OPMessage.TYPE_INERNAL_CALL_VIDEO.equals(type)) {
                 return VIEWTYPE_CALL_VIEW;
             }
-            if (HOPConversationEvent.EventTypes.ContactsChange.toString().equals(type)) {
+            if (HOPConversationEvent.EventTypes.ContactsChange.name().equals(type)) {
                 return VIEWTYPE_CONVERSATION_EVENT_VIEW;
             }
 
             long sender_id = cursor.getLong(cursor
                                                 .getColumnIndex(MessageEntry.COLUMN_SENDER_ID));
-            if (sender_id == HOPDataManager.getInstance().getCurrentUserId()) {
+            if (sender_id == HOPAccount.selfContactId()) {
                 return VIEWTYPE_SELF_MESSAGE_VIEW;
             }
             return VIEWTYPE_RECIEVED_MESSAGE_VIEW;
-
         }
 
         @Override
@@ -597,7 +594,7 @@ public class ChatFragment extends BaseFragment implements
                 //TODO: error handling
                 return true;
             }
-            if (!HOPDataManager.getInstance().isAccountReady()) {
+            if (!HOPAccount.isAccountReady()) {
                 BaseActivity.showInvalidStateWarning(getActivity());
                 return true;
             }

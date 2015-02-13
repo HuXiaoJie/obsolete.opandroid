@@ -35,27 +35,6 @@ import java.util.List;
 import com.openpeer.sdk.app.HOPSettingsHelper;
 
 public class OPAccount {
-    /*
-     * Database record id
-     */
-    private long mAccountId;
-    private long mSelfContactId;
-
-    public long getSelfContactId() {
-        return mSelfContactId;
-    }
-
-    public void setSelfContactId(long id) {
-        this.mSelfContactId = id;
-    }
-
-    public long getAccountId() {
-        return mAccountId;
-    }
-
-    public void setAccountId(long id) {
-        this.mAccountId = id;
-    }
 
     /**
      * 
@@ -63,15 +42,6 @@ public class OPAccount {
      */
     public AccountStates getState() {
         return getState(0, "");
-    }
-
-    /**
-     * Convenience method to get the peerURI of the account
-     * 
-     * @return
-     */
-    public String getPeerUri() {
-        return OPContact.getForSelf(this).getPeerURI();
     }
 
     /**

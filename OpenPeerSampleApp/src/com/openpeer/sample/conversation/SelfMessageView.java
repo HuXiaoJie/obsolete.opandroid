@@ -39,7 +39,8 @@ import android.widget.TextView;
 import com.openpeer.javaapi.OPMessage;
 import com.openpeer.sample.R;
 import com.openpeer.sample.util.DateFormatUtils;
-import com.openpeer.sdk.app.HOPDataManager;
+import com.openpeer.sdk.model.HOPAccount;
+import com.openpeer.sdk.model.HOPDataManager;
 import com.openpeer.sdk.model.HOPConversation;
 import com.openpeer.sdk.model.MessageEditState;
 
@@ -140,7 +141,7 @@ public class SelfMessageView extends RelativeLayout {
     }
 
     public void onDeleteSelected() {
-        OPMessage message = new OPMessage(HOPDataManager.getInstance().getCurrentUserId(),
+        OPMessage message = new OPMessage(HOPAccount.selfContactId(),
                 OPMessage.TYPE_TEXT,
                 "",
                 System.currentTimeMillis(),

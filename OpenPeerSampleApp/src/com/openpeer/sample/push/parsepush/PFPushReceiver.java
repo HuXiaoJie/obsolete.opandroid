@@ -15,16 +15,18 @@ import com.openpeer.sample.BackgroundingManager;
 import com.openpeer.sample.OPNotificationBuilder;
 import com.openpeer.sample.conversation.ConversationActivity;
 import com.openpeer.sample.conversation.ConversationSwitchSystemMessage;
+import com.openpeer.sample.delegates.HOPConversationDelegateImpl;
 import com.openpeer.sample.events.ConversationSwitchEvent;
-import com.openpeer.sdk.app.HOPDataManager;
+import com.openpeer.sdk.model.HOPDataManager;
 import com.openpeer.sdk.model.CallSystemMessage;
-import com.openpeer.sdk.model.HOPContact;
-import com.openpeer.sdk.model.HOPConversationManager;
 import com.openpeer.sdk.model.GroupChatMode;
+import com.openpeer.sdk.model.HOPAccount;
+import com.openpeer.sdk.model.HOPContact;
 import com.openpeer.sdk.model.HOPConversation;
+import com.openpeer.sdk.model.HOPConversationManager;
 import com.openpeer.sdk.model.HOPParticipantInfo;
-import com.openpeer.sdk.model.MessageEditState;
 import com.openpeer.sdk.model.HOPSystemMessage;
+import com.openpeer.sdk.model.MessageEditState;
 import com.openpeer.sdk.utils.HOPModelUtils;
 import com.parse.DeleteCallback;
 import com.parse.FindCallback;
@@ -84,7 +86,7 @@ public class PFPushReceiver extends ParsePushBroadcastReceiver {
 
             HOPParticipantInfo HOPParticipantInfo = getParticipantInfo(sender, peerURIsString);
             //Make sure conversation is saved in db.
-            HOPConversation conversation = HOPConversationManager.getInstance().getConversation
+            HOPConversation conversation = HOPConversation.getConversation
                 (GroupChatMode.valueOf(conversationType), HOPParticipantInfo, conversationId, true);
             String messageType = jsonObject.getString(PFPushMessage.KEY_MESSAGE_TYPE);
 
@@ -99,9 +101,8 @@ public class PFPushReceiver extends ParsePushBroadcastReceiver {
                                                   messageId,
                                                   MessageEditState.Normal);
                 HOPDataManager.getInstance().saveMessage(message,
-                                                        conversation.getConversationId(),
-                                                        HOPParticipantInfo);
-//                return getTextMessageNotification(jsonObject);
+                                                         conversation.getConversationId(),
+                                                         HOPParticipantInfo);
                 OPNotificationBuilder.showNotificationForMessage(
                     HOPModelUtils.getUserIds(HOPParticipantInfo.getParticipants()),
                     message,
@@ -111,15 +112,14 @@ public class PFPushReceiver extends ParsePushBroadcastReceiver {
             break;
             case OPMessage.TYPE_JSON_SYSTEM_MESSAGE:{
                 JSONObject systemObject = jsonObject.getJSONObject(HOPSystemMessage.KEY_ROOT);
-                if (systemObject.has("callStatus")) {
-                    JSONObject callStatusObject = systemObject.getJSONObject("callStatus");
-                    String callStatus = callStatusObject.getString(CallSystemMessage
-                                                                       .KEY_CALL_STATUS_STATUS);
-                    if (HOPDataManager.getInstance().isAccountReady()) {
+                if (systemObject.has(HOPSystemMessage.KEY_CALL_STATUS)) {
+                    JSONObject callStatusObject = systemObject.getJSONObject(HOPSystemMessage
+                                                                                 .KEY_CALL_STATUS);
+                    if (HOPAccount.isAccountReady()) {
                         HOPContact user = HOPDataManager.getInstance().getUserByPeerUri(jsonObject
-                                                                                       .getString
+                                                                                            .getString
 
-                                                                                           (PFPushMessage.KEY_PEER_URI));
+                                                                                                (PFPushMessage.KEY_PEER_URI));
                         if (user != null) {
                             user.hintAboutLocation(jsonObject.getString(PFPushMessage
                                                                             .KEY_LOCATION));
@@ -129,6 +129,9 @@ public class PFPushReceiver extends ParsePushBroadcastReceiver {
                     if (BackgroundingManager.isInBackground()) {
 
                     }
+                    HOPConversationDelegateImpl.handleCallSystemMessage(
+                        systemObject.getJSONObject(HOPSystemMessage.KEY_CALL_STATUS),
+                        sender, conversationId, date);
                     String callId = callStatusObject.getString("id");
                     OPNotificationBuilder.showNotification(
                         OPNotificationBuilder.getNotificationIdForCall(callId),
@@ -142,7 +145,8 @@ public class PFPushReceiver extends ParsePushBroadcastReceiver {
                             HOPModelUtils.getUserIds(HOPParticipantInfo.getParticipants())));
                 } else if (systemObject.has(ConversationSwitchSystemMessage.KEY_CONVERSATION_SWITCH)) {
                     String fromConversationId = systemObject.getJSONObject(
-                        ConversationSwitchSystemMessage.KEY_CONVERSATION_SWITCH).getString(ConversationSwitchSystemMessage.KEY_FROM_CONVERSATION_ID);
+                        ConversationSwitchSystemMessage.KEY_CONVERSATION_SWITCH).getString
+                        (ConversationSwitchSystemMessage.KEY_FROM_CONVERSATION_ID);
                     HOPConversation fromConversation = HOPConversationManager.getInstance()
                         .getConversationById(fromConversationId);
                     if (fromConversation != null) {
@@ -180,7 +184,7 @@ public class PFPushReceiver extends ParsePushBroadcastReceiver {
 
     public static void downloadMessages() {
         ParseQuery parseQuery = new ParseQuery("OPPushMessage");
-        parseQuery.whereEqualTo("to", HOPDataManager.getInstance().getCurrentUser().getPeerUri());
+        parseQuery.whereEqualTo("to", HOPAccount.selfContact().getPeerUri());
         parseQuery.findInBackground(new FindCallback<ParseObject>() {
             @Override
             public void done(final List<ParseObject> list, ParseException e) {
@@ -201,7 +205,8 @@ public class PFPushReceiver extends ParsePushBroadcastReceiver {
                         continue;
                     }
                     String peerURIsString = object.getString(PFPushMessage.KEY_PEER_URIS);
-                    HOPParticipantInfo HOPParticipantInfo = getParticipantInfo(sender, peerURIsString);
+                    HOPParticipantInfo HOPParticipantInfo = getParticipantInfo(sender,
+                                                                               peerURIsString);
                     OPMessage message = new OPMessage(sender.getUserId(),
                                                       object.getString(PFPushMessage
                                                                            .KEY_MESSAGE_TYPE),
@@ -209,7 +214,8 @@ public class PFPushReceiver extends ParsePushBroadcastReceiver {
                                                       object.getLong(PFPushMessage.KEY_DATE) * 1000,
                                                       object.getString(PFPushMessage
                                                                            .KEY_MESSAGE_ID));
-                    HOPConversation conversation = HOPConversationManager.getInstance().getConversation(
+                    HOPConversation conversation = HOPConversationManager.getInstance()
+                        .getConversation(
                         GroupChatMode.valueOf(object.getString(PFPushMessage
                                                                    .KEY_CONVERSATION_TYPE)),
                         HOPParticipantInfo,
@@ -217,8 +223,8 @@ public class PFPushReceiver extends ParsePushBroadcastReceiver {
                         true
                     );
                     HOPDataManager.getInstance().saveMessage(message,
-                                                            conversation.getConversationId(),
-                                                            HOPParticipantInfo);
+                                                             conversation.getConversationId(),
+                                                             HOPParticipantInfo);
                 }
                 ParseObject.deleteAllInBackground(list, new DeleteCallback() {
                     @Override
@@ -254,8 +260,8 @@ public class PFPushReceiver extends ParsePushBroadcastReceiver {
             }
         }
         HOPParticipantInfo HOPParticipantInfo = new HOPParticipantInfo(HOPModelUtils
-                                                                  .getWindowId(users),
-                                                              users);
+                                                                           .getWindowId(users),
+                                                                       users);
         return HOPParticipantInfo;
     }
 

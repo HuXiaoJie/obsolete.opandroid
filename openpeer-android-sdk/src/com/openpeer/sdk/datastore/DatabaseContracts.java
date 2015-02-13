@@ -35,24 +35,21 @@ import android.provider.BaseColumns;
  * Database definitions and create statements.
  */
 public class DatabaseContracts {
-    public static final String TEXT_TYPE = " TEXT";
-    public static final String INTEGER_TYPE = " INTEGER";
-    public static final String INTEGER_PRIMARY_KEY_TYPE = " INTEGER PRIMARY KEY";
-    public static final String UNIQUE_TYPE = " UNIQUE";
-    public static final String PRIMARY_KEY_TYPE = " PRIMARY KEY";
-    public static final String CREATE_TABLE = "CREATE TABLE IF NOT EXISTS ";
-    public static final String CREATE_VIEW = "CREATE VIEW IF NOT EXISTS ";
+    static final String TEXT_TYPE = " TEXT";
+    static final String INTEGER_TYPE = " INTEGER";
+    static final String INTEGER_PRIMARY_KEY_TYPE = " INTEGER PRIMARY KEY";
+    static final String UNIQUE_TYPE = " UNIQUE";
+    static final String PRIMARY_KEY_TYPE = " PRIMARY KEY";
+    static final String CREATE_TABLE = "CREATE TABLE IF NOT EXISTS ";
+    static final String CREATE_VIEW = "CREATE VIEW IF NOT EXISTS ";
 
-    public static final String COMMA_SEP = ",";
-    public static final String LEFT_JOIN = " left join ";
-    public static final String ON = " on ";
+    static final String COMMA_SEP = ",";
+    static final String LEFT_JOIN = " left join ";
+    static final String ON = " on ";
 
-    public static final String AUTHORITY = "com.openpeer.sample.provider";
     static final String SCHEME = "content://";
-    public static final String URI_PREFIX = SCHEME + AUTHORITY;
     public static final String COLUMN_IDENTITY_URI = "identity_uri";
-    public static final String COLUMN_THREAD_ID = "thread_id";
-    public static final String COLUMN_GROUP_ID = "group_id";
+
     public static final String COLUMN_STABLE_ID = "stable_id";
     public static final String COLUMN_PEER_URI = "peer_uri";
     public static final String COLUMN_CBC_ID = "cbc_id";
@@ -74,7 +71,7 @@ public class DatabaseContracts {
         public static final String COLUMN_LOGGED_IN = "logged_in";
         public static final String COLUMN_RELOGIN_INFO = "relogin_info";
         public static final String COLUMN_STABLE_ID = DatabaseContracts.COLUMN_STABLE_ID;
-        public static final String COLUMN_PEER_URI = DatabaseContracts.COLUMN_PEER_URI;
+        public static final String COLUMN_SELF_CONTACT_ID = "self_contact_id";
     }
 
     public static abstract class RolodexContactEntry implements BaseColumns {
@@ -100,9 +97,6 @@ public class DatabaseContracts {
         public static final String URI_PATH_INFO = "/" + TABLE_NAME;
         public static final String URI_PATH_INFO_ID = "/" + TABLE_NAME + "/#";
 
-        public static final String COLUMN_ASSOCIATED_IDENTITY_ID = "associated_identity_id";
-        // This is acutally hash of identityUri of OPRolodexContact, kinda redundant but keeping it for now
-        public static final String COLUMN_PEERFILE_PUBLIC_ID = "peerfile_public_id";
         public static final String COLUMN_IDENTITY_PROOF_BUNDLE = "identity_proof_bundle";
         public static final String COLUMN_PRORITY = "priority";
         public static final String COLUMN_WEIGHT = "weight";
@@ -110,7 +104,7 @@ public class DatabaseContracts {
         public static final String COLUMN_EXPIRE = "expire";
     }
 
-    public static abstract class AssociatedIdentityEntry implements BaseColumns {
+    public static abstract class AccountIdentityEntry implements BaseColumns {
         public static final String TABLE_NAME = "associated_identity";
         public static final String URI_PATH_INFO = "/" + TABLE_NAME;
         public static final String URI_PATH_INFO_ID = "/" + TABLE_NAME + "/#";
@@ -137,7 +131,6 @@ public class DatabaseContracts {
 
     public static abstract class OpenpeerContactEntry implements BaseColumns {
         public static final String TABLE_NAME = "openpeer_contact";
-        public static final String URI_PATH_LOGIN_USER = "/" + TABLE_NAME+"/loggedin";
         public static final String URI_PATH_INFO = "/" + TABLE_NAME;
         public static final String URI_PATH_INFO_ID = "/" + TABLE_NAME + "/#";
         // use this URI to retrieve full info of openpeer contact from all three tables(openpeer_contact,rolodex_contact,identity_contact0
@@ -275,8 +268,6 @@ public class DatabaseContracts {
         public static final String COLUMN_CBC_ID = DatabaseContracts.COLUMN_CBC_ID;
         public static final String COLUMN_CONVERSATION_ID = "conversation_id";
         public static final String COLUMN_AVATAR_URI = "avatar_uri";
-        // This is window id based on participants
-        public static final String COLUMN_LAST_READ_MSG_ID = "lrm_id";
         public static final String COLUMN_LAST_MESSAGE = "last_message";
         public static final String COLUMN_LAST_MESSAGE_TIME = "last_message_time";
         public static final String COLUMN_USER_ID = "openpeer_contact_id";

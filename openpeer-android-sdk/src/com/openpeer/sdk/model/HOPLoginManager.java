@@ -27,7 +27,7 @@
  *  of the authors and should not be interpreted as representing official policies,
  *  either expressed or implied, of the FreeBSD Project.
  *******************************************************************************/
-package com.openpeer.sdk.login;
+package com.openpeer.sdk.model;
 
 import android.text.TextUtils;
 import android.util.Log;
@@ -42,13 +42,10 @@ import com.openpeer.javaapi.OPIdentity;
 import com.openpeer.javaapi.OPIdentityDelegate;
 import com.openpeer.javaapi.OPLogLevel;
 import com.openpeer.javaapi.OPLogger;
-import com.openpeer.sdk.app.HOPDataManager;
 import com.openpeer.sdk.app.HOPHelper;
 import com.openpeer.sdk.app.HOPSettingsHelper;
-import com.openpeer.sdk.model.HOPCallManager;
-import com.openpeer.sdk.model.HOPConversationManager;
+import com.openpeer.sdk.login.HOPLoginDelegate;
 
-import java.util.Hashtable;
 import java.util.List;
 
 public class HOPLoginManager implements OPIdentityDelegate,OPAccountDelegate{
@@ -59,9 +56,9 @@ public class HOPLoginManager implements OPIdentityDelegate,OPAccountDelegate{
 
     private boolean mAccountLoggingIn;
     private List<LoginRecord> mLoginRecords;
-    Hashtable<Long, OPIdentity> mIdentitiesLoggingIn;
     AccountStates pendingState;
     String mPendingCommand;
+    HOPAccount mAccount;
 
     private boolean mLoginPerformed;
 
@@ -113,9 +110,8 @@ public class HOPLoginManager implements OPIdentityDelegate,OPAccountDelegate{
             OPCallDelegate callDelegate,
             OPConversationThreadDelegate conversationThreadDelegate) {
 
-        OPAccount account = OPAccount.login(this,
+        mAccount = HOPAccount.login(this,
                 conversationThreadDelegate, callDelegate);
-        HOPDataManager.getInstance().setSharedAccount(account);
         mAccountLoggingIn = true;
         startIdentityLogin(null);
     }
@@ -136,20 +132,15 @@ public class HOPLoginManager implements OPIdentityDelegate,OPAccountDelegate{
             OPCallDelegate callDelegate,
             OPConversationThreadDelegate conversationThreadDelegate,
             String reloginInfo) {
-        OPAccount account = OPAccount.relogin(this,
+        mAccount = HOPAccount.relogin(this,
                 conversationThreadDelegate, callDelegate, reloginInfo);
-
-        HOPDataManager.getInstance().setSharedAccount(account);
         mAccountLoggingIn = true;
     }
 
     void startIdentityLogin(String uri) {
-        OPAccount account = HOPDataManager.getInstance().getSharedAccount();
-
-        OPIdentity identity = OPIdentity.login(uri, account, this);
-        identity.setIsLoggingIn(true);
-        HOPDataManager.getInstance().addIdentity(identity);
-
+        HOPAccountIdentity identity = HOPAccountIdentity.login(uri, mAccount.getAccount(), this);
+        identity.setAssociating(true);
+        mAccount.addIdentity(identity);
     }
 
     /**
@@ -158,26 +149,22 @@ public class HOPLoginManager implements OPIdentityDelegate,OPAccountDelegate{
      *
      * @param account
      */
-    public void onAccountStateReady(OPAccount account) {
+    void onAccountStateReady(HOPAccount account) {
 
-        HOPDataManager.getInstance().saveAccount();
+        HOPDataManager.getInstance().saveAccount(mAccount);
 
-        List<OPIdentity> identities = account.getAssociatedIdentities();
+        List<HOPAccountIdentity> identities = account.getAssociatedIdentities();
         if (identities.size() == 0) {
             Log.d("TODO", "Account login FAILED identities empty ");
 
             return;
         }
 
-        for (OPIdentity identity : identities) {
-            if (identity.getState() != IdentityStates.IdentityState_Ready) {
-                addIdentityLoggingIn(identity);
-            }
+        for (HOPAccountIdentity identity : identities) {
+            HOPAccountIdentity accountIdentity =mAccount.getIdentity(identity.getID());
+
             if (!identity.isDelegateAttached()) {// This is relogin
-
-                attachDelegateForIdentity(identity);
-                HOPDataManager.getInstance().addIdentity(identity);
-
+                attachDelegateForIdentity(accountIdentity);
             } else {
 
                 String version = HOPDataManager.getInstance()
@@ -218,12 +205,15 @@ public class HOPLoginManager implements OPIdentityDelegate,OPAccountDelegate{
         // release resources
     }
 
+    public void signout(){
+        mAccount.shutdown();
+    }
     public void onSignoutComplete(){
         if(mDelegate!=null){
             mDelegate.onSignoutComplete();
         }
     }
-    public void onIdentityLoginSucceed(OPIdentity identity) {
+    public void onIdentityLoginSucceed(HOPAccountIdentity identity) {
         if (identity.isAssociating()) {
             String version = HOPDataManager.getInstance()
                 .getDownloadedContactsVersion(identity.getIdentityURI());
@@ -237,15 +227,14 @@ public class HOPLoginManager implements OPIdentityDelegate,OPAccountDelegate{
                         "start download initial contacts");
                 identity.startRolodexDownload(version);
             }
-            identity.setIsAssocaiting(false);
+            identity.setAssociating(false);
         }
-        identity.setIsLoggingIn(false);
+        identity.setAssociating(false);
     }
 
-    public void onIdentityLoginFail(OPIdentity identity) {
-        identity.setIsAssocaiting(false);
-        identity.setIsLoggingIn(false);
-        removeLoggingInIdentity(identity);
+    public void onIdentityLoginFail(HOPAccountIdentity identity) {
+        identity.setAssociating(false);
+        identity.setLoggingIn(false);
     }
 
     /**
@@ -264,27 +253,19 @@ public class HOPLoginManager implements OPIdentityDelegate,OPAccountDelegate{
         mDelegate = null;
     }
 
-    public void addIdentityLoggingIn(OPIdentity identity) {
-        if (mIdentitiesLoggingIn == null) {
-            mIdentitiesLoggingIn = new Hashtable<Long, OPIdentity>();
-        }
-        mIdentitiesLoggingIn.put(identity.getID(), identity);
-    }
-
-    void removeLoggingInIdentity(OPIdentity identity) {
-        if (mIdentitiesLoggingIn != null) {
-            mIdentitiesLoggingIn.remove(identity.getID());
-        }
-    }
-
     boolean isIdentityLoginInprog() {
-        return mIdentitiesLoggingIn != null && !mIdentitiesLoggingIn.isEmpty();
+        List<HOPAccountIdentity> associatedIdentities = mAccount.getAssociatedIdentities();
+        if (!associatedIdentities.isEmpty()) {
+            for (HOPAccountIdentity identity : associatedIdentities) {
+
+            }
+        }
+        return false;
     }
 
     public boolean hasUnloggedinIdentities() {
-        List<OPIdentity> identities = HOPDataManager.getInstance().getSharedAccount()
-            .getAssociatedIdentities();
-        for (OPIdentity identity : identities) {
+        List<HOPAccountIdentity> identities = mAccount.getAssociatedIdentities();
+        for (HOPAccountIdentity identity: identities) {
             if (identity.getState() != IdentityStates.IdentityState_Ready) {
                 return true;
             }
@@ -297,7 +278,6 @@ public class HOPLoginManager implements OPIdentityDelegate,OPAccountDelegate{
      *
      */
     public void afterSignout() {
-        mIdentitiesLoggingIn = null;
         mAccountLoggingIn = false;
     }
 
@@ -312,7 +292,10 @@ public class HOPLoginManager implements OPIdentityDelegate,OPAccountDelegate{
     // START of OPAccountDelegate
     @Override
     public void onAccountStateChanged(OPAccount account, AccountStates state) {
-        boolean processedByDelegate = mDelegate.onAccountStateChanged(account, state);
+        onAccountStateChanged(mAccount,state);
+    }
+    void onAccountStateChanged(HOPAccount account,AccountStates state){
+        boolean processedByDelegate = mDelegate.onAccountStateChanged(mAccount, state);
         if (!processedByDelegate) {
             pendingState = state;
             return;
@@ -330,7 +313,7 @@ public class HOPLoginManager implements OPIdentityDelegate,OPAccountDelegate{
             account.notifyBrowserWindowClosed();
             break;
         case AccountState_Ready:
-            HOPLoginManager.getInstance().onAccountStateReady(account);
+            onAccountStateReady(account);
             break;
         case AccountState_Shutdown:
             HOPHelper.getInstance().onAccountShutdown();
@@ -340,6 +323,7 @@ public class HOPLoginManager implements OPIdentityDelegate,OPAccountDelegate{
         }
 
     }
+
     @Override
     public void onAccountAssociatedIdentitiesChanged(OPAccount account) {
         OPLogger.debug(OPLogLevel.LogLevel_Debug,
@@ -353,13 +337,13 @@ public class HOPLoginManager implements OPIdentityDelegate,OPAccountDelegate{
         }
 
         for (OPIdentity identity : identities) {
-            if (null == HOPDataManager.getInstance().getStoredIdentityById(
-                identity.getID())) {
-                HOPDataManager.getInstance().addIdentity(identity);
+            HOPAccountIdentity accountIdentity = mAccount.getIdentity(identity.getID());
+            if (null == accountIdentity) {
+                accountIdentity = new HOPAccountIdentity(identity);
+                mAccount.addIdentity(accountIdentity);
             }
-            if (!identity.isDelegateAttached()) {
-                attachDelegateForIdentity(identity);
-                HOPDataManager.getInstance().addIdentity(identity);
+            if (!accountIdentity.isDelegateAttached()) {
+                attachDelegateForIdentity(accountIdentity);
             }
         }
     }
@@ -370,7 +354,7 @@ public class HOPLoginManager implements OPIdentityDelegate,OPAccountDelegate{
 
         String msg = account.getNextMessageForInnerBrowerWindowFrame();
         String cmd = String.format("javascript:sendBundleToJS(\'%s\')", msg);
-        if(mDelegate.onAccountPendingMessageForInnerBrowserWindowFrame(account,cmd)){
+        if(mDelegate.onAccountPendingMessageForInnerBrowserWindowFrame(mAccount,cmd)){
             mPendingCommand=null;
         } else {
             mPendingCommand = cmd;
@@ -379,7 +363,12 @@ public class HOPLoginManager implements OPIdentityDelegate,OPAccountDelegate{
     // ENDof OPAccountDelegate
     // START of OPIdentityDelegate
     @Override
-    public void onIdentityStateChanged(OPIdentity identity, IdentityStates state) {
+    public void onIdentityStateChanged(OPIdentity identity1, IdentityStates state) {
+        HOPAccountIdentity identity=mAccount.getIdentity(identity1.getID());
+        onIdentityStateChanged(identity,state);
+    }
+
+    void onIdentityStateChanged(HOPAccountIdentity identity, IdentityStates state) {
         boolean processedByDelegate = mDelegate.onIdentityStateChanged(identity, state);
         if (!processedByDelegate) {
             identity.setPendingState(state);
@@ -413,7 +402,9 @@ public class HOPLoginManager implements OPIdentityDelegate,OPAccountDelegate{
 
     @Override
     public void onIdentityPendingMessageForInnerBrowserWindowFrame(
-        OPIdentity identity) {
+        OPIdentity identity1) {
+        HOPAccountIdentity identity=mAccount.getIdentity(identity1.getID());
+
         String msg = identity.getNextMessageForInnerBrowerWindowFrame();
         String cmd = String.format("javascript:sendBundleToJS(\'%s\')", msg);
         Log.w("login", "Identity webview Pass to JS: " + cmd);
@@ -426,22 +417,23 @@ public class HOPLoginManager implements OPIdentityDelegate,OPAccountDelegate{
 
     @Override
     public void onIdentityRolodexContactsDownloaded(OPIdentity identity) {
-        HOPDataManager.getInstance().onDownloadedRolodexContacts(identity);
+        HOPDataManager.getInstance().onDownloadedRolodexContacts(mAccount.getIdentity(identity.getID()));
     }
 
-    void attachDelegateForIdentity(OPIdentity identity){
-        identity.setIsAssocaiting(true);
+    void attachDelegateForIdentity(HOPAccountIdentity identity){
+        identity.setAssociating(true);
         identity.attachDelegate(this, HOPSettingsHelper
             .getInstance().getRedirectUponCompleteUrl());
     }
 
     public void onEnteringForeground(){
         if(pendingState!=null){
-            onAccountStateChanged(HOPDataManager.getInstance().getSharedAccount(), pendingState);
+            onAccountStateChanged(mAccount, pendingState);
         }
 
-        if(HOPDataManager.getInstance().isAccountReady()) {
-            for (OPIdentity identity : HOPDataManager.getInstance().getSharedAccount().getAssociatedIdentities()) {
+        if(HOPAccount.isAccountReady()) {
+            List<HOPAccountIdentity> associatedIdentities = mAccount.getAssociatedIdentities();
+            for (HOPAccountIdentity identity:associatedIdentities) {
                 if (identity.getPendingState() != null) {
                     onIdentityStateChanged(identity, identity.getPendingState());
                 }

@@ -30,11 +30,11 @@ package com.openpeer.sample.login;
 
 import com.openpeer.javaapi.AccountStates;
 import com.openpeer.javaapi.IdentityStates;
-import com.openpeer.javaapi.OPAccount;
-import com.openpeer.javaapi.OPIdentity;
 import com.openpeer.sample.events.SignoutCompleteEvent;
 import com.openpeer.sdk.login.HOPLoginDelegate;
-import com.openpeer.sdk.login.HOPLoginManager;
+import com.openpeer.sdk.model.HOPLoginManager;
+import com.openpeer.sdk.model.HOPAccount;
+import com.openpeer.sdk.model.HOPAccountIdentity;
 
 /**
  * The listener monitor the Account/Identity login state changes and show appropriate UI
@@ -62,7 +62,7 @@ public class LoginDelegateImpl implements HOPLoginDelegate {
         viewHandler = null;
     }
 
-    public boolean onAccountStateChanged(OPAccount account, AccountStates state) {
+    public boolean onAccountStateChanged(HOPAccount account, AccountStates state) {
         switch (state){
         case AccountState_WaitingForAssociationToIdentity:
             break;
@@ -99,7 +99,7 @@ public class LoginDelegateImpl implements HOPLoginDelegate {
         return false;
     }
 
-    public boolean onIdentityStateChanged(OPIdentity identity, IdentityStates state) {
+    public boolean onIdentityStateChanged(HOPAccountIdentity identity, IdentityStates state) {
         switch (state){
         case IdentityState_PendingAssociation:
             return true;
@@ -140,7 +140,7 @@ public class LoginDelegateImpl implements HOPLoginDelegate {
         }
     }
 
-    public boolean onAccountPendingMessageForInnerBrowserWindowFrame(OPAccount account,
+    public boolean onAccountPendingMessageForInnerBrowserWindowFrame(HOPAccount account,
                                                                      String message) {
         if (viewHandler != null) {
             viewHandler.processAccountMessageForInnerBrowserWindowFrame(account, message);
@@ -150,7 +150,7 @@ public class LoginDelegateImpl implements HOPLoginDelegate {
     }
 
     @Override
-    public boolean onIdentityPendingMessageForInnerBrowserWindowFrame(OPIdentity identity,
+    public boolean onIdentityPendingMessageForInnerBrowserWindowFrame(HOPAccountIdentity identity,
                                                                       String message) {
         if (viewHandler != null) {
             viewHandler.processIdentityMessageForInnerBrowserWindowFrame(identity, message);

@@ -32,7 +32,7 @@ package com.openpeer.sdk.login;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 
-import com.openpeer.sdk.app.HOPDataManager;
+import com.openpeer.sdk.model.HOPAccount;
 import com.openpeer.sdk.utils.StringUtils;
 
 import android.graphics.Bitmap;
@@ -84,7 +84,7 @@ public class HOPAccountLoginWebViewClient extends WebViewClient {
 
 			Log.d("login", "Account Client Namespace grant Received from JS: " + data);
 			// mAccount.handleMessageFromInnerBrowserWindowFrame(data);
-			HOPDataManager.getInstance().getSharedAccount().handleMessageFromInnerBrowserWindowFrame(data);
+			HOPAccount.currentAccount().handleMessageFromInnerBrowserWindowFrame(data);
 
 			return null;
 		} else if (url.contains("?reload=true")) {
@@ -103,7 +103,8 @@ public class HOPAccountLoginWebViewClient extends WebViewClient {
 		if (!mNamespaceGrantInnerFrameLoaded) {
 			mNamespaceGrantInnerFrameLoaded = true;
 			String cmd = String.format("javascript:initInnerFrame(\'%s\')",
-					HOPDataManager.getInstance().getSharedAccount().getInnerBrowserWindowFrameURL());
+					HOPAccount.currentAccount().getInnerBrowserWindowFrameURL());
+
 			Log.d("login", "Account Client INIT NAMESPACE GRANT INNER FRAME: " + cmd);
 			view.loadUrl(cmd);
 

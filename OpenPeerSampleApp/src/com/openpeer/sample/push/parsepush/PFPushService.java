@@ -39,7 +39,8 @@ import android.util.Log;
 import com.openpeer.javaapi.MessageDeliveryStates;
 import com.openpeer.javaapi.OPMessage;
 import com.openpeer.sample.OPApplication;
-import com.openpeer.sdk.app.HOPDataManager;
+import com.openpeer.sdk.model.HOPDataManager;
+import com.openpeer.sdk.model.HOPAccount;
 import com.openpeer.sdk.model.HOPContact;
 import com.openpeer.sdk.model.HOPConversation;
 import com.openpeer.sample.push.PushServiceInterface;
@@ -92,7 +93,7 @@ public class PFPushService implements PushServiceInterface {
     }
 
     public boolean init() {
-        HOPContact currentUser = HOPDataManager.getInstance().getCurrentUser();
+        HOPContact currentUser = HOPAccount.selfContact();
         if (currentUser != null) {
             ParseInstallation.getCurrentInstallation().put(KEY_PEER_URI, currentUser.getPeerUri());
             ParseInstallation.getCurrentInstallation().put(KEY_OS_VERSION,
@@ -149,16 +150,13 @@ public class PFPushService implements PushServiceInterface {
 
         HashMap<String, Object> params = new HashMap<String, Object>();
         params.put(PFPushMessage.KEY_TO, HOPContact.getPeerUri());
-        params.put(PFPushMessage.KEY_PEER_URI, HOPDataManager.getInstance().getCurrentUser()
-            .getPeerUri());
-        params.put(PFPushMessage.KEY_SENDER_NAME, HOPDataManager.getInstance().getCurrentUser()
-            .getName());
+        params.put(PFPushMessage.KEY_PEER_URI, HOPAccount.selfContact().getPeerUri());
+        params.put(PFPushMessage.KEY_SENDER_NAME, HOPAccount.selfContact().getName());
         params.put(PFPushMessage.KEY_PEER_URIS, peerURIs);
         params.put(PFPushMessage.KEY_MESSAGE_ID, message.getMessageId());
         params.put(PFPushMessage.KEY_CONVERSATION_TYPE, conversation.getType().name());
         params.put(PFPushMessage.KEY_CONVERSATION_ID, conversation.getConversationId());
-        params.put(PFPushMessage.KEY_LOCATION, HOPDataManager.getInstance().getSharedAccount()
-            .getLocationID());
+        params.put(PFPushMessage.KEY_LOCATION, HOPAccount.currentAccount().getLocationID());
         params.put(PFPushMessage.KEY_DATE, message.getTime().toMillis(false) / 1000);
         String messageType = message.getMessageType();
         params.put(PFPushMessage.KEY_MESSAGE_TYPE, messageType);

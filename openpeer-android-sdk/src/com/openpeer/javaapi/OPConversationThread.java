@@ -31,7 +31,7 @@ package com.openpeer.javaapi;
 
 import android.util.Log;
 
-import com.openpeer.sdk.app.HOPDataManager;
+import com.openpeer.sdk.model.HOPDataManager;
 import com.openpeer.sdk.model.HOPContact;
 import com.openpeer.sdk.model.GroupChatMode;
 import com.openpeer.sdk.model.HOPParticipantInfo;

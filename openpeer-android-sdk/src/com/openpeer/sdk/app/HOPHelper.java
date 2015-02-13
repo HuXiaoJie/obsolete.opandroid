@@ -53,7 +53,8 @@ import com.openpeer.javaapi.VideoOrientations;
 import com.openpeer.sdk.delegates.OPCacheDelegateImpl;
 import com.openpeer.sdk.delegates.OPSettingsDelegateImpl;
 import com.openpeer.sdk.delegates.OPStackMessageQueueDelegateImpl;
-import com.openpeer.sdk.login.HOPLoginManager;
+import com.openpeer.sdk.model.HOPDataManager;
+import com.openpeer.sdk.model.HOPLoginManager;
 import com.openpeer.sdk.model.HOPCallManager;
 import com.openpeer.sdk.model.HOPConversationManager;
 
@@ -262,6 +263,7 @@ public class HOPHelper {
     public void onSignOut() {
         isSigningOut = true;
         HOPDataManager.getInstance().onSignOut();
+        HOPLoginManager.getInstance().signout();
     }
 
     public boolean isSigningOut() {

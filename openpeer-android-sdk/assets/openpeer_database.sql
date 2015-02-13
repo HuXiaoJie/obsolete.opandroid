@@ -9,6 +9,7 @@ CREATE TABLE "account" (
 	 "stable_id" TEXT NOT NULL UNIQUE,
 	 "relogin_info" TEXT NOT NULL,
 	 "logged_in" INTEGER DEFAULT 0,
+	 "self_contact_id" INTEGER UNIQUE DEFAULT 0,
 	PRIMARY KEY("_id")
 );
 
@@ -72,6 +73,7 @@ CREATE TABLE "call_event" (
 	 "call_id" TEXT NOT NULL,
 	 "event" TEXT NOT NULL,
 	 "time" integer NOT NULL,
+	 unique(call_id,event),
 	CONSTRAINT "fk_call_event_call_id" FOREIGN KEY ("call_id") REFERENCES "call" ("_id") ON DELETE RESTRICT
 );
 

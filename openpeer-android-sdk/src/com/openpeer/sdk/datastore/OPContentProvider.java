@@ -44,9 +44,8 @@ import android.provider.BaseColumns;
 import android.text.TextUtils;
 import android.util.Log;
 
-import com.openpeer.sdk.app.HOPDataManager;
+import com.openpeer.sdk.model.HOPDataManager;
 import com.openpeer.sdk.datastore.DatabaseContracts.AccountEntry;
-import com.openpeer.sdk.datastore.DatabaseContracts.AssociatedIdentityEntry;
 import com.openpeer.sdk.datastore.DatabaseContracts.AvatarEntry;
 import com.openpeer.sdk.datastore.DatabaseContracts.CallEntry;
 import com.openpeer.sdk.datastore.DatabaseContracts.ConversationEntry;
@@ -74,8 +73,8 @@ public class OPContentProvider extends ContentProvider implements ContentUriReso
     static enum MatcherInfo {
         ACCOUNTS(AccountEntry.TABLE_NAME),
         ACCOUNT(AccountEntry.TABLE_NAME + "/#"),
-        IDENTTIIES(AssociatedIdentityEntry.TABLE_NAME),
-        IDENTITY(AssociatedIdentityEntry.TABLE_NAME + "/#"),
+        IDENTTIIES(DatabaseContracts.AccountIdentityEntry.TABLE_NAME),
+        IDENTITY(DatabaseContracts.AccountIdentityEntry.TABLE_NAME + "/#"),
 
         CONVERSATION_HISTORY(MessageEntry.URI_PATH_INFO_CONTEXT),//Messages/Events of a conversation
         CONVERSATION_MESSAGE(MessageEntry.URI_PATH_INFO_CONTEXT_ID),//Messages/Events of a conversation
@@ -98,7 +97,6 @@ public class OPContentProvider extends ContentProvider implements ContentUriReso
         OPENPEER_CONTACT(OpenpeerContactEntry.URI_PATH_INFO_ID),
         OPENPEER_CONTACT_DETAIL(OpenpeerContactEntry.URI_PATH_INFO_DETAIL),
         OPENPEER_CONTACT_DETAIL_ID(OpenpeerContactEntry.URI_PATH_INFO_DETAIL_ID),
-        OPENPEER_CONTACT_LOGGEDIN(OpenpeerContactEntry.URI_PATH_LOGIN_USER),
 
         IDENTITY_PROVIDERS(DatabaseContracts.IdentityProviderEntry.TABLE_NAME),
 
@@ -281,10 +279,6 @@ public class OPContentProvider extends ContentProvider implements ContentUriReso
             return queryRolodexContacts(uri, projection, selection,
                     selectionArgs,
                     sortOrder);
-        case OPENPEER_CONTACT_LOGGEDIN:
-            return queryLoggedInUser(uri, projection, selection,
-                                     selectionArgs,
-                                     sortOrder);
         case CONVERSATIONS_VIEW:
             return queryConversationHisotry(uri, projection, selection,
                                             selectionArgs,
@@ -362,14 +356,6 @@ public class OPContentProvider extends ContentProvider implements ContentUriReso
         return cursor;
     }
 
-    private Cursor queryLoggedInUser(Uri uri, String[] projection,
-                                     String selection, String[] selectionArgs, String sortOrder) {
-        String rawQuery = "select openpeer_contact_id from rolodex_contact where _id=(select " +
-            "self_contact_id from associated_identity where account_id =(select _id from account " +
-            "where logged_in=1))";
-        Cursor cursor = mOpenHelper.getReadableDatabase().rawQuery(rawQuery, null);
-        return cursor;
-    }
     /**
      * Should be used to retrieve user details like identityContact info
      * 

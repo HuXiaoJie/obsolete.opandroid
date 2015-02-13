@@ -27,16 +27,14 @@
  *  of the authors and should not be interpreted as representing official policies,
  *  either expressed or implied, of the FreeBSD Project.
  *******************************************************************************/
-package com.openpeer.sdk.delegates;
+package com.openpeer.sdk.model;
 
 import java.util.Hashtable;
 
 import android.util.Log;
 
+import com.openpeer.javaapi.*;
 import com.openpeer.javaapi.OPIdentity;
-import com.openpeer.javaapi.OPIdentityLookup;
-import com.openpeer.javaapi.OPIdentityLookupDelegate;
-import com.openpeer.sdk.app.HOPDataManager;
 
 /**
  * Default implementatiion of OPIdentityLookupDelegate. Handles identity lookup result and save it to datastore.

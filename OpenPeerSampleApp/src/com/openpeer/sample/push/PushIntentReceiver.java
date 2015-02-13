@@ -35,7 +35,7 @@ import android.content.Intent;
 import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 
-import com.openpeer.sdk.app.HOPDataManager;
+import com.openpeer.sdk.model.HOPAccount;
 import com.urbanairship.actions.DeepLinkAction;
 import com.urbanairship.actions.LandingPageAction;
 import com.urbanairship.actions.OpenExternalUrlAction;
@@ -95,9 +95,9 @@ public class PushIntentReceiver extends BroadcastReceiver {
             String apid = intent.getStringExtra(com.urbanairship.push.PushManager.EXTRA_APID);
             Log.i(logTag, "Push registration finished " + apid);
             if (apid != null
-                    && HOPDataManager.getInstance().isAccountReady()) {
+                    && HOPAccount.isAccountReady()) {
                 PushManager.getInstance().associateDeviceToken(
-                        HOPDataManager.getInstance().getCurrentUser().getPeerUri(),
+                        HOPAccount.selfContact().getPeerUri(),
                         apid,
                         new Callback<HackApiService.HackAssociateResult>() {
                             @Override

@@ -41,8 +41,6 @@ import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.widget.Toast;
 
-import com.openpeer.javaapi.OPAccount;
-import com.openpeer.javaapi.OPIdentity;
 import com.openpeer.sample.events.SignoutCompleteEvent;
 import com.openpeer.sample.login.LoginDelegateImpl;
 import com.openpeer.sample.login.LoginViewHandler;
@@ -50,11 +48,12 @@ import com.openpeer.sample.push.HackApiService;
 import com.openpeer.sample.push.PushManager;
 import com.openpeer.sample.push.parsepush.PFPushService;
 import com.openpeer.sample.util.SettingsHelper;
-import com.openpeer.sdk.app.HOPDataManager;
 import com.openpeer.sdk.app.HOPHelper;
 import com.openpeer.sdk.login.HOPIdentityLoginWebViewClient;
-import com.openpeer.sdk.login.HOPLoginManager;
+import com.openpeer.sdk.model.HOPLoginManager;
 import com.openpeer.sdk.login.HOPIdentityLoginWebview;
+import com.openpeer.sdk.model.HOPAccount;
+import com.openpeer.sdk.model.HOPAccountIdentity;
 
 import java.util.Hashtable;
 
@@ -81,7 +80,7 @@ public class BaseActivity extends BaseFragmentActivity implements LoginViewHandl
 
         if (HOPHelper.getInstance().isSigningOut()) {
             showSignoutView();
-        } else if (!HOPDataManager.getInstance().isAccountReady()) {
+        } else if (!HOPAccount.isAccountReady()) {
 
             if (!HOPLoginManager.getInstance().loginPerformed()) {
                 LoginDelegateImpl.getInstance().registerViewHandler(this);
@@ -179,7 +178,7 @@ public class BaseActivity extends BaseFragmentActivity implements LoginViewHandl
         progressDialog.show();
     }
 
-    HOPIdentityLoginWebview getIdentityWebview(OPIdentity identity) {
+    HOPIdentityLoginWebview getIdentityWebview(HOPAccountIdentity identity) {
         HOPIdentityLoginWebview view = mIdentityWebviews.get(identity.getID());
         if (view == null) {
             view = new HOPIdentityLoginWebview(getLoginViewContainer().getContext());
@@ -217,13 +216,13 @@ public class BaseActivity extends BaseFragmentActivity implements LoginViewHandl
     /* START implementation of LoginUIListener */
 
     @Override
-    public void processIdentityMessageForInnerBrowserWindowFrame(OPIdentity identity, String
+    public void processIdentityMessageForInnerBrowserWindowFrame(HOPAccountIdentity identity, String
         message) {
         getIdentityWebview(identity).loadUrl(message);
     }
 
     @Override
-    public void processAccountMessageForInnerBrowserWindowFrame(OPAccount account, String message) {
+    public void processAccountMessageForInnerBrowserWindowFrame(HOPAccount account, String message) {
         getAccountWebview().loadUrl(message);
     }
 
@@ -234,7 +233,7 @@ public class BaseActivity extends BaseFragmentActivity implements LoginViewHandl
     }
 
     @Override
-    public void loadIdentityLoginUrl(OPIdentity identity,String url) {
+    public void loadIdentityLoginUrl(HOPAccountIdentity identity,String url) {
         getIdentityWebview(identity).loadUrl(url);
         showProgressView(this.getString(R.string.msg_identity_login_started));
     }
@@ -256,7 +255,7 @@ public class BaseActivity extends BaseFragmentActivity implements LoginViewHandl
             if (!TextUtils.isEmpty(apid)) {
                 PushManager.getInstance()
                     .associateDeviceToken(
-                        HOPDataManager.getInstance().getCurrentUser().getPeerUri(),
+                        HOPAccount.selfContact().getPeerUri(),
                         com.urbanairship.push.PushManager.shared().getAPID(),
                         new Callback<HackApiService.HackAssociateResult>() {
                             @Override
@@ -276,7 +275,7 @@ public class BaseActivity extends BaseFragmentActivity implements LoginViewHandl
     }
 
     @Override
-    public void showIdentityLoginWebView(OPIdentity identity) {
+    public void showIdentityLoginWebView(HOPAccountIdentity identity) {
         hideProgressView();
         HOPIdentityLoginWebview view = getIdentityWebview(identity);
         view.setVisibility(View.VISIBLE);
@@ -301,7 +300,7 @@ public class BaseActivity extends BaseFragmentActivity implements LoginViewHandl
     }
 
     @Override
-    public void closeIdentityLoginWebView(OPIdentity identity) {
+    public void closeIdentityLoginWebView(HOPAccountIdentity identity) {
         HOPIdentityLoginWebview view = getIdentityWebview(identity);
         if (view != null) {
             getLoginViewContainer().removeView(view);
@@ -330,7 +329,7 @@ public class BaseActivity extends BaseFragmentActivity implements LoginViewHandl
      * @see com.openpeer.sdk.app.LoginUIListener#onIdentityReady(com.openpeer.javaapi.OPIdentity)
      */
     @Override
-    public void onIdentityReady(OPIdentity identity) {
+    public void onIdentityReady(HOPAccountIdentity identity) {
         hideProgressView();
         Toast.makeText(
             this,
@@ -340,7 +339,7 @@ public class BaseActivity extends BaseFragmentActivity implements LoginViewHandl
     }
 
     @Override
-    public void onIdentityShutdown(OPIdentity identity) {
+    public void onIdentityShutdown(HOPAccountIdentity identity) {
         hideProgressView();
         HOPIdentityLoginWebview view = getIdentityWebview(identity);
         if (view != null) {

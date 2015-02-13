@@ -46,7 +46,7 @@ import com.openpeer.sample.IntentData;
 import com.openpeer.sample.R;
 import com.openpeer.sample.contacts.ProfilePickerActivity;
 import com.openpeer.sample.view.UserItemView;
-import com.openpeer.sdk.app.HOPDataManager;
+import com.openpeer.sdk.model.HOPDataManager;
 import com.openpeer.sdk.model.HOPContact;
 import com.openpeer.sdk.utils.HOPModelUtils;
 

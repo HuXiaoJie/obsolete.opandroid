@@ -31,7 +31,7 @@ package com.openpeer.sample.conversation;
 
 import android.database.Cursor;
 
-import com.openpeer.sdk.app.HOPDataManager;
+import com.openpeer.sdk.model.HOPDataManager;
 import com.openpeer.sdk.datastore.DatabaseContracts.WindowViewEntry;
 
 public class ChatInfo {

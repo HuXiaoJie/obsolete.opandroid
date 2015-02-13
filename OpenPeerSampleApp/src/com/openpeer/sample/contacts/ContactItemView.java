@@ -42,7 +42,7 @@ import android.widget.Toast;
 
 import com.openpeer.sample.R;
 import com.openpeer.sample.conversation.ConversationActivity;
-import com.openpeer.sdk.app.HOPDataManager;
+import com.openpeer.sdk.model.HOPDataManager;
 import com.openpeer.sdk.model.GroupChatMode;
 import com.squareup.picasso.Picasso;
 

@@ -37,11 +37,6 @@ import com.openpeer.javaapi.CallStates;
 import com.openpeer.javaapi.OPCall;
 import com.openpeer.javaapi.OPCallDelegate;
 import com.openpeer.javaapi.OPConversationThread;
-import com.openpeer.javaapi.OPMessage;
-import com.openpeer.sdk.app.HOPDataManager;
-
-import org.json.JSONException;
-import org.json.JSONObject;
 
 import java.util.Hashtable;
 
@@ -89,6 +84,7 @@ public class HOPCallManager implements OPCallDelegate {
             HOPCall oldCall = findCallForPeer(call.getPeer().getUserId());
             if (oldCall != null) {
                 call.hangup(CallClosedReasons.CallClosedReason_NotAcceptableHere);
+                return;
             } else {
                 int direction = call.getCallDirection();
                 HOPDataManager.getInstance().saveCall(
@@ -99,18 +95,13 @@ public class HOPCallManager implements OPCallDelegate {
                     call.hasVideo() ? CallSystemMessage.MEDIATYPE_VIDEO : CallSystemMessage
                         .MEDIATYPE_AUDIO);
                 cacheCall(call);
-                if (call.isOutgoing()) {
-                    OPMessage message = HOPSystemMessage.getCallSystemMessage(
-                        CallSystemMessage.STATUS_PLACED,
-                        call);
-                    conversation.sendMessage(message, false);
-                    CallEvent event = new CallEvent(call.getCallID(),
-                                                    CallSystemMessage.STATUS_PLACED,
-                                                    message.getTime().toMillis(false));
-                    HOPDataManager.getInstance().saveCallEvent(call.getCallID(),
-                                                               conversation.getConversationId(),
-                                                               event);
-                }
+
+                CallEvent event = new CallEvent(call.getCallID(),
+                                                CallSystemMessage.STATUS_PLACED,
+                                                System.currentTimeMillis());
+                HOPDataManager.getInstance().saveCallEvent(call.getCallID(),
+                                                           conversation.getConversationId(),
+                                                           event);
             }
         }
         break;
@@ -118,34 +109,23 @@ public class HOPCallManager implements OPCallDelegate {
         }
         break;
         case CallState_Open:{
-            if (call.isOutgoing()) {
-                OPMessage message = HOPSystemMessage.getCallSystemMessage(
-                    CallSystemMessage.STATUS_ANSWERED,
-                    call);
-                conversation.sendMessage(message, false);
-                CallEvent event = new CallEvent(call.getCallID(),
-                                                CallSystemMessage.STATUS_ANSWERED,
-                                                message.getTime().toMillis(false));
-                HOPDataManager.getInstance().saveCallEvent(call.getCallID(),
-                                                           conversation.getConversationId(),
-                                                           event);
-            }
+
+            CallEvent event = new CallEvent(call.getCallID(),
+                                            CallSystemMessage.STATUS_ANSWERED,
+                                            call.getAnswerTimeInMillis());
+            HOPDataManager.getInstance().saveCallEvent(call.getCallID(),
+                                                       conversation.getConversationId(),
+                                                       event);
         }
         break;
 
         case CallState_Closed:{
-            if (call.isOutgoing()) {
-                OPMessage message = HOPSystemMessage.getCallSystemMessage(
-                    CallSystemMessage.STATUS_HUNGUP,
-                    call);
-                conversation.sendMessage(message, false);
-                CallEvent event = new CallEvent(call.getCallID(),
-                                                CallSystemMessage.STATUS_HUNGUP,
-                                                message.getTime().toMillis(false));
-                HOPDataManager.getInstance().saveCallEvent(call.getCallID(),
-                                                           conversation.getConversationId(),
-                                                           event);
-            }
+            CallEvent event = new CallEvent(call.getCallID(),
+                                            CallSystemMessage.STATUS_HUNGUP,
+                                            call.getClosedTime().toMillis(false));
+            HOPDataManager.getInstance().saveCallEvent(call.getCallID(),
+                                                       conversation.getConversationId(),
+                                                       event);
             removeCallCache(call);
         }
         break;
@@ -168,37 +148,11 @@ public class HOPCallManager implements OPCallDelegate {
         mUserIdToCalls.put(call.getPeer().getUserId(), call);
     }
 
-    public void handleCallSystemMessage(JSONObject message, HOPContact user, String conversationId,
-                                        long timestamp) {
-        try {
-            String callId = message.getString(CallSystemMessage.KEY_ID);
-            HOPCall call = findCallById(callId);
-
-            if (call == null) {
-                //couldn't find call in memory. try to save call
-                HOPDataManager.getInstance().saveCall(message.getString(CallSystemMessage.KEY_ID),
-                                                      conversationId,
-                                                      user.getUserId(),
-                                                      HOPCall.DIRECTION_INCOMING,
-                                                      message.getString(CallSystemMessage
-                                                                            .KEY_CALL_STATUS_MEDIA_TYPE));
-            }
-            CallEvent event = new CallEvent(callId,
-                                            message.getString(CallSystemMessage
-                                                                  .KEY_CALL_STATUS_STATUS),
-                                            timestamp);
-            HOPDataManager.getInstance().saveCallEvent(callId, conversationId, event);
-        } catch(JSONException e) {
-            e.printStackTrace();
-        }
-    }
-
     public boolean hasCalls() {
         return mIdToCalls != null && mIdToCalls.size() > 0;
     }
 
     private void removeCallCache(HOPCall call) {
-        long userId = call.getPeer().getUserId();
         if (mIdToCalls != null) {
             mIdToCalls.remove(call.getCallID());
             mUserIdToCalls.remove(call.getPeer().getUserId());

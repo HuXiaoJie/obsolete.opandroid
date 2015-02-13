@@ -37,7 +37,7 @@ import android.view.MenuItem;
 import com.openpeer.sample.BaseActivity;
 import com.openpeer.sample.IntentData;
 import com.openpeer.sample.R;
-import com.openpeer.sdk.app.HOPDataManager;
+import com.openpeer.sdk.model.HOPAccount;
 
 public class ConversationActivity extends BaseActivity {
 
@@ -65,7 +65,7 @@ public class ConversationActivity extends BaseActivity {
         cFragment.setArguments(intent.getExtras());
         setContentFragment(cFragment);
 
-        if (!HOPDataManager.getInstance().isAccountReady()) {
+        if (!HOPAccount.isAccountReady()) {
             // BaseActivity.showInvalidStateWarning(this);
             return;
         }

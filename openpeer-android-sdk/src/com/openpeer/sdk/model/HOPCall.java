@@ -7,7 +7,6 @@ import com.openpeer.javaapi.OPCall;
 import com.openpeer.javaapi.OPContact;
 import com.openpeer.javaapi.OPConversationThread;
 import com.openpeer.javaapi.OPIdentityContact;
-import com.openpeer.sdk.app.HOPDataManager;
 
 import java.util.List;
 
@@ -18,6 +17,7 @@ public class HOPCall {
     private OPCall call;
     CallMediaStatus callMediaStatus;
     HOPConversation conversation;
+    HOPContact peer;
 
     public void setConversation(HOPConversation conversation) {
         this.conversation = conversation;
@@ -58,12 +58,14 @@ public class HOPCall {
     }
 
     public HOPContact getPeer() {
-        OPContact contact = call.getCaller();
-        if (contact.isSelf()) {
-            contact = call.getCallee();
+        if(peer==null) {
+            OPContact contact = call.getCaller();
+            if (contact.isSelf()) {
+                contact = call.getCallee();
+            }
+            peer = HOPDataManager.getInstance().getUserByPeerUri(contact.getPeerURI());
         }
-        return HOPDataManager.getInstance().getUser(contact,
-                                                    getIdentityContactList(contact));
+        return peer;
     }
 
     public void ring() {
@@ -136,5 +138,21 @@ public class HOPCall {
 
     public HOPConversation getConversation() {
         return conversation;
+    }
+
+    public static HOPCall findCallById(String callId) {
+        return HOPCallManager.getInstance().findCallById(callId);
+    }
+
+    public static HOPCall findCallForPeer(long userId) {
+        return HOPCallManager.getInstance().findCallForPeer(userId);
+    }
+
+    public static boolean hasCalls() {
+        return HOPCallManager.getInstance().hasCalls();
+    }
+
+    public static void registerDelegate(HOPCallDelegate delegate) {
+        HOPCallManager.getInstance().registerDelegate(delegate);
     }
 }

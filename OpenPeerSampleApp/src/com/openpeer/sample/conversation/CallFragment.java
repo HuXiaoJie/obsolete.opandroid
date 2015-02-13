@@ -53,10 +53,9 @@ import com.openpeer.sample.events.CallStateChangeEvent;
 import com.openpeer.sample.util.CallUtil;
 import com.openpeer.sample.util.SettingsHelper;
 import com.openpeer.sample.util.ViewUtils;
-import com.openpeer.sdk.app.HOPDataManager;
+import com.openpeer.sdk.model.HOPDataManager;
 import com.openpeer.sdk.model.CallMediaStatus;
 import com.openpeer.sdk.model.HOPCall;
-import com.openpeer.sdk.model.HOPCallManager;
 import com.openpeer.sdk.model.HOPContact;
 import com.openpeer.sdk.model.HOPConversationManager;
 import com.openpeer.sdk.model.HOPConversation;
@@ -111,11 +110,11 @@ public class CallFragment extends BaseFragment {
         String conversationId = args.getString(IntentData.ARG_CONVERSATION_ID);
 
         if(callId!=null){
-            mCall= HOPCallManager.getInstance().findCallById(callId);
+            mCall= HOPCall.findCallById(callId);
             mPeerId = mCall.getPeer().getUserId();
         } else if (userIDs != null && userIDs.length > 0) {
             mPeerId = userIDs[0];
-            mCall = HOPCallManager.getInstance().findCallForPeer(mPeerId);
+            mCall = HOPCall.findCallForPeer(mPeerId);
         } else {
             Log.e(TAG, "no peerUri nor userIDs");
         }

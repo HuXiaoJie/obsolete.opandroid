@@ -12,13 +12,15 @@ import com.openpeer.sample.events.ConversationComposingStatusChangeEvent;
 import com.openpeer.sample.events.ConversationContactsChangeEvent;
 import com.openpeer.sample.events.ConversationSwitchEvent;
 import com.openpeer.sample.events.ConversationTopicChangeEvent;
-import com.openpeer.sdk.app.HOPDataManager;
-import com.openpeer.sdk.model.HOPCallManager;
+import com.openpeer.sdk.model.HOPDataManager;
+import com.openpeer.sdk.model.CallEvent;
 import com.openpeer.sdk.model.CallSystemMessage;
+import com.openpeer.sdk.model.HOPAccount;
+import com.openpeer.sdk.model.HOPCall;
 import com.openpeer.sdk.model.HOPContact;
+import com.openpeer.sdk.model.HOPConversation;
 import com.openpeer.sdk.model.HOPConversationDelegate;
 import com.openpeer.sdk.model.HOPConversationManager;
-import com.openpeer.sdk.model.HOPConversation;
 import com.openpeer.sdk.model.HOPSystemMessage;
 import com.openpeer.sdk.utils.JSONUtils;
 
@@ -104,29 +106,23 @@ public class HOPConversationDelegateImpl implements HOPConversationDelegate {
         return true;
     }
 
-    public boolean onCallSystemMessageReceived(HOPConversation conversation,
-                                               CallSystemMessage message,
-                                               HOPContact sender) {
-        return false;
-    }
-
-    public void handleSystemMessage(HOPConversation conversation, HOPContact sender, JSONObject systemMessage,
-                                    long time) {
+    public static void handleSystemMessage(HOPConversation conversation, HOPContact sender,
+                                           JSONObject systemMessage,
+                                           long time) {
         try {
             if (systemMessage.has(HOPSystemMessage.KEY_CALL_STATUS)) {
                 JSONObject callSystemMessage = systemMessage
                     .getJSONObject(HOPSystemMessage.KEY_CALL_STATUS);
-                HOPCallManager.getInstance().
-                    handleCallSystemMessage(callSystemMessage,
-                                            sender,
-                                            conversation.getConversationId(),
-                                            time);
+                handleCallSystemMessage(callSystemMessage,
+                                        sender,
+                                        conversation.getConversationId(),
+                                        time);
 
             } else if (systemMessage.has(HOPSystemMessage.KEY_CONTACTS_REMOVED)) {
                 JSONArray contactsRemovedMessage = systemMessage
                     .getJSONArray(HOPSystemMessage.KEY_CONTACTS_REMOVED);
-                String selfPeerUri = HOPDataManager.getInstance().getCurrentUser().getPeerUri();
-                for (String peerUri : (String[]) JSONUtils.toArray(contactsRemovedMessage)) {
+                String selfPeerUri = HOPAccount.selfContact().getPeerUri();
+                for (Object peerUri : (Object[])JSONUtils.toArray(contactsRemovedMessage)) {
                     if (peerUri.equals(selfPeerUri)) {
                         conversation.setDisabled(true);
                         new ConversationContactsChangeEvent(conversation).post();
@@ -147,4 +143,43 @@ public class HOPConversationDelegateImpl implements HOPConversationDelegate {
         }
     }
 
+    public static void handleCallSystemMessage(JSONObject message, HOPContact user,
+                                               String conversationId,
+                                               long timestamp) {
+        try {
+            String callId = message.getString(CallSystemMessage.KEY_ID);
+            HOPCall call = HOPCall.findCallById(callId);
+            String calleeUrl = message.getString(CallSystemMessage.KEY_CALL_STATUS_CALLEE);
+            if (calleeUrl.equals(HOPAccount.selfContact().getPeerUri())) {
+                HOPDataManager.getInstance().saveCall(message.getString(CallSystemMessage.KEY_ID),
+                                                      conversationId,
+                                                      user.getUserId(),
+                                                      HOPCall.DIRECTION_INCOMING,
+                                                      message.getString(CallSystemMessage
+                                                                            .KEY_CALL_STATUS_MEDIA_TYPE));
+                CallEvent event = new CallEvent(callId,
+                                                message.getString(CallSystemMessage
+                                                                      .KEY_CALL_STATUS_STATUS),
+                                                timestamp);
+                HOPDataManager.getInstance().saveCallEvent(callId, conversationId, event);
+            } else {
+                if (call == null) {// i'm tototally not connected with the peer
+                    //couldn't find call in memory. try to save call
+                    HOPDataManager.getInstance().saveCall(
+                        message.getString(CallSystemMessage.KEY_ID),
+                        conversationId,
+                        user.getUserId(),
+                        HOPCall.DIRECTION_INCOMING,
+                        message.getString(CallSystemMessage.KEY_CALL_STATUS_MEDIA_TYPE));
+                    CallEvent event = new CallEvent(callId,
+                                                    message.getString(CallSystemMessage
+                                                                          .KEY_CALL_STATUS_STATUS),
+                                                    timestamp);
+                    HOPDataManager.getInstance().saveCallEvent(callId, conversationId, event);
+                }
+            }
+        } catch(JSONException e) {
+            e.printStackTrace();
+        }
+    }
 }

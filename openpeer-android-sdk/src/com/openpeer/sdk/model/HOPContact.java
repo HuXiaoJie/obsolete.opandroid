@@ -29,19 +29,15 @@
  *******************************************************************************/
 package com.openpeer.sdk.model;
 
-import android.text.TextUtils;
-
-import java.util.List;
-
 import com.openpeer.javaapi.OPContact;
 import com.openpeer.javaapi.OPIdentityContact;
-import com.openpeer.javaapi.OPRolodexContact;
-import com.openpeer.sdk.app.HOPDataManager;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class HOPContact {
     private long mUserId;// locally maintained user id
-    private List<OPIdentityContact> mIdentityContacts;
-    private List<OPRolodexContact> mRolodexContacts;
+    private List<HOPIdentity> identities;
     private OPContact mOPContact;
 
     private String mPeerUri;
@@ -55,8 +51,8 @@ public class HOPContact {
      * @return
      */
     public boolean isContact() {
-        if (mIdentityContacts != null) {
-            for (OPIdentityContact contact : mIdentityContacts) {
+        if (identities != null) {
+            for (HOPIdentity contact : identities) {
                 if (contact.getAssociatedIdentityId() > 0) {
                     return true;
                 }
@@ -73,21 +69,25 @@ public class HOPContact {
     public OPContact getOPContact() {
         // Lazy creation of opcontact to avoid problem before core stack is ready.
         if (mOPContact == null) {
-            OPIdentityContact contact = getPreferredContact();
+            HOPIdentity contact = getPreferredContact();
 
             mOPContact = OPContact.createFromPeerFilePublic(
-                HOPDataManager.getInstance().getSharedAccount(),
-                contact.getPeerFilePublic().getPeerFileString());
+                HOPAccount.currentAccount().getAccount(),
+                contact.getPeerFilePublic());
         }
         return mOPContact;
     }
 
     public List<OPIdentityContact> getIdentityContacts() {
-        return mIdentityContacts;
+        List<OPIdentityContact> identityContacts = new ArrayList<>();
+        for(HOPIdentity identity:identities){
+            identityContacts.add((OPIdentityContact)identity.getContact());
+        }
+        return identityContacts;
     }
 
-    public void setIdentityContacts(List<OPIdentityContact> mIdentityContact) {
-        this.mIdentityContacts = mIdentityContact;
+    public void setIdentityContacts(List<HOPIdentity> mIdentityContact) {
+        this.identities = mIdentityContact;
     }
 
     /**
@@ -96,9 +96,9 @@ public class HOPContact {
      * @param contact
      * @param iContacts
      */
-    public HOPContact(OPContact contact, List<OPIdentityContact> iContacts) {
+    public HOPContact(OPContact contact, List<HOPIdentity> iContacts) {
         this.mOPContact = contact;
-        this.mIdentityContacts = iContacts;
+        this.identities = iContacts;
         mPeerUri = mOPContact.getPeerURI();
     }
 
@@ -136,7 +136,7 @@ public class HOPContact {
      * @return
      */
     public String getPeerFilePublic() {
-        return getPreferredContact().getPeerFilePublic().getPeerFileString();
+        return getPreferredContact().getPeerFilePublic();
     }
 
     /**
@@ -163,13 +163,13 @@ public class HOPContact {
      *
      * @return Preferred identity contact based on priority and weight
      */
-    OPIdentityContact getPreferredContact() {
-        if (mIdentityContacts.size() == 1) {
-            return mIdentityContacts.get(0);
+    HOPIdentity getPreferredContact() {
+        if (identities.size() == 1) {
+            return identities.get(0);
         } else {
-            OPIdentityContact preferredContact = mIdentityContacts.get(0);
-            for (int i = 1; i < mIdentityContacts.size(); i++) {
-                OPIdentityContact contact = mIdentityContacts.get(i);
+            HOPIdentity preferredContact = identities.get(0);
+            for (int i = 1; i < identities.size(); i++) {
+                HOPIdentity contact = identities.get(i);
                 if (contact.getPriority() < preferredContact.getPriority()) {
                     preferredContact = contact;
                 } else if (contact.getPriority() == preferredContact.getPriority() &&
@@ -189,8 +189,8 @@ public class HOPContact {
      *
      * @return Preferred contact of a specific network,e.g. Facebook,Twitter
      */
-    private OPIdentityContact getPreferredContactOfNetwork(String network) {
-        return mIdentityContacts.get(0);
+    private HOPIdentity getPreferredContactOfNetwork(String network) {
+        return identities.get(0);
     }
 
     public boolean isSame(OPContact contact) {
@@ -198,21 +198,20 @@ public class HOPContact {
     }
 
     public boolean isSelf() {
-        return mUserId == HOPDataManager.getInstance().getCurrentUserId();
+        return mUserId == HOPAccount.selfContactId();
     }
 
-    public boolean isOpenPeer() {
-        return !TextUtils.isEmpty(mPeerUri);
-    }
     public void hintAboutLocation(String locationId) {
         getOPContact().hintAboutLocation(locationId);
     }
     public int getNumberOfAssociatedIdentities(){
-        return mIdentityContacts.size();
+        return identities.size();
+    }
+    public List<HOPIdentity> getIdentities(){
+        return identities;
     }
     @Override
     public boolean equals(Object o) {
         return o instanceof HOPContact && ((HOPContact) o).getUserId() == this.mUserId;
     }
-
 }

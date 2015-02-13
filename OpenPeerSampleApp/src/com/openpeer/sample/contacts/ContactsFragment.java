@@ -53,8 +53,9 @@ import android.widget.SearchView;
 import com.openpeer.sample.BaseFragment;
 import com.openpeer.sample.R;
 import com.openpeer.sample.view.ProgressEmptyView;
-import com.openpeer.sdk.app.HOPDataManager;
+import com.openpeer.sdk.model.HOPDataManager;
 import com.openpeer.sdk.datastore.DatabaseContracts.RolodexContactEntry;
+import com.openpeer.sdk.model.HOPAccount;
 
 import butterknife.ButterKnife;
 import butterknife.InjectView;
@@ -170,7 +171,7 @@ public class ContactsFragment extends BaseFragment implements SwipeRefreshLayout
 
 	@Override
 	public void onRefresh() {
-		HOPDataManager.getInstance().refreshContacts();
+		HOPAccount.currentAccount().refreshContacts();
 		mRootLayout.setRefreshing(false);
 	}
 
