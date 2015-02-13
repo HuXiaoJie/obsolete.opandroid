@@ -33,10 +33,10 @@ package com.openpeer.utils;
 
 import android.text.format.Time;
 
+import com.openpeer.javaapi.OPIdentity;
 import com.openpeer.javaapi.OPAccount;
 import com.openpeer.javaapi.OPCall;
 import com.openpeer.javaapi.OPContact;
-import com.openpeer.javaapi.OPIdentity;
 import com.openpeer.javaapi.OPIdentityContact;
 import com.openpeer.javaapi.OPRolodexContact;
 import com.openpeer.sdk.model.HOPContact;

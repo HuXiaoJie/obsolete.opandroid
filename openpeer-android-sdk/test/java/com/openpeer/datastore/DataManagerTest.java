@@ -58,20 +58,17 @@ import java.util.List;
  *
  */
 @RunWith(RobolectricTestRunner.class)
-public class DatastoreDelegateImplTest {
+public class DataManagerTest {
 
-    OPDatastoreDelegateImpl delegate;
+    HOPDataManager manager;
 
     @Before
     public void setup() {
         Application application = Robolectric.application;
         HOPContact user = new HOPContact();
         user.setUserId(1);
-        delegate = OPDatastoreDelegateImpl.getInstance();
-        delegate.init(application);
-        delegate.setupForTest();
+        manager = HOPDataManager.getInstance();
         OPLogger.setIsUnitTest(true);
-        HOPDataManager.getInstance().init(delegate);
     }
 
     @After
@@ -86,7 +83,7 @@ public class DatastoreDelegateImplTest {
         Mockito.when(account.getReloginInformation()).thenReturn(
             "{\"reloginInfo\":\"peer://hcs.io/1234567890\"}");
         Mockito.when(account.getPeerUri()).thenReturn("peer://hcs.io/1234567890");
-        // delegate.saveAccount(account);
+        // manager.saveAccount(account);
 
     }
 
@@ -95,7 +92,7 @@ public class DatastoreDelegateImplTest {
 
         OPCall call = CoreTestObjectFactory.getMockCall();
         HOPConversation conversation = CoreTestObjectFactory.getMockConversation();
-        long id = delegate.saveCall(call.getCallID(), conversation.getConversationId(),1 ,0 ,"audio" );
+        long id = manager.saveCall(call.getCallID(), conversation.getConversationId(),1 ,0 ,"audio" );
         Assert.assertEquals(1, id);
     }
 
@@ -107,7 +104,7 @@ public class DatastoreDelegateImplTest {
         OPRolodexContact contact2 = CoreTestObjectFactory.getRolodexContact2();
         contacts.add(contact2);
 
-        List<OPRolodexContact> results = delegate.saveDownloadedRolodexContacts(identity,
+        List<OPRolodexContact> results = manager.saveDownloadedRolodexContacts(identity,
                                                                                 contacts,
                                                                                 "abcdefg");
         Assert.assertEquals(contact1, results.get(0));
@@ -124,7 +121,7 @@ public class DatastoreDelegateImplTest {
         users.add(user2);
         HOPParticipantInfo info=new HOPParticipantInfo(2530l,users);
         HOPConversation conversation = new HOPConversation(info, "123", GroupChatMode.contact);
-        long id = delegate.saveConversation(conversation);
+        long id = manager.saveConversation(conversation);
         Assert.assertEquals(id, 1);
     }
 

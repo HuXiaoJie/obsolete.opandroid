@@ -41,7 +41,7 @@ import org.robolectric.RobolectricTestRunner;
 
 import android.app.Application;
 
-import com.openpeer.sdk.app.HOPDataManager;
+import com.openpeer.sdk.model.HOPDataManager;
 import com.openpeer.sdk.model.HOPContact;
 
 /**
