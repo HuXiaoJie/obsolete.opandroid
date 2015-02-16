@@ -1,6 +1,5 @@
 package com.openpeer.sdk.model;
 
-import com.google.gson.annotations.SerializedName;
 import com.openpeer.javaapi.CallClosedReasons;
 
 import org.json.JSONObject;

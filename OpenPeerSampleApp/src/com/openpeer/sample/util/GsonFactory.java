@@ -1,4 +1,4 @@
-package com.openpeer.sdk.model;
+package com.openpeer.sample.util;
 
 import com.google.gson.Gson;
 

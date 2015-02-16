@@ -28,6 +28,10 @@
  */
 package com.openpeer.sdk.model;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
 /**
  *
  */
@@ -52,14 +56,14 @@ public class HOPConversationEvent<T> {
     }
 
     public static HOPConversationEvent newContactsChangeEvent(String conversationId,
-                                                             long cbcId, long[] added,
-                                                             long[] removed) {
+                                                              long cbcId, long[] added,
+                                                              long[] removed) {
         HOPConversationEvent<ContactsChange> changeEvent = new HOPConversationEvent<ContactsChange>
             (conversationId,
-                                                                                                  EventTypes.ContactsChange,
-                                                                                                  null,
-                                                                                                  cbcId,
-                                                                                                  System.currentTimeMillis());
+             EventTypes.ContactsChange,
+             null,
+             cbcId,
+             System.currentTimeMillis());
         ContactsChange change = new ContactsChange();
         if (added != null) {
             change.added = added;
@@ -72,8 +76,30 @@ public class HOPConversationEvent<T> {
     }
 
     public static ContactsChange contactsChangeFromJson(String jsonBlob) {
-        ContactsChange event = GsonFactory.getGson().fromJson(jsonBlob, ContactsChange.class);
-        return event;
+        try {
+            JSONObject jsonObject = new JSONObject(jsonBlob);
+            JSONArray addedArray = jsonObject.getJSONArray(ContactsChange.KEY_ADDED);
+            JSONArray removedArray = jsonObject.getJSONArray(ContactsChange.KEY_REMOVED);
+            ContactsChange event = new ContactsChange();
+            if (addedArray != null) {
+                long[] added = new long[addedArray.length()];
+                for (int i = 0; i < added.length; i++) {
+                    added[i] = addedArray.getLong(i);
+                }
+                event.added = added;
+            }
+            if (removedArray != null) {
+                long[] removed = new long[removedArray.length()];
+                for (int i = 0; i < removed.length; i++) {
+                    removed[i] = removedArray.getLong(i);
+                }
+                event.removed = removed;
+            }
+            return event;
+        } catch(Exception e) {
+            e.printStackTrace();
+        }
+        return null;
     }
 
     /**
@@ -130,7 +156,7 @@ public class HOPConversationEvent<T> {
     }
 
     public String getContentString() {
-        return GsonFactory.getGson().toJson(event);
+        return event.toString();
     }
 
     /**
@@ -142,9 +168,19 @@ public class HOPConversationEvent<T> {
     }
 
     public static class ContactsChange {
-
+        public static final String KEY_ADDED = "added";
+        public static final String KEY_REMOVED = "removed";
         long added[];
         long removed[];
+
+        public ContactsChange() {
+        }
+
+        public ContactsChange(long[] added, long[] removed) {
+            this.added = added;
+            this.removed = removed;
+        }
+
         public long[] getAdded() {
             return added;
         }
@@ -152,6 +188,23 @@ public class HOPConversationEvent<T> {
         public long[] getRemoved() {
             return removed;
         }
+
+        public String toString() {
+            try {
+                JSONObject object = new JSONObject();
+                if (added != null) {
+                    object.put(KEY_ADDED, added);
+                }
+                if (removed != null) {
+                    object.put(KEY_ADDED, removed);
+                }
+                return object.toString();
+            } catch(JSONException e) {
+
+            }
+            return null;
+        }
     }
+
 
 }

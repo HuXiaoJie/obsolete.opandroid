@@ -76,7 +76,7 @@ public class ConversationEventView extends LinearLayout {
         case ContactsChange:{
             HOPConversationEvent.ContactsChange event = HOPConversationEvent.contactsChangeFromJson
                 (message.getMessage());
-            if ( event.getAdded().length>0) {
+            if (event.getAdded() != null && event.getAdded().length > 0) {
                 List<HOPContact> users = HOPDataManager.getInstance().getUsers(event.getAdded
                     ());
                 String names = ModelUtil.getNamesStringFromUsers(users);

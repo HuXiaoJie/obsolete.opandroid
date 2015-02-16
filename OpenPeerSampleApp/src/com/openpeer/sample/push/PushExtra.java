@@ -1,6 +1,6 @@
 package com.openpeer.sample.push;
 
-import com.openpeer.sdk.model.GsonFactory;
+import com.openpeer.sample.util.GsonFactory;
 
 import org.json.JSONException;
 import org.json.JSONObject;

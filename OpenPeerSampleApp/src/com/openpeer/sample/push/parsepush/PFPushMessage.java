@@ -1,11 +1,5 @@
 package com.openpeer.sample.push.parsepush;
 
-import com.openpeer.sample.push.PushExtra;
-import com.openpeer.sdk.model.GsonFactory;
-
-import org.json.JSONException;
-import org.json.JSONObject;
-
 public class PFPushMessage {
     public static final String MESSAGE_TYPE_TEXT="text";
     public static final String MESSAGE_TYPE_CALL_STATE="system/call";
