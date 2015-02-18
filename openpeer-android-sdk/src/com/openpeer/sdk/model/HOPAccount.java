@@ -88,8 +88,10 @@ public class HOPAccount {
 
     public static HOPAccount login(OPAccountDelegate accountDelegate, OPConversationThreadDelegate
         conversationThreadDelegate, OPCallDelegate callDelegate) {
-        return new HOPAccount(OPAccount.login(accountDelegate, conversationThreadDelegate,
+        HOPAccount account = new HOPAccount(OPAccount.login(accountDelegate, conversationThreadDelegate,
                                               callDelegate));
+        account.setAccountId(1);
+        return account;
     }
 
     public void notifyBrowserWindowClosed() {
@@ -135,6 +137,7 @@ public class HOPAccount {
                                                                callDelegate,
                                                                reloginInformation));
         account1.setSelfContactId(HOPDataManager.getInstance().getCurrentUserId());
+        account1.setAccountId(HOPDataManager.getInstance().getCurrentAccountId());
         return account1;
     }
 

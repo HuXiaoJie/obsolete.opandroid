@@ -7,6 +7,15 @@ import com.openpeer.javaapi.OPIdentity;
 
 public class HOPAccountIdentity {
     private OPIdentity identity;
+    private long identityId;//database rowid
+
+    public long getIdentityId() {
+        return identityId;
+    }
+
+    public void setIdentityId(long identityId) {
+        this.identityId = identityId;
+    }
 
     public OPIdentity getIdentity() {
         return identity;

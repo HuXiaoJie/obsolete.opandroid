@@ -37,6 +37,7 @@ import com.openpeer.javaapi.IdentityStates;
 import com.openpeer.javaapi.OPAccount;
 import com.openpeer.javaapi.OPAccountDelegate;
 import com.openpeer.javaapi.OPCallDelegate;
+import com.openpeer.javaapi.OPContact;
 import com.openpeer.javaapi.OPConversationThreadDelegate;
 import com.openpeer.javaapi.OPIdentity;
 import com.openpeer.javaapi.OPIdentityDelegate;
@@ -91,6 +92,7 @@ public class HOPLoginManager implements OPIdentityDelegate,OPAccountDelegate{
         if (reloginInfo == null || reloginInfo.length() == 0) {
             login(HOPCallManager.getInstance(),
                     HOPConversationManager.getInstance());
+            mAccount.setSelfContactId(HOPDataManager.getInstance().getCurrentUserId());
         } else {
             relogin(HOPCallManager.getInstance(),
                     HOPConversationManager.getInstance(),
@@ -214,6 +216,10 @@ public class HOPLoginManager implements OPIdentityDelegate,OPAccountDelegate{
         }
     }
     public void onIdentityLoginSucceed(HOPAccountIdentity identity) {
+        HOPDataManager.getInstance().saveAccountIdentity(mAccount.getAccountId(),
+                                                         mAccount.getSelfContactId(),
+                                                         identity);
+
         if (identity.isAssociating()) {
             String version = HOPDataManager.getInstance()
                 .getDownloadedContactsVersion(identity.getIdentityURI());

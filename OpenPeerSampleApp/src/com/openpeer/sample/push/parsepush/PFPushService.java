@@ -118,7 +118,7 @@ public class PFPushService implements PushServiceInterface {
     public void onConversationThreadPushMessage(final HOPConversation conversation,
                                                 final OPMessage message, final HOPContact HOPContact) {
         if (!mInitialized) {
-            return;
+            init();
         }
         List<HOPContact> participants = conversation.getParticipants();
         String peerURIs = "";

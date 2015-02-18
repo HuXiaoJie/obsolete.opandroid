@@ -105,8 +105,9 @@ public class OPContentProvider extends ContentProvider implements ContentUriReso
         IDENTITY_CONTACTS(IdentityContactEntry.TABLE_NAME),
         IDENTITY_CONTACT(IdentityContactEntry.TABLE_NAME + "/#"),
 
-        ROLODEX_CONTACTS(RolodexContactEntry.TABLE_NAME),
+        ROLODEX_CONTACTS(RolodexContactEntry.URI_PATH_INFO),
         ROLODEX_CONTACT(IdentityContactEntry.TABLE_NAME + "/#"),
+        ROLODEX_CONTACTS_ALL(RolodexContactEntry.TABLE_NAME),
 
         AVATARS(AvatarEntry.TABLE_NAME),
         AVATAR(AvatarEntry.TABLE_NAME + "/#"),
@@ -279,6 +280,7 @@ public class OPContentProvider extends ContentProvider implements ContentUriReso
             return queryRolodexContacts(uri, projection, selection,
                     selectionArgs,
                     sortOrder);
+
         case CONVERSATIONS_VIEW:
             return queryConversationHisotry(uri, projection, selection,
                                             selectionArgs,
