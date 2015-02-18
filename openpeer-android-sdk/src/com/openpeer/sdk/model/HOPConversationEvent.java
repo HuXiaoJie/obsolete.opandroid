@@ -78,8 +78,8 @@ public class HOPConversationEvent<T> {
     public static ContactsChange contactsChangeFromJson(String jsonBlob) {
         try {
             JSONObject jsonObject = new JSONObject(jsonBlob);
-            JSONArray addedArray = jsonObject.getJSONArray(ContactsChange.KEY_ADDED);
-            JSONArray removedArray = jsonObject.getJSONArray(ContactsChange.KEY_REMOVED);
+            JSONArray addedArray = jsonObject.optJSONArray(ContactsChange.KEY_ADDED);
+            JSONArray removedArray = jsonObject.optJSONArray(ContactsChange.KEY_REMOVED);
             ContactsChange event = new ContactsChange();
             if (addedArray != null) {
                 long[] added = new long[addedArray.length()];
@@ -193,10 +193,18 @@ public class HOPConversationEvent<T> {
             try {
                 JSONObject object = new JSONObject();
                 if (added != null) {
-                    object.put(KEY_ADDED, added);
+                    JSONArray array = new JSONArray();
+                    for(long value:added){
+                        array.put(value);
+                    }
+                    object.put(KEY_ADDED, array);
                 }
                 if (removed != null) {
-                    object.put(KEY_ADDED, removed);
+                    JSONArray array = new JSONArray();
+                    for(long value:removed){
+                        array.put(value);
+                    }
+                    object.put(KEY_ADDED, array);
                 }
                 return object.toString();
             } catch(JSONException e) {
