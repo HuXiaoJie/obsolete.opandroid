@@ -65,10 +65,10 @@ public class HOPConversationEvent<T> {
              cbcId,
              System.currentTimeMillis());
         ContactsChange change = new ContactsChange();
-        if (added != null) {
+        if (added != null && added.length > 0) {
             change.added = added;
         }
-        if (removed != null) {
+        if (removed != null && removed.length > 0) {
             change.removed = removed;
         }
         changeEvent.event = change;
@@ -81,14 +81,14 @@ public class HOPConversationEvent<T> {
             JSONArray addedArray = jsonObject.optJSONArray(ContactsChange.KEY_ADDED);
             JSONArray removedArray = jsonObject.optJSONArray(ContactsChange.KEY_REMOVED);
             ContactsChange event = new ContactsChange();
-            if (addedArray != null) {
+            if (addedArray != null && addedArray.length() > 0) {
                 long[] added = new long[addedArray.length()];
                 for (int i = 0; i < added.length; i++) {
                     added[i] = addedArray.getLong(i);
                 }
                 event.added = added;
             }
-            if (removedArray != null) {
+            if (removedArray != null && removedArray.length() > 0) {
                 long[] removed = new long[removedArray.length()];
                 for (int i = 0; i < removed.length; i++) {
                     removed[i] = removedArray.getLong(i);
@@ -194,17 +194,17 @@ public class HOPConversationEvent<T> {
                 JSONObject object = new JSONObject();
                 if (added != null) {
                     JSONArray array = new JSONArray();
-                    for(long value:added){
+                    for (long value : added) {
                         array.put(value);
                     }
                     object.put(KEY_ADDED, array);
                 }
                 if (removed != null) {
                     JSONArray array = new JSONArray();
-                    for(long value:removed){
+                    for (long value : removed) {
                         array.put(value);
                     }
-                    object.put(KEY_ADDED, array);
+                    object.put(KEY_REMOVED, array);
                 }
                 return object.toString();
             } catch(JSONException e) {

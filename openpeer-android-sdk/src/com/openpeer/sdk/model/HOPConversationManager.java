@@ -46,6 +46,7 @@ import com.openpeer.javaapi.OPMessage;
 import com.openpeer.sdk.app.HOPSettingsHelper;
 import com.openpeer.sdk.utils.HOPModelUtils;
 
+import java.util.ArrayList;
 import java.util.Hashtable;
 import java.util.List;
 
@@ -105,8 +106,8 @@ public class HOPConversationManager implements OPConversationThreadDelegate {
                                                        thread.getParticipantInfo(),
                                                        thread.getConversationId(), false);
 
-        if (conversation == null ) {
-            if(createNew) {
+        if (conversation == null) {
+            if (createNew) {
                 conversation = new HOPConversation(thread.getParticipantInfo(),
                                                    thread.getConversationId(),
                                                    thread.getConverationType()
@@ -116,8 +117,8 @@ public class HOPConversationManager implements OPConversationThreadDelegate {
                 cacheConversation(thread.getConversationId(), conversation);
                 conversation.save();
             }
-        } else if(!thread.getConversationId().equals(conversation.getConversationId())){
-            cacheConversation(thread.getConversationId(),conversation);
+        } else if (!thread.getConversationId().equals(conversation.getConversationId())) {
+            cacheConversation(thread.getConversationId(), conversation);
         }
         return conversation;
     }
@@ -329,7 +330,20 @@ public class HOPConversationManager implements OPConversationThreadDelegate {
                 newConversation = HOPConversationManager.getInstance().
                     getConversation(GroupChatMode.thread, mHOPParticipantInfo, null, true);
             } else {
-                conversation.onContactsChanged(newParticipants);
+                long cbcId = HOPModelUtils.getWindowId(newParticipants);
+                if (cbcId != conversation.getCurrentCbcId()) {
+                    List<HOPContact> addedUsers = new ArrayList<>();
+                    List<HOPContact> removedUsers = new ArrayList<>();
+                    HOPModelUtils.findChangedUsers(conversation.getParticipants(), newParticipants,
+                                                   addedUsers,
+                                                   removedUsers);
+                    if (!addedUsers.isEmpty()) {
+                        conversation.addParticipants(addedUsers);
+                    }
+                    if (!removedUsers.isEmpty()) {
+                        conversation.removeParticipants(removedUsers);
+                    }
+                }
             }
         }
         break;
