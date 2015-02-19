@@ -16,7 +16,9 @@ public class HOPAccount {
     private HOPContact selfContact;
 
     public static long selfContactId() {
-        return currentAccount().selfContactId;
+
+        return currentAccount() == null ? HOPDataManager.getInstance().getCurrentUserId() :
+            currentAccount().selfContactId;
     }
 
     public long getSelfContactId() {
