@@ -210,7 +210,7 @@ public class PFPushReceiver extends ParsePushBroadcastReceiver {
                     OPMessage message = new OPMessage(sender.getUserId(),
                                                       object.getString(PFPushMessage
                                                                            .KEY_MESSAGE_TYPE),
-                                                      object.getString(KEY_ALERT),
+                                                      object.getString(PFPushMessage.KEY_MESSAGE),
                                                       object.getLong(PFPushMessage.KEY_DATE) * 1000,
                                                       object.getString(PFPushMessage
                                                                            .KEY_MESSAGE_ID));
