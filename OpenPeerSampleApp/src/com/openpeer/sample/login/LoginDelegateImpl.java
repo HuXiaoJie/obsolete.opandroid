@@ -28,13 +28,23 @@
  */
 package com.openpeer.sample.login;
 
+import android.text.TextUtils;
+
 import com.openpeer.javaapi.AccountStates;
 import com.openpeer.javaapi.IdentityStates;
 import com.openpeer.sample.events.SignoutCompleteEvent;
+import com.openpeer.sample.push.HackApiService;
+import com.openpeer.sample.push.PushManager;
+import com.openpeer.sample.push.parsepush.PFPushService;
+import com.openpeer.sample.util.SettingsHelper;
 import com.openpeer.sdk.login.HOPLoginDelegate;
 import com.openpeer.sdk.model.HOPLoginManager;
 import com.openpeer.sdk.model.HOPAccount;
 import com.openpeer.sdk.model.HOPAccountIdentity;
+
+import retrofit.Callback;
+import retrofit.RetrofitError;
+import retrofit.client.Response;
 
 /**
  * The listener monitor the Account/Identity login state changes and show appropriate UI
@@ -84,6 +94,34 @@ public class LoginDelegateImpl implements HOPLoginDelegate {
             }
             return true;
         case AccountState_Ready:
+            if(SettingsHelper.getInstance().isParsePushEnabled() && !PFPushService.getInstance().isInitialized()){
+                PFPushService.getInstance().init();
+            }
+            if(SettingsHelper.getInstance().isUAPushEnabled()) {
+                com.urbanairship.push.PushManager.enablePush();
+
+                // TODO: move it to proper place after login refactoring.
+                String apid = com.urbanairship.push.PushManager.shared().getAPID();
+                if (!TextUtils.isEmpty(apid)) {
+                    PushManager.getInstance()
+                        .associateDeviceToken(
+                            HOPAccount.selfContact().getPeerUri(),
+                            com.urbanairship.push.PushManager.shared().getAPID(),
+                            new Callback<HackApiService.HackAssociateResult>() {
+                                @Override
+                                public void success(
+                                    HackApiService.HackAssociateResult hackAssociateResult,
+                                    Response response) {
+
+                                }
+
+                                @Override
+                                public void failure(RetrofitError error) {
+                                }
+                            }
+                        );
+                }
+            }
             if (viewHandler != null) {
                 viewHandler.onAccountLoginComplete();
             }

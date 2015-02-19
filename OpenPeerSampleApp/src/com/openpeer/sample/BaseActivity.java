@@ -244,34 +244,6 @@ public class BaseActivity extends BaseFragmentActivity implements LoginViewHandl
         getLoginViewContainer().removeView(mAccountLoginWebView);
         Toast.makeText(this, R.string.msg_account_login_completed, Toast.LENGTH_LONG)
             .show();
-        if(SettingsHelper.getInstance().isParsePushEnabled() && !PFPushService.getInstance().isInitialized()){
-            PFPushService.getInstance().init();
-        }
-        if(SettingsHelper.getInstance().isUAPushEnabled()) {
-            com.urbanairship.push.PushManager.enablePush();
-
-            // TODO: move it to proper place after login refactoring.
-            String apid = com.urbanairship.push.PushManager.shared().getAPID();
-            if (!TextUtils.isEmpty(apid)) {
-                PushManager.getInstance()
-                    .associateDeviceToken(
-                        HOPAccount.selfContact().getPeerUri(),
-                        com.urbanairship.push.PushManager.shared().getAPID(),
-                        new Callback<HackApiService.HackAssociateResult>() {
-                            @Override
-                            public void success(
-                                HackApiService.HackAssociateResult hackAssociateResult,
-                                Response response) {
-
-                            }
-
-                            @Override
-                            public void failure(RetrofitError error) {
-                            }
-                        }
-                    );
-            }
-        }
     }
 
     @Override
