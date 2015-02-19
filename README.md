@@ -21,7 +21,7 @@ This repository will yield the Android Java SDK, Native sample application and d
 
 ###Prerequisites:
 + [Android SDK](https://developer.android.com/sdk/index.html)
-+ Android NDK  Android NDK r8e (http://dl.google.com/android/ndk/android-ndk-r10c-darwin-x86_64.bin for mac) is required. Path to the NDK is mandatory for building 3rd party libraries. 
++ Android NDK  Android NDK r8e (http://dl.google.com/android/ndk/android-ndk-r8e-darwin-x86.tar.bz2 for mac) is required. Path to the NDK is mandatory for building 3rd party libraries. 
 + [ninja](http://martine.github.io/ninja/) build sysytem required for WebRTC library build. You can install ninja using MacPorts or Homebrew.
 
 
