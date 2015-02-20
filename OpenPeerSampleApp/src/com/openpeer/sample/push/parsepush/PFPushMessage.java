@@ -6,7 +6,6 @@ public class PFPushMessage {
     public static final String MESSAGE_TYPE_CONTACTS_REMOVED="system/contactsRemoved";
 
     public static final String KEY_ALERT="alert";
-    public static final String KEY_MESSAGE="message";
     public static final String KEY_TO="to";
     public static final String KEY_PEER_URI="peerURI";
     public static final String KEY_SENDER_NAME="senderName";
