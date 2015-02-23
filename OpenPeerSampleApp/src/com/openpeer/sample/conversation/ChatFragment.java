@@ -633,7 +633,6 @@ public class ChatFragment extends BaseFragment implements
             outState.putString(IntentData.ARG_CONVERSATION_ID, mConversationId);
         }
         outState.putString(IntentData.ARG_CONVERSATION_TYPE, mType);
-        outState.putLong(IntentData.ARG_CONVERSATION_TYPE, mHOPParticipantInfo.getCbcId());
         super.onSaveInstanceState(outState);
     }
 
