@@ -102,7 +102,7 @@ public class CallInfoView extends LinearLayout {
 	private Runnable timerThread = new Runnable() {
 
 		public void run() {
-			if (!isShown()) {
+			if (!isShown() || mCall == null) {
 				return;
 			}
 
