@@ -641,7 +641,7 @@ public class HOPDataManager {
     }
 
 
-    public Uri saveMessage(OPMessage message, String conversationId,
+    public Uri saveMessage(OPMessage message, long conversationId,
                            HOPParticipantInfo HOPParticipantInfo) {
         ContentValues values = new ContentValues();
         values.put(DatabaseContracts.MessageEntry.COLUMN_MESSAGE_ID, message.getMessageId());
@@ -812,7 +812,7 @@ public class HOPDataManager {
     public long saveConversationEvent(HOPConversationEvent event) {
         ContentValues values = new ContentValues();
         values.put(DatabaseContracts.ConversationEventEntry.COLUMN_CONVERSATION_ID,
-                   event.getConversationId());
+                   event.getId());
         values.put(DatabaseContracts.ConversationEventEntry.COLUMN_EVENT, event.getEventType()
             .name());
         values.put(DatabaseContracts.ConversationEventEntry.COLUMN_CONTENT, event
@@ -836,7 +836,7 @@ public class HOPDataManager {
 
 
     public long saveCall(String callId,
-                         String conversationId,
+                         long conversationId,
                          long peerId,
                          int direction,
                          String mediaType) {
@@ -862,7 +862,7 @@ public class HOPDataManager {
     }
 
 
-    public long saveCallEvent(String callId, String conversationId, CallEvent event) {
+    public long saveCallEvent(String callId, long conversationId, CallEvent event) {
         long eventRecordId = 0;
 
         switch (event.getState()){
@@ -1167,7 +1167,7 @@ public class HOPDataManager {
         return contact;
     }
 
-    private Uri notifyMessageChanged(String conversationId, long id) {
+    private Uri notifyMessageChanged(long conversationId, long id) {
         StringBuilder sb = new StringBuilder();
 
         sb.append(DatabaseContracts.MessageEntry.URI_PATH_INFO_CONTEXT_URI_BASE + conversationId);

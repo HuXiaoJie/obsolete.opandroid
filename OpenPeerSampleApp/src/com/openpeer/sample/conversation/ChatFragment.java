@@ -778,11 +778,11 @@ public class ChatFragment extends BaseFragment implements
 
     Uri getMessagesUri() {
 
-        if (TextUtils.isEmpty(mConversationId)) {
+        if (mConversation==null) {
             return null;
         }
         return HOPDataManager.getInstance().getContentUri(
-            MessageEntry.URI_PATH_INFO_CONTEXT_URI_BASE + mConversationId);
+            MessageEntry.URI_PATH_INFO_CONTEXT_URI_BASE + mConversation.getId());
     }
 
     // Beginning of SessionListener implementation

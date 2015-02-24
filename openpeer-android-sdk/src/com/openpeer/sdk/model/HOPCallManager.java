@@ -89,7 +89,7 @@ public class HOPCallManager implements OPCallDelegate {
                 int direction = call.getCallDirection();
                 HOPDataManager.getInstance().saveCall(
                     call.getCallID(),
-                    conversation.getConversationId(),
+                    conversation.getId(),
                     call.getPeer().getUserId(),
                     direction,
                     call.hasVideo() ? CallSystemMessage.MEDIATYPE_VIDEO : CallSystemMessage
@@ -100,7 +100,7 @@ public class HOPCallManager implements OPCallDelegate {
                                                 CallSystemMessage.STATUS_PLACED,
                                                 System.currentTimeMillis());
                 HOPDataManager.getInstance().saveCallEvent(call.getCallID(),
-                                                           conversation.getConversationId(),
+                                                           conversation.getId(),
                                                            event);
             }
         }
@@ -114,7 +114,7 @@ public class HOPCallManager implements OPCallDelegate {
                                             CallSystemMessage.STATUS_ANSWERED,
                                             call.getAnswerTimeInMillis());
             HOPDataManager.getInstance().saveCallEvent(call.getCallID(),
-                                                       conversation.getConversationId(),
+                                                       conversation.getId(),
                                                        event);
         }
         break;
@@ -124,7 +124,7 @@ public class HOPCallManager implements OPCallDelegate {
                                             CallSystemMessage.STATUS_HUNGUP,
                                             call.getClosedTime().toMillis(false));
             HOPDataManager.getInstance().saveCallEvent(call.getCallID(),
-                                                       conversation.getConversationId(),
+                                                       conversation.getId(),
                                                        event);
             removeCallCache(call);
         }

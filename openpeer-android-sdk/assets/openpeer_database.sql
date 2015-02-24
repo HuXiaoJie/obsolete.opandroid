@@ -57,7 +57,7 @@ CREATE TABLE "call" (
 	 "time" integer,
 	 "answer_time" integer default 0,
 	 "end_time" integer default 0,
-	 "conversation_id" TEXT NOT NULL,
+	 "conversation_id" integer,
 	 "conversation_event_id" long,
 	 "cbc_id" INTEGER,
 	CONSTRAINT "fk_call_conversation_id" FOREIGN KEY ("conversation_id") REFERENCES "conversation" ("conversation_id") ON DELETE RESTRICT,
@@ -106,7 +106,7 @@ CREATE TABLE "conversation_event" (
 	 "content" TEXT,
 	 "time" integer NOT NULL,
 	 "participants" INTEGER,
-	 "conversation_id" TEXT NOT NULL,
+	 "conversation_id" integer NOT NULL,
 
 	CONSTRAINT "fk_conversation_event_conversation_id" FOREIGN KEY ("conversation_id") REFERENCES "conversation" ("_id") ON DELETE RESTRICT,
 	CONSTRAINT "fk_conversation_event_participants" FOREIGN KEY ("participants") REFERENCES "participants" ("cbc_id") ON DELETE RESTRICT

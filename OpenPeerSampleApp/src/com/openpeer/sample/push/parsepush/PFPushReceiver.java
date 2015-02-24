@@ -101,7 +101,7 @@ public class PFPushReceiver extends ParsePushBroadcastReceiver {
                                                   messageId,
                                                   MessageEditState.Normal);
                 HOPDataManager.getInstance().saveMessage(message,
-                                                         conversation.getConversationId(),
+                                                         conversation.getId(),
                                                          HOPParticipantInfo);
                 OPNotificationBuilder.showNotificationForMessage(
                     HOPModelUtils.getUserIds(HOPParticipantInfo.getParticipants()),
@@ -131,7 +131,7 @@ public class PFPushReceiver extends ParsePushBroadcastReceiver {
                     }
                     HOPConversationDelegateImpl.handleCallSystemMessage(
                         systemObject.getJSONObject(HOPSystemMessage.KEY_CALL_STATUS),
-                        sender, conversationId, date);
+                        sender, conversation.getId(), date);
                     String callId = callStatusObject.getString("id");
                     OPNotificationBuilder.showNotification(
                         OPNotificationBuilder.getNotificationIdForCall(callId),
@@ -223,7 +223,7 @@ public class PFPushReceiver extends ParsePushBroadcastReceiver {
                         true
                     );
                     HOPDataManager.getInstance().saveMessage(message,
-                                                             conversation.getConversationId(),
+                                                             conversation.getId(),
                                                              HOPParticipantInfo);
                 }
                 ParseObject.deleteAllInBackground(list, new DeleteCallback() {

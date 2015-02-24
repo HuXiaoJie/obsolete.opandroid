@@ -146,7 +146,7 @@ public class HOPConversation extends Observable {
             if (!TextUtils.isEmpty(message.getReplacesMessageId())) {
                 HOPDataManager.getInstance().updateMessage(message, this);
             } else {
-                HOPDataManager.getInstance().saveMessage(message, conversationId, mParticipantInfo);
+                HOPDataManager.getInstance().saveMessage(message, _id, mParticipantInfo);
 
             }
         }
@@ -329,7 +329,7 @@ public class HOPConversation extends Observable {
             if (!TextUtils.isEmpty(message.getReplacesMessageId())) {
                 HOPDataManager.getInstance().updateMessage(message, this);
             } else {
-                HOPDataManager.getInstance().saveMessage(message, conversationId,
+                HOPDataManager.getInstance().saveMessage(message, _id,
                                                          mParticipantInfo);
             }
             selectActiveThread(thread);
@@ -427,6 +427,10 @@ public class HOPConversation extends Observable {
      */
     public void setId(long id) {
         _id = id;
+    }
+
+    public long getId() {
+        return _id;
     }
 
     /**

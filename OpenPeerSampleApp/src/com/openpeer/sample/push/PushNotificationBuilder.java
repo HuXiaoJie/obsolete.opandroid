@@ -110,7 +110,7 @@ public class PushNotificationBuilder implements com.urbanairship.push.PushNotifi
         HOPConversation conversation = HOPConversation.getConversation
             (GroupChatMode.valueOf(conversationType), HOPParticipantInfo, conversationId, true);
         HOPDataManager.getInstance().saveMessage(message,
-                                                conversationId, HOPParticipantInfo);
+                                                conversation.getId(), HOPParticipantInfo);
         //For contact based conversation, teh conversation id might be different.
         return OPNotificationBuilder.buildNotificationForMessage(
             new long[]{sender.getUserId()}, message, conversationType, conversation.getConversationId());

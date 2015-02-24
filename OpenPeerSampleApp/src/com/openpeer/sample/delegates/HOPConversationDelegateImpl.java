@@ -115,7 +115,7 @@ public class HOPConversationDelegateImpl implements HOPConversationDelegate {
                     .getJSONObject(HOPSystemMessage.KEY_CALL_STATUS);
                 handleCallSystemMessage(callSystemMessage,
                                         sender,
-                                        conversation.getConversationId(),
+                                        conversation.getId(),
                                         time);
 
             } else if (systemMessage.has(HOPSystemMessage.KEY_CONTACTS_REMOVED)) {
@@ -144,7 +144,7 @@ public class HOPConversationDelegateImpl implements HOPConversationDelegate {
     }
 
     public static void handleCallSystemMessage(JSONObject message, HOPContact user,
-                                               String conversationId,
+                                               long conversationId,
                                                long timestamp) {
         try {
             String callId = message.getString(CallSystemMessage.KEY_ID);
