@@ -64,20 +64,25 @@ public class HOPSystemMessage {
 
         String mediaType = call.hasVideo() ? CallSystemMessage.MEDIATYPE_VIDEO :
             CallSystemMessage.MEDIATYPE_AUDIO;
-        JSONObject callSystemMessage = HOPSystemMessage.CallSystemMessage(
-            call.getCallID(),
-            status,
-            mediaType,
-            call.getPeer().getPeerUri(),
-            callClosedReason);
+        try {
+            JSONObject callSystemMessage = getSystemObject(CallSystemMessage(
+                    call.getCallID(),
+                    status,
+                    mediaType,
+                    call.getPeer().getPeerUri(),
+                    callClosedReason));
 
-        OPMessage message = new OPMessage(
-            HOPAccount.selfContactId(),
-            OPSystemMessage.getMessageType(),
-            callSystemMessage.toString(),
-            System.currentTimeMillis(),
-            UUID.randomUUID().toString());
-        return message;
+            OPMessage message = new OPMessage(
+                    HOPAccount.selfContactId(),
+                    OPSystemMessage.getMessageType(),
+                    callSystemMessage.toString(),
+                    System.currentTimeMillis(),
+                    UUID.randomUUID().toString());
+            return message;
+        }catch (JSONException e){
+            e.printStackTrace();
+        }
+        return null;
     }
 
     public static JSONObject CallSystemMessage(String id,
@@ -97,7 +102,7 @@ public class HOPSystemMessage {
                 object.put(CallSystemMessage.KEY_ERROR, errorObject);
             }
             JSONObject systemObject = new JSONObject();
-            systemObject.put(KEY_ROOT, object);
+            systemObject.put(KEY_CALL_STATUS, object);
             return systemObject;
         } catch(JSONException e) {
             e.printStackTrace();
