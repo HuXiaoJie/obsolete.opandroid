@@ -92,7 +92,6 @@ public class HOPLoginManager implements OPIdentityDelegate,OPAccountDelegate{
         if (reloginInfo == null || reloginInfo.length() == 0) {
             login(HOPCallManager.getInstance(),
                     HOPConversationManager.getInstance());
-            mAccount.setSelfContactId(HOPDataManager.getInstance().getCurrentUserId());
         } else {
             relogin(HOPCallManager.getInstance(),
                     HOPConversationManager.getInstance(),
@@ -136,6 +135,7 @@ public class HOPLoginManager implements OPIdentityDelegate,OPAccountDelegate{
             String reloginInfo) {
         mAccount = HOPAccount.relogin(this,
                 conversationThreadDelegate, callDelegate, reloginInfo);
+        mAccount.setSelfContactId(HOPDataManager.getInstance().getCurrentUserId());
         mAccountLoggingIn = true;
     }
 
@@ -301,6 +301,9 @@ public class HOPLoginManager implements OPIdentityDelegate,OPAccountDelegate{
         onAccountStateChanged(mAccount,state);
     }
     void onAccountStateChanged(HOPAccount account,AccountStates state){
+        if(state==AccountStates.AccountState_Ready){
+                onAccountStateReady(account);
+        }
         boolean processedByDelegate = mDelegate.onAccountStateChanged(mAccount, state);
         if (!processedByDelegate) {
             pendingState = state;
@@ -319,7 +322,7 @@ public class HOPLoginManager implements OPIdentityDelegate,OPAccountDelegate{
             account.notifyBrowserWindowClosed();
             break;
         case AccountState_Ready:
-            onAccountStateReady(account);
+//            onAccountStateReady(account);
             break;
         case AccountState_Shutdown:
             HOPHelper.getInstance().onAccountShutdown();

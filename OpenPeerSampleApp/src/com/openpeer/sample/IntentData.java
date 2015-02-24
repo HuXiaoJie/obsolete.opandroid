@@ -47,6 +47,6 @@ public class IntentData {
     public static final String ARG_CALL_STATE = "callState";
     public static final String ARG_CALL_ID = "callId";
     public static final String ARG_CONVERSATION_ID = "conversationId";
-    public static final String ARG_CONVERSATION_TYPE = "ARG_CONVERSATION_TYPE";
+    public static final String ARG_CONVERSATION_TYPE = "conversationType";
 
 }

@@ -93,16 +93,22 @@ public class PFPushService implements PushServiceInterface {
     }
 
     public boolean init() {
-        HOPContact currentUser = HOPAccount.selfContact();
+        final HOPContact currentUser = HOPAccount.selfContact();
         if (currentUser != null) {
+            Log.d("PFPushService","init calling parse init for "+currentUser.getPeerUri());
             ParseInstallation.getCurrentInstallation().put(KEY_PEER_URI, currentUser.getPeerUri());
             ParseInstallation.getCurrentInstallation().put(KEY_OS_VERSION,
                                                            "" + Build.VERSION.SDK_INT);
             ParseInstallation.getCurrentInstallation().saveInBackground(new SaveCallback() {
                 @Override
                 public void done(ParseException e) {
-                    mInitialized = true;
-                    PFPushReceiver.downloadMessages();
+                    if (e == null) {
+                        Log.d("PFPushService", "init done " + currentUser.getPeerUri());
+                        mInitialized = true;
+                        PFPushReceiver.downloadMessages();
+                    } else {
+                        e.printStackTrace();
+                    }
                 }
             });
 

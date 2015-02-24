@@ -38,9 +38,9 @@ public class HOPAccount {
     }
 
     public HOPContact getSelfContact() {
-        if (selfContact == null && selfContactId != 0) {
-            selfContact = HOPDataManager.getInstance().getUserById(selfContactId);
-        }
+//        if (selfContact == null && selfContactId != 0) {
+            selfContact = HOPDataManager.getInstance().getUserById(HOPDataManager.getInstance().getCurrentUserId());
+//        }
         return selfContact;
 
     }
