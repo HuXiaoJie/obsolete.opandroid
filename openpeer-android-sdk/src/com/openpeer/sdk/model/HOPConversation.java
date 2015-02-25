@@ -64,10 +64,15 @@ public class HOPConversation extends Observable {
 
     //try to keep the data fields correspond to database columns
     private long _id;// database id
+
+
     private String conversationId = "";
     private String topic;
     private boolean removed;
 
+    public void setConversationId(String conversationId) {
+        this.conversationId = conversationId;
+    }
     public boolean isQuit() {
         return quit;
     }
@@ -180,9 +185,13 @@ public class HOPConversation extends Observable {
      * @param thread
      */
     void setThread(OPConversationThread thread) {
+        if(thread==null){
+            return;
+        }
         mConvThread = thread;
-        if(conversationId==null){
+        if(!mConvThread.getConversationId().equals(conversationId)){
             conversationId=mConvThread.getConversationId();
+            HOPDataManager.getInstance().updateConversation(this);
         }
     }
 

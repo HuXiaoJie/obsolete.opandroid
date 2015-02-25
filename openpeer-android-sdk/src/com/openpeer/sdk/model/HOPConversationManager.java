@@ -120,6 +120,7 @@ public class HOPConversationManager implements OPConversationThreadDelegate {
         } else if (!thread.getConversationId().equals(conversation.getConversationId())) {
             cacheConversation(thread.getConversationId(), conversation);
         }
+        conversation.setThread(thread);
         return conversation;
     }
 
@@ -140,7 +141,7 @@ public class HOPConversationManager implements OPConversationThreadDelegate {
                     if (!conversation.amIRemoved()) {
                         //For contact based conversation, teh conversation id might be different.
                         conversation.setThread(getThread(type,
-                                                         conversation.getConversationId(),
+                                                         conversationId,
                                                          HOPParticipantInfo,
                                                          true));
                     }
@@ -159,7 +160,7 @@ public class HOPConversationManager implements OPConversationThreadDelegate {
                     conversation = HOPDataManager.getInstance().getConversation
                         (type, HOPParticipantInfo, conversationId);
                     if (conversation != null) {
-                        conversation.setThread(getThread(type, conversation.getConversationId(),
+                        conversation.setThread(getThread(type, conversationId,
                                                          HOPParticipantInfo,
                                                          true));
 
