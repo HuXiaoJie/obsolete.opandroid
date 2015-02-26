@@ -2,16 +2,16 @@
  *
  *  Copyright (c) 2014 , Hookflash Inc.
  *  All rights reserved.
- *  
+ *
  *  Redistribution and use in source and binary forms, with or without
  *  modification, are permitted provided that the following conditions are met:
- *  
+ *
  *  1. Redistributions of source code must retain the above copyright notice, this
  *  list of conditions and the following disclaimer.
  *  2. Redistributions in binary form must reproduce the above copyright notice,
  *  this list of conditions and the following disclaimer in the documentation
  *  and/or other materials provided with the distribution.
- *  
+ *
  *  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
  *  ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
  *  WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
@@ -22,7 +22,7 @@
  *  ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
  *  (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  *  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- *  
+ *
  *  The views and conclusions contained in the software and documentation are those
  *  of the authors and should not be interpreted as representing official policies,
  *  either expressed or implied, of the FreeBSD Project.
@@ -35,17 +35,6 @@ import android.provider.BaseColumns;
  * Database definitions and create statements.
  */
 public class DatabaseContracts {
-    static final String TEXT_TYPE = " TEXT";
-    static final String INTEGER_TYPE = " INTEGER";
-    static final String INTEGER_PRIMARY_KEY_TYPE = " INTEGER PRIMARY KEY";
-    static final String UNIQUE_TYPE = " UNIQUE";
-    static final String PRIMARY_KEY_TYPE = " PRIMARY KEY";
-    static final String CREATE_TABLE = "CREATE TABLE IF NOT EXISTS ";
-    static final String CREATE_VIEW = "CREATE VIEW IF NOT EXISTS ";
-
-    static final String COMMA_SEP = ",";
-    static final String LEFT_JOIN = " left join ";
-    static final String ON = " on ";
 
     static final String SCHEME = "content://";
     public static final String COLUMN_IDENTITY_URI = "identity_uri";
@@ -145,18 +134,32 @@ public class DatabaseContracts {
         public static final String COLUMN_STABLE_ID = "stable_id";
     }
 
+    /**
+     * This is for SDK internal use only. Application should use ConversationInfoEntry instead.
+     */
     public static abstract class ConversationEntry implements BaseColumns {
         public static final String TABLE_NAME = "conversation";
         public static final String URI_PATH_INFO = "/" + TABLE_NAME;
         public static final String URI_PATH_INFO_ID = "/" + TABLE_NAME + "/#";
+        /**
+         * See {@link com.openpeer.sdk.model.GroupChatMode}
+         */
         public static final String COLUMN_TYPE = "type";
-        public static final String COLUMN_NAME= "name";
         public static final String COLUMN_TOPIC= "topic";
         public static final String COLUMN_ACCOUNT_ID = "account_id";
-        public static final String COLUMN_START_TIME = "start_time";
-        public static final String COLUMN_PARTICIPANTS = "participants";
+
+        public static final String COLUMN_CBC_ID = "cbc_id";
+        /**
+         * String representation of unique conversation Id.
+         */
         public static final String COLUMN_CONVERSATION_ID = "conversation_id";
+        /**
+         * Whether I have been removed from this conversation
+         */
         public static final String COLUMN_REMOVED = "removed";
+        /**
+         * whether I have quit this conversation
+         */
         public static final String COLUMN_QUIT = "quit";
     }
 
@@ -185,7 +188,7 @@ public class DatabaseContracts {
 
         // for content provider insert() call
         public static final String COLUMN_MESSAGE_ID = "message_id";
-        public static final String COLUMN_CONTEXT_ID = "conversation_id";
+        public static final String COLUMN_CONVERSATION_ID = "conversation_id";
         public static final String COLUMN_CBC_ID = DatabaseContracts.COLUMN_CBC_ID;
 
         // for now only text is supported
@@ -196,12 +199,19 @@ public class DatabaseContracts {
         public static final String COLUMN_MESSAGE_TEXT = "text";
         // sent or receive time
         public static final String COLUMN_MESSAGE_TIME = "time";
-        // Whether the message has been read/presented, default 0 means not read
+        /**
+         * Whether the message has been read/presented, default 0 means not read. This is set to 1 for all sent messages
+          */
         public static final String COLUMN_MESSAGE_READ = "read";
 
+        /**
+         * Message delivery status. See {@link com.openpeer.javaapi.MessageDeliveryStates}
+         */
         public static final String COLUMN_MESSAGE_DELIVERY_STATUS = "outgoing_message_status";
+        /**
+         * Whether the message has been editted or deleted. See {@link com.openpeer.sdk.model.MessageEditState}
+         */
         public static final String COLUMN_EDIT_STATUS = "edit_status";
-        public static final String COLUMN_INCOMING_MESSAGE_STATUS = "incoming_message_status";
     }
 
     public static abstract class MessageEventEntry implements BaseColumns {
@@ -258,20 +268,38 @@ public class DatabaseContracts {
         public static final String COLUMN_DOMAIN = "domain";
     }
 
-    public static abstract class WindowViewEntry implements BaseColumns {
+    public static abstract class ConversationInfoEntry implements BaseColumns {
         public static final String TABLE_NAME = "conversations";
         public static final String URI_PATH_INFO_ID = "/" + TABLE_NAME + "/";
         public static final String URI_PATH_INFO_CONTEXT = "/" + TABLE_NAME;
 
-        public static final int INFO_ID_PATH_POSITION = 1;
         public static final String COLUMN_CONVERSATION_TYPE = "type";
         public static final String COLUMN_CBC_ID = DatabaseContracts.COLUMN_CBC_ID;
+        /**
+         * String representation of unique conversation Id.
+         */
         public static final String COLUMN_CONVERSATION_ID = "conversation_id";
-        public static final String COLUMN_AVATAR_URI = "avatar_uri";
+
+        /**
+         * Last event in this conversation. could be a message/call, etc
+         */
         public static final String COLUMN_LAST_MESSAGE = "last_message";
         public static final String COLUMN_LAST_MESSAGE_TIME = "last_message_time";
+        /**
+         * IDs of participants formated as comma seperated string.
+         */
         public static final String COLUMN_USER_ID = "openpeer_contact_id";
+        /**
+         * Names of participants formated as comma seperated string.
+         */
         public static final String COLUMN_PARTICIPANT_NAMES = "name";
+        /**
+         * Avatar URIs of participants formated as comma seperated string.
+         */
+        public static final String COLUMN_AVATAR_URI = "avatar_uri";
+        /**
+         * Unread messages count
+         */
         public static final String COLUMN_UNREAD_COUNT = "unread_count";
         public static final String COLUMN_ROLODEX_ID = "rolodex_id";
     }

@@ -31,8 +31,8 @@ package com.openpeer.sample.conversation;
 
 import android.database.Cursor;
 
+import com.openpeer.sdk.datastore.DatabaseContracts;
 import com.openpeer.sdk.model.HOPDataManager;
-import com.openpeer.sdk.datastore.DatabaseContracts.WindowViewEntry;
 
 public class ChatInfo {
 
@@ -119,29 +119,30 @@ public class ChatInfo {
 
     public static ChatInfo fromCursor(Cursor cursor) {
         long id = cursor.getLong(0);
-        String type = cursor.getString(cursor.getColumnIndex(WindowViewEntry
+        String type = cursor.getString(cursor.getColumnIndex(DatabaseContracts.ConversationInfoEntry
                                                                  .COLUMN_CONVERSATION_TYPE));
-        String conversationId = cursor.getString(cursor.getColumnIndex(WindowViewEntry
+        String conversationId = cursor.getString(cursor.getColumnIndex(DatabaseContracts
+                                                                           .ConversationInfoEntry
                                                                            .COLUMN_CONVERSATION_ID));
-        long cbcId = cursor.getLong(cursor.getColumnIndex(WindowViewEntry.COLUMN_CBC_ID));
+        long cbcId = cursor.getLong(cursor.getColumnIndex(DatabaseContracts.ConversationInfoEntry.COLUMN_CBC_ID));
         String nameString = cursor.getString(cursor
-                                                 .getColumnIndex(WindowViewEntry
+                                                 .getColumnIndex(DatabaseContracts.ConversationInfoEntry
                                                                      .COLUMN_PARTICIPANT_NAMES));
         String lastMessage = cursor.getString(cursor
-                                                  .getColumnIndex(WindowViewEntry
+                                                  .getColumnIndex(DatabaseContracts.ConversationInfoEntry
                                                                       .COLUMN_LAST_MESSAGE));
         long lastMessageTime = cursor.getLong(cursor
-                                                  .getColumnIndex(WindowViewEntry
+                                                  .getColumnIndex(DatabaseContracts.ConversationInfoEntry
                                                                       .COLUMN_LAST_MESSAGE_TIME));
 
 
-        long userIds[]= stringToLongArray( cursor.getString(cursor.getColumnIndex(WindowViewEntry
+        long userIds[]= stringToLongArray( cursor.getString(cursor.getColumnIndex(DatabaseContracts.ConversationInfoEntry
                                                                          .COLUMN_USER_ID)));
-        long rolodexIds[]= stringToLongArray( cursor.getString(cursor.getColumnIndex(WindowViewEntry
+        long rolodexIds[]= stringToLongArray( cursor.getString(cursor.getColumnIndex(DatabaseContracts.ConversationInfoEntry
                                                                          .COLUMN_ROLODEX_ID)));
 
         int mUnreadCount = cursor.getInt(cursor
-                                             .getColumnIndex(WindowViewEntry.COLUMN_UNREAD_COUNT));
+                                             .getColumnIndex(DatabaseContracts.ConversationInfoEntry.COLUMN_UNREAD_COUNT));
         ChatInfo ci = new ChatInfo(id,
                                    type,
                                    conversationId,

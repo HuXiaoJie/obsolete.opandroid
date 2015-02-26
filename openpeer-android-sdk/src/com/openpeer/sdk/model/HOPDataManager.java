@@ -457,7 +457,7 @@ public class HOPDataManager {
         String args[] = null;
         switch (type){
         case contact:{
-            where = DatabaseContracts.ConversationEntry.COLUMN_PARTICIPANTS + "=" +
+            where = DatabaseContracts.ConversationEntry.COLUMN_CBC_ID + "=" +
                 HOPParticipantInfo.getCbcId() +
 
                 " and " + DatabaseContracts.ConversationEntry.COLUMN_TYPE + "=?";
@@ -486,7 +486,7 @@ public class HOPDataManager {
             conversation.setId(cursor.getLong(0));
             conversation.setCbcId(cursor.getLong(cursor.getColumnIndex(DatabaseContracts
                                                                            .ConversationEntry
-                                                                           .COLUMN_PARTICIPANTS)));
+                                                                           .COLUMN_CBC_ID)));
             conversation.setDisabled(cursor.getInt(cursor.getColumnIndex(DatabaseContracts
                                                                              .ConversationEntry
                                                                              .COLUMN_REMOVED))
@@ -623,7 +623,7 @@ public class HOPDataManager {
                    message.getMessageType());
         values.put(DatabaseContracts.MessageEntry.COLUMN_SENDER_ID, message.getSenderId());
         values.put(DatabaseContracts.MessageEntry.COLUMN_CBC_ID, conversation.getCurrentCbcId());
-        values.put(DatabaseContracts.MessageEntry.COLUMN_CONTEXT_ID, conversation
+        values.put(DatabaseContracts.MessageEntry.COLUMN_CONVERSATION_ID, conversation
             .getConversationId());
 
         values.put(DatabaseContracts.MessageEntry.COLUMN_MESSAGE_READ, message.isRead());
@@ -650,7 +650,7 @@ public class HOPDataManager {
         values.put(DatabaseContracts.MessageEntry.COLUMN_MESSAGE_TYPE, message.getMessageType());
         values.put(DatabaseContracts.MessageEntry.COLUMN_SENDER_ID, message.getSenderId());
 
-        values.put(DatabaseContracts.MessageEntry.COLUMN_CONTEXT_ID, conversationId);
+        values.put(DatabaseContracts.MessageEntry.COLUMN_CONVERSATION_ID, conversationId);
         values.put(DatabaseContracts.MessageEntry.COLUMN_CBC_ID, HOPParticipantInfo.getCbcId());
         values.put(DatabaseContracts.MessageEntry.COLUMN_MESSAGE_READ, message.isRead());
         values.put(DatabaseContracts.MessageEntry.COLUMN_EDIT_STATUS,
@@ -764,7 +764,7 @@ public class HOPDataManager {
         long id = 0;
         String where = conversation.getType() == GroupChatMode.contact ? DatabaseContracts
             .ConversationEntry
-            .COLUMN_PARTICIPANTS + "=" + conversation.getCurrentCbcId() :
+            .COLUMN_CBC_ID + "=" + conversation.getCurrentCbcId() :
             DatabaseContracts.ConversationEntry.COLUMN_CONVERSATION_ID + "=?";
         String args[] = conversation.getType() == GroupChatMode.contact ? null : new
             String[]{conversation.getConversationId()};
@@ -776,9 +776,9 @@ public class HOPDataManager {
 
         ContentValues values = new ContentValues();
         values.put(DatabaseContracts.ConversationEntry.COLUMN_TYPE, conversation.getType().name());
-        values.put(DatabaseContracts.ConversationEntry.COLUMN_START_TIME,
-                   System.currentTimeMillis());
-        values.put(DatabaseContracts.ConversationEntry.COLUMN_PARTICIPANTS,
+//        values.put(DatabaseContracts.ConversationEntry.COLUMN_START_TIME,
+//                   System.currentTimeMillis());
+        values.put(DatabaseContracts.ConversationEntry.COLUMN_CBC_ID,
                    conversation.getCurrentCbcId());
         values.put(DatabaseContracts.ConversationEntry.COLUMN_CONVERSATION_ID,
                    conversation.getConversationId());
@@ -794,7 +794,7 @@ public class HOPDataManager {
 
     public long updateConversation(HOPConversation conversation) {
         ContentValues values = new ContentValues();
-        values.put(DatabaseContracts.ConversationEntry.COLUMN_PARTICIPANTS,
+        values.put(DatabaseContracts.ConversationEntry.COLUMN_CBC_ID,
                    conversation.getCurrentCbcId());
         values.put(DatabaseContracts.ConversationEntry.COLUMN_REMOVED, conversation.amIRemoved());
         values.put(DatabaseContracts.ConversationEntry.COLUMN_QUIT, conversation.isQuit());
@@ -804,7 +804,7 @@ public class HOPDataManager {
                            new String[]{conversation.getConversationId()});
 
         getContentResolver().notifyChange(
-            mContentUriProvider.getContentUri(DatabaseContracts.WindowViewEntry
+            mContentUriProvider.getContentUri(DatabaseContracts.ConversationInfoEntry
                                                   .URI_PATH_INFO_CONTEXT), null);
         return count;
     }
