@@ -140,6 +140,7 @@ public class DiscoveryFragment extends BaseFragment implements
     public void onResume() {
         // TODO Auto-generated method stub
         super.onResume();
+        getLoaderManager().restartLoader(URL_LOADER,null,this);
 
     }
 

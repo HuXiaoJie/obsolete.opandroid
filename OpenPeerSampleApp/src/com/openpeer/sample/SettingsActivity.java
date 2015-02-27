@@ -375,11 +375,27 @@ public class SettingsActivity extends BaseActivity {
     void doSignout() {
         if (HOPCall.hasCalls()) {
             Toast.makeText(SettingsActivity.this,
-                    R.string.msg_cannot_signout_with_call, Toast.LENGTH_LONG)
-                    .show();
+                           R.string.msg_cannot_signout_with_call,
+                           Toast.LENGTH_LONG).show();
         } else {
-            showSignoutView();
-            OPApplication.getInstance().signout();
+            AlertDialog.Builder builder = new AlertDialog.Builder(this);
+            builder.setMessage(R.string.alert_signout).
+                setNegativeButton(R.string.cancel,
+                                  new DialogInterface.OnClickListener() {
+                                      @Override
+                                      public void onClick(DialogInterface dialog, int which) {
+                                          dialog.cancel();
+                                      }
+                                  }).
+                setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
+
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        showSignoutView();
+                        OPApplication.getInstance().signout();
+                    }
+                });
+            builder.create().show();
         }
     }
 }

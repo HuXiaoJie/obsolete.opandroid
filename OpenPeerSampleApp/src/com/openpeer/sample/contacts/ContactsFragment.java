@@ -146,6 +146,7 @@ public class ContactsFragment extends BaseFragment implements SwipeRefreshLayout
 	public void onResume() {
 		// TODO Auto-generated method stub
 		super.onResume();
+        getLoaderManager().restartLoader(URL_LOADER,null,this);
 
 	}
 

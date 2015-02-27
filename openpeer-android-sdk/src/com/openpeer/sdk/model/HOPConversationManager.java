@@ -120,7 +120,9 @@ public class HOPConversationManager implements OPConversationThreadDelegate {
         } else if (!thread.getConversationId().equals(conversation.getConversationId())) {
             cacheConversation(thread.getConversationId(), conversation);
         }
-        conversation.setThread(thread);
+        if (conversation != null) {
+            conversation.setThread(thread);
+        }
         return conversation;
     }
 
@@ -293,7 +295,7 @@ public class HOPConversationManager implements OPConversationThreadDelegate {
         if (oldThread != null) {
             long oldCbcId = oldThread.getParticipantInfo().getCbcId();
             HOPConversation conversation = HOPConversationManager.getInstance().
-                getConversation(oldThread, false);
+                getConversation(oldThread, true);
             OPLogger.debug(OPLogLevel.LogLevel_Detail,
                            "onConversationThreadContactsChanged find old thread cbcId " + oldCbcId);
             if (conversation != null) {

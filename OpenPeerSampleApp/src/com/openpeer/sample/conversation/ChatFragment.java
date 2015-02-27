@@ -185,6 +185,7 @@ public class ChatFragment extends BaseFragment implements
 
         mConversation.setComposingStatus(ComposingStates.ComposingState_Active);
         EventBus.getDefault().register(this);
+        getLoaderManager().restartLoader(URL_LOADER,null,this);
     }
 
     @Override

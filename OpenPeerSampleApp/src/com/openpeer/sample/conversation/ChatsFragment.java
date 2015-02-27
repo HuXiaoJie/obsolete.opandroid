@@ -91,9 +91,7 @@ public class ChatsFragment extends BaseFragment implements
     @Override
     public void onResume() {
         super.onResume();
-        mSessions = getSessions();
-        // CallbackHandler.getInstance().registerConversationThreadDelegate(
-        // mConvThreadDelegate);
+        getLoaderManager().restartLoader(URL_LOADER,null,this);
     }
 
     @Override
