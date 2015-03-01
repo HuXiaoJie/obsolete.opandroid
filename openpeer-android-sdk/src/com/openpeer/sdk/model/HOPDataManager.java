@@ -668,7 +668,7 @@ public class HOPDataManager {
 
 
     public boolean updateMessageDeliveryStatus(String messageId,
-                                               String conversationId,
+                                               long conversationId,
                                                MessageDeliveryStates deliveryStatus) {
         int count;
 
@@ -726,6 +726,9 @@ public class HOPDataManager {
         saveOrUpdateIdentities(identities, accountRecordId, opId);
         account.setAccountId(accountRecordId);
         result = true;
+
+        mContext.getContentResolver().notifyChange(
+            mContentUriProvider.getContentUri(DatabaseContracts.AccountEntry.URI_PATH_INFO), null);
 
         return result;
     }

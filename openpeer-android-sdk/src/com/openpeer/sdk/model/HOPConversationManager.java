@@ -420,7 +420,7 @@ public class HOPConversationManager implements OPConversationThreadDelegate {
         MessageDeliveryStates state) {
         HOPDataManager.getInstance().
             updateMessageDeliveryStatus(messageID,
-                                        conversationThread.getConversationId(),
+                                        getConversation(conversationThread,true).getId(),
                                         state);
     }
 

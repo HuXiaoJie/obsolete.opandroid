@@ -212,7 +212,7 @@ public class PFPushService implements PushServiceInterface {
                         HOPDataManager.getInstance()
                             .updateMessageDeliveryStatus(
                                 message.getMessageId(),
-                                conversation.getConversationId(),
+                                conversation.getId(),
                                 MessageDeliveryStates.MessageDeliveryState_Sent);
 
                     } else {
