@@ -104,7 +104,7 @@ public class MainActivity extends BaseActivity implements ChatsFragment.ChatsVie
             }
         });
 
-        for (int i = 0; i < 3; i++) {
+        for (int i = 0; i < 2; i++) {
             actionBar.addTab(actionBar.newTab().setText(tabNames[i]).setTabListener(tabListener));
         }
     }
@@ -135,7 +135,7 @@ public class MainActivity extends BaseActivity implements ChatsFragment.ChatsVie
         @Override
         public int getCount() {
             // TODO Auto-generated method stub
-            return 3;
+            return 2;
         }
 
     }

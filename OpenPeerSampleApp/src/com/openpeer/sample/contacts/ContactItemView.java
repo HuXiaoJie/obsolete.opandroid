@@ -31,6 +31,7 @@ package com.openpeer.sample.contacts;
 
 import android.content.Context;
 import android.database.Cursor;
+import android.text.TextUtils;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -81,11 +82,13 @@ public class ContactItemView extends RelativeLayout {
         mTitleView.setText(cursor.getString(2));
         String avatar = HOPDataManager.getInstance().getAvatarUri(
             rolodexId, 48, 48);
-        Picasso.with(getContext()).load(avatar).into(mImageView);
+        if(!TextUtils.isEmpty(avatar)) {
+            Picasso.with(getContext()).load(avatar).into(mImageView);
+        }
 
         if (mUserId != 0) {
             mInviteView.setVisibility(View.GONE);
-            mChatView.setVisibility(View.VISIBLE);
+//            mChatView.setVisibility(View.VISIBLE);
             final long mUserIds[] = {mUserId};
 
             mChatView.setOnClickListener(new View.OnClickListener() {
@@ -98,7 +101,7 @@ public class ContactItemView extends RelativeLayout {
             });
 
         } else {
-            mInviteView.setVisibility(View.VISIBLE);
+//            mInviteView.setVisibility(View.VISIBLE);
             mInviteView.setOnClickListener(new View.OnClickListener() {
 
                 @Override

@@ -46,7 +46,7 @@
     <string name="label_select_contact">Select friends</string>
     <string name="label_new_message_received">New message received</string>
     <string name="label_chats">Chats</string>
-    <string name="label_contacts">Contacts</string>
+    <string name="label_contacts">Friends</string>
     <string name="label_favorites">Favorites</string>
 
     <!-- beginning of settings strings -->
