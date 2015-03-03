@@ -34,12 +34,13 @@ public class HOPAccount {
     }
 
     public static HOPContact selfContact() {
-        return currentAccount().getSelfContact();
+        return currentAccount() == null ? null : currentAccount().getSelfContact();
     }
 
     public HOPContact getSelfContact() {
 //        if (selfContact == null && selfContactId != 0) {
-            selfContact = HOPDataManager.getInstance().getUserById(HOPDataManager.getInstance().getCurrentUserId());
+        selfContact = HOPDataManager.getInstance().getUserById(HOPDataManager.getInstance()
+                                                                   .getCurrentUserId());
 //        }
         return selfContact;
 
@@ -90,8 +91,9 @@ public class HOPAccount {
 
     public static HOPAccount login(OPAccountDelegate accountDelegate, OPConversationThreadDelegate
         conversationThreadDelegate, OPCallDelegate callDelegate) {
-        HOPAccount account = new HOPAccount(OPAccount.login(accountDelegate, conversationThreadDelegate,
-                                              callDelegate));
+        HOPAccount account = new HOPAccount(OPAccount.login(accountDelegate,
+                                                            conversationThreadDelegate,
+                                                            callDelegate));
         account.setAccountId(1);
         return account;
     }

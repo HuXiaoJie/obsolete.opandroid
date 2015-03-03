@@ -42,6 +42,10 @@ public class HOPContact {
 
     private String mPeerUri;
 
+    private static HOPContact self;
+    public static HOPContact getSelf(){
+        return self;
+    }
     /**
      * If the user is a contact, or a stranger. This is determined by checking if the contact is
      * associated with any of the user's identity

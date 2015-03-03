@@ -183,6 +183,7 @@ public class PFPushReceiver extends ParsePushBroadcastReceiver {
     }
 
     public static void downloadMessages() {
+        if(HOPAccount.selfContact()==null)return;
         ParseQuery parseQuery = new ParseQuery("OPPushMessage");
         parseQuery.whereEqualTo("to", HOPAccount.selfContact().getPeerUri());
         parseQuery.findInBackground(new FindCallback<ParseObject>() {
