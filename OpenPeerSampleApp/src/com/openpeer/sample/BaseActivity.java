@@ -34,7 +34,6 @@ import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.os.Bundle;
-import android.text.TextUtils;
 import android.view.View;
 import android.view.ViewGroup;
 import android.webkit.WebSettings;
@@ -44,23 +43,16 @@ import android.widget.Toast;
 import com.openpeer.sample.events.SignoutCompleteEvent;
 import com.openpeer.sample.login.LoginDelegateImpl;
 import com.openpeer.sample.login.LoginViewHandler;
-import com.openpeer.sample.push.HackApiService;
-import com.openpeer.sample.push.PushManager;
-import com.openpeer.sample.push.parsepush.PFPushService;
-import com.openpeer.sample.util.SettingsHelper;
 import com.openpeer.sdk.app.HOPHelper;
 import com.openpeer.sdk.login.HOPIdentityLoginWebViewClient;
-import com.openpeer.sdk.model.HOPLoginManager;
 import com.openpeer.sdk.login.HOPIdentityLoginWebview;
 import com.openpeer.sdk.model.HOPAccount;
 import com.openpeer.sdk.model.HOPAccountIdentity;
+import com.openpeer.sdk.model.HOPLoginManager;
 
 import java.util.Hashtable;
 
 import de.greenrobot.event.EventBus;
-import retrofit.Callback;
-import retrofit.RetrofitError;
-import retrofit.client.Response;
 
 public class BaseActivity extends BaseFragmentActivity implements LoginViewHandler{
 
