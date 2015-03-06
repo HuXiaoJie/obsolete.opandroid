@@ -144,7 +144,6 @@ public class ChatFragment extends BaseFragment implements
         mConversation = HOPConversation.getConversation(GroupChatMode.valueOf(type),
                                                         mHOPParticipantInfo,
                                                         conversationId, true);
-
     }
 
 

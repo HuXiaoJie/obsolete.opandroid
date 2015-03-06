@@ -48,6 +48,7 @@ import com.openpeer.sdk.model.HOPSystemMessage;
 import com.parse.FunctionCallback;
 import com.parse.Parse;
 import com.parse.ParseCloud;
+import com.parse.ParseCrashReporting;
 import com.parse.ParseException;
 import com.parse.ParseInstallation;
 import com.parse.SaveCallback;
@@ -85,6 +86,7 @@ public class PFPushService implements PushServiceInterface {
                 throw new RuntimeException("Parse client key is not defined");
             }
             Parse.setLogLevel(Parse.LOG_LEVEL_VERBOSE);
+            ParseCrashReporting.enable(OPApplication.getInstance());
             Parse.initialize(OPApplication.getInstance(),
                              parseAppId,
                              parseClientKey);

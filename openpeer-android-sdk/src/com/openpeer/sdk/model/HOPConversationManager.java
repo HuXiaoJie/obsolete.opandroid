@@ -184,7 +184,9 @@ public class HOPConversationManager implements OPConversationThreadDelegate {
 
             conversation.setThread(getThread(type, conversationId, HOPParticipantInfo, true));
             cacheCbcToConversation(HOPParticipantInfo.getCbcId(), conversation);
-            cacheConversation(conversation.getConversationId(), conversation);
+            if (!TextUtils.isEmpty(conversation.getConversationId())) {
+                cacheConversation(conversation.getConversationId(), conversation);
+            }
             conversation.save();
         }
         return conversation;
@@ -420,7 +422,7 @@ public class HOPConversationManager implements OPConversationThreadDelegate {
         MessageDeliveryStates state) {
         HOPDataManager.getInstance().
             updateMessageDeliveryStatus(messageID,
-                                        getConversation(conversationThread,true).getId(),
+                                        getConversation(conversationThread, true).getId(),
                                         state);
     }
 

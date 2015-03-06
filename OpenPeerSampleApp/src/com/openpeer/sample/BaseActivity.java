@@ -85,6 +85,7 @@ public class BaseActivity extends BaseFragmentActivity implements LoginViewHandl
             if (!HOPLoginManager.getInstance().loginPerformed()) {
                 LoginDelegateImpl.getInstance().registerViewHandler(this);
                 HOPLoginManager.getInstance().startLogin();
+                showProgressView("Signing in...");
             } else if (!HOPLoginManager.getInstance().isLoggingIn()) {
                 AlertDialog.Builder builder = new AlertDialog.Builder(this);
                 builder.setMessage(
@@ -171,7 +172,7 @@ public class BaseActivity extends BaseFragmentActivity implements LoginViewHandl
         if (progressDialog == null) {
             progressDialog = new ProgressDialog(this);
             progressDialog.setIndeterminate(true);
-//            progressDialog.setCancelable(false);
+            progressDialog.setCancelable(false);
         }
         progressDialog.setMessage(message);
 

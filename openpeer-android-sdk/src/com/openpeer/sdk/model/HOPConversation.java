@@ -198,6 +198,10 @@ public class HOPConversation extends Observable {
     OPConversationThread getThread(boolean createIfNo) {
         if (mConvThread == null && createIfNo) {
             mConvThread = HOPConversationManager.getInstance().getThread(type, conversationId, mParticipantInfo,createIfNo);
+            if(TextUtils.isEmpty(conversationId) && mConvThread!=null){
+                conversationId = mConvThread.getConversationId();
+                HOPConversationManager.getInstance().cacheConversation(conversationId,this);
+            }
         }
         return mConvThread;
     }
