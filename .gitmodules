@@ -1,9 +1,0 @@
-[submodule "libs/op"]
-	path = libs/op
-	url = https://github.com/openpeer/op.git
-[submodule "libs/PullToRefresharp"]
-	path = libs/PullToRefresharp
-	url = https://github.com/openpeer/PullToRefresharp.git
-[submodule "libs/ZXing.Net.Mobile"]
-	path = libs/ZXing.Net.Mobile
-	url = https://github.com/openpeer/ZXing.Net.Mobile.git
