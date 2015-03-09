@@ -2,16 +2,16 @@
  *
  *  Copyright (c) 2014 , Hookflash Inc.
  *  All rights reserved.
- *  
+ *
  *  Redistribution and use in source and binary forms, with or without
  *  modification, are permitted provided that the following conditions are met:
- *  
+ *
  *  1. Redistributions of source code must retain the above copyright notice, this
  *  list of conditions and the following disclaimer.
  *  2. Redistributions in binary form must reproduce the above copyright notice,
  *  this list of conditions and the following disclaimer in the documentation
  *  and/or other materials provided with the distribution.
- *  
+ *
  *  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
  *  ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
  *  WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
@@ -22,34 +22,23 @@
  *  ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
  *  (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  *  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- *  
+ *
  *  The views and conclusions contained in the software and documentation are those
  *  of the authors and should not be interpreted as representing official policies,
  *  either expressed or implied, of the FreeBSD Project.
  *******************************************************************************/
 package com.openpeer.sample.conversation;
 
-import android.content.BroadcastReceiver;
 import android.content.Context;
-import android.content.Intent;
-import android.content.IntentFilter;
-import android.database.Cursor;
 import android.util.AttributeSet;
 import android.view.LayoutInflater;
-import android.view.View;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
-import com.openpeer.javaapi.CallStates;
-import com.openpeer.javaapi.OPCall;
-import com.openpeer.javaapi.OPCallDelegate;
 import com.openpeer.javaapi.OPRolodexContact;
-import com.openpeer.sample.IntentData;
-import com.openpeer.sample.OPSessionManager;
 import com.openpeer.sample.R;
 import com.openpeer.sample.util.DateFormatUtils;
-import com.openpeer.sdk.datastore.DatabaseContracts.MessageEntry;
 
 public class CallItemView extends LinearLayout {
     private OPRolodexContact mContact;
@@ -78,12 +67,11 @@ public class CallItemView extends LinearLayout {
     public void update(CallItem item) {
         mTimeView.setText(DateFormatUtils.getSameDayTime(item.getTime()));
         String text;
-        String stateName = item.getState().name();
-        stateName = stateName.substring(stateName.indexOf("_"));
+        String stateName = item.getState();
         if (item.isOutgoing()) {
-            text = "Call to " + item.getPeerName() + stateName;
+            text = "Call to " + item.getPeerName() + " " + stateName;
         } else {
-            text = "Call from " + item.getPeerName() + stateName;
+            text = "Call from " + item.getPeerName() + " " + stateName;
         }
         mTitleView.setText(text);
     }

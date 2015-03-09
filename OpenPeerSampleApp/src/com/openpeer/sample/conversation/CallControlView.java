@@ -29,32 +29,21 @@
  *******************************************************************************/
 package com.openpeer.sample.conversation;
 
-import java.util.List;
-
 import android.content.Context;
-import android.database.Cursor;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
-import android.widget.RelativeLayout;
-import android.widget.TextView;
-import android.widget.Toast;
 
 import com.openpeer.javaapi.CallClosedReasons;
 import com.openpeer.javaapi.OPCall;
-import com.openpeer.javaapi.OPIdentityContact;
-import com.openpeer.javaapi.OPRolodexContact;
-import com.openpeer.sample.OPSessionManager;
 import com.openpeer.sample.R;
-import com.openpeer.sample.util.DateFormatUtils;
-import com.openpeer.sdk.datastore.DatabaseContracts.WindowViewEntry;
-import com.squareup.picasso.Picasso;
+import com.openpeer.sdk.model.HOPCall;
 
 public class CallControlView extends LinearLayout {
-	private OPCall mCall;
+	private HOPCall mCall;
 	private ImageView mAnswerButton;
 	private ImageView mEndButton;
 	private View mPaddingView;
@@ -78,18 +67,20 @@ public class CallControlView extends LinearLayout {
 		mPaddingView = findViewById(R.id.padview);
 	}
 
-	public void bindCall(OPCall call) {
+	public void bindCall(HOPCall call) {
 		mCall = call;
 		mEndButton.setOnClickListener(new View.OnClickListener() {
 			@Override
 			public void onClick(View v) {
-				OPSessionManager.getInstance().hangupCall(mCall, CallClosedReasons.CallClosedReason_User);
+                mCall.hangup(CallClosedReasons.CallClosedReason_User);
+                //test
+                Log.d("test","call closed reason "+mCall.getClosedReason());
 				if (mListener != null) {
 					mListener.onEndClick();
 				}
 			}
 		});
-		if (mCall.getCaller().isSelf()) {
+		if (mCall.isOutgoing()) {
 			removeView(mAnswerButton);
 			removeView(mPaddingView);
 		}

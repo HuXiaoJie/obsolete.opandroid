@@ -43,11 +43,9 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 
-import com.openpeer.javaapi.OPAccount;
 import com.openpeer.sample.contacts.ContactsFragment;
 import com.openpeer.sample.conversation.ChatsFragment;
 import com.openpeer.sample.conversation.DiscoveryFragment;
-import com.openpeer.sdk.app.OPDataManager;
 
 public class MainActivity extends BaseActivity implements ChatsFragment.ChatsViewListener {
     TabsAdapter mTabsAdapter;
@@ -106,7 +104,7 @@ public class MainActivity extends BaseActivity implements ChatsFragment.ChatsVie
             }
         });
 
-        for (int i = 0; i < 3; i++) {
+        for (int i = 0; i < 2; i++) {
             actionBar.addTab(actionBar.newTab().setText(tabNames[i]).setTabListener(tabListener));
         }
     }
@@ -137,7 +135,7 @@ public class MainActivity extends BaseActivity implements ChatsFragment.ChatsVie
         @Override
         public int getCount() {
             // TODO Auto-generated method stub
-            return 3;
+            return 2;
         }
 
     }
@@ -166,13 +164,6 @@ public class MainActivity extends BaseActivity implements ChatsFragment.ChatsVie
     @Override
     public void onResume() {
         super.onResume();
-        OPAccount account = OPDataManager.getInstance().getSharedAccount();
-//        if (account == null || account.getState() == AccountStates.AccountState_Shutdown) {
-////        if(LoginManager.getInstance().isLoggingIn()){
-//            if (NetworkUtil.isConnected()) {
-//                showLoginFragment();
-//            }
-//        }
     }
 
     @Override

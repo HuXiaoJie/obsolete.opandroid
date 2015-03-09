@@ -28,11 +28,40 @@
  */
 package com.openpeer.sdk.model;
 
+import com.openpeer.javaapi.MessageDeliveryStates;
 
 /**
  *
  */
 public class MessageEvent {
+    long mEventId;// for now this is local database record id
+    String messageId;
+    EventType mType;
+    String description;
+    long time;
+
+    public long getEventId() {
+        return mEventId;
+    }
+
+    public void setEventId(long mEventId) {
+        this.mEventId = mEventId;
+    }
+
+    /**
+     * @param messageId
+     * @param mType
+     * @param description
+     * @param time
+     */
+    public MessageEvent(String messageId, EventType mType, String description, long time) {
+        super();
+        this.messageId = messageId;
+        this.mType = mType;
+        this.description = description;
+        this.time = time;
+    }
+
     public enum EventType {
         DeliveryStateChange,
         Edit,
@@ -40,12 +69,9 @@ public class MessageEvent {
         // Favorite --?
     }
 
-    long messageId;
-    EventType mType;
-    String description;
-    long time;
-
     /**
+     * Get message event type
+     * 
      * @return
      */
     public EventType getEvent() {
@@ -62,10 +88,27 @@ public class MessageEvent {
     }
 
     /**
-     * @return
+     * @returnÒ
      */
     public long getTime() {
         // TODO Auto-generated method stub
         return time;
+    }
+
+    /**
+     * @return
+     */
+    public String getMessageId() {
+        // TODO Auto-generated method stub
+        return messageId;
+    }
+
+    /**
+     * @param deliveryStatus
+     * @return
+     */
+    public static String getStateChangeJsonBlob(MessageDeliveryStates deliveryStatus) {
+        String blobString = String.format("{\"newState\":\"%s\"}", deliveryStatus.name());
+        return blobString;
     }
 }

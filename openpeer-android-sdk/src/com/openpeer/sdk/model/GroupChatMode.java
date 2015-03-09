@@ -29,10 +29,11 @@
 package com.openpeer.sdk.model;
 
 /**
- *
+ * To keep consisten with the actual string put on wire and simplify comparison,
+ * just use the actual value, even this is a little bit off convention.
  */
 public enum GroupChatMode {
-    ContactsBased,
-    ContextBased,
-    RoomBased
+    contact,
+    thread,
+    room
 }

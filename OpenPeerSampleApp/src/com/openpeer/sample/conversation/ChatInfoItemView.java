@@ -30,6 +30,7 @@
 package com.openpeer.sample.conversation;
 
 import android.content.Context;
+import android.text.TextUtils;
 import android.util.AttributeSet;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -71,24 +72,25 @@ public class ChatInfoItemView extends RelativeLayout {
     }
 
     public void updateData(final ChatInfo chatInfo) {
-        mTitleView.setText(chatInfo.getmNameString());
-        String msg = chatInfo.getmLastMessage();
-        Long time = chatInfo.getmLastMessageTime();
+        mTitleView.setText(chatInfo.getNameString());
+        String msg = chatInfo.getLastMessage();
+        Long time = chatInfo.getLastMessageTime();
 
-        int unreadCount = chatInfo.getmUnreadCount();
+        int unreadCount = chatInfo.getUnreadCount();
 
         this.setOnClickListener(new View.OnClickListener() {
 
             @Override
             public void onClick(View v) {
                 ConversationActivity.launchForChat(getContext(),
-                        chatInfo.getUserIDs(), chatInfo.getContextId());
+                                                   chatInfo.getType(),
+                                                   chatInfo.getConversationId(),
+                                                   chatInfo.getUserIDs());
             }
         });
-        if (chatInfo.getUserIDs().length == 1) {
-            Picasso.with(getContext()).load(chatInfo.getAvatarUri(48, 48))
-                    .into(mImageView);
-
+        String avatar = chatInfo.getAvatarUri(48, 48);
+        if(!TextUtils.isEmpty(avatar)) {
+            Picasso.with(getContext()).load(avatar).into(mImageView);
         }
 
         if (msg != null) {

@@ -2,16 +2,16 @@
  *
  *  Copyright (c) 2014 , Hookflash Inc.
  *  All rights reserved.
- *  
+ *
  *  Redistribution and use in source and binary forms, with or without
  *  modification, are permitted provided that the following conditions are met:
- *  
+ *
  *  1. Redistributions of source code must retain the above copyright notice, this
  *  list of conditions and the following disclaimer.
  *  2. Redistributions in binary form must reproduce the above copyright notice,
  *  this list of conditions and the following disclaimer in the documentation
  *  and/or other materials provided with the distribution.
- *  
+ *
  *  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
  *  ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
  *  WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
@@ -22,7 +22,7 @@
  *  ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
  *  (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  *  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- *  
+ *
  *  The views and conclusions contained in the software and documentation are those
  *  of the authors and should not be interpreted as representing official policies,
  *  either expressed or implied, of the FreeBSD Project.
@@ -32,17 +32,14 @@ package com.openpeer.sample.contacts;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
-import android.content.IntentFilter;
 import android.database.Cursor;
 import android.os.Bundle;
-import android.provider.BaseColumns;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.CursorLoader;
 import android.support.v4.content.Loader;
 import android.support.v4.widget.CursorAdapter;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.text.TextUtils;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -55,19 +52,25 @@ import android.widget.SearchView;
 
 import com.openpeer.sample.BaseFragment;
 import com.openpeer.sample.R;
-import com.openpeer.sdk.app.OPDataManager;
+import com.openpeer.sample.view.ProgressEmptyView;
+import com.openpeer.sdk.model.HOPDataManager;
 import com.openpeer.sdk.datastore.DatabaseContracts.RolodexContactEntry;
-import com.openpeer.sdk.datastore.OPContentProvider;
+import com.openpeer.sdk.model.HOPAccount;
+
+import butterknife.ButterKnife;
+import butterknife.InjectView;
 
 
 public class ContactsFragment extends BaseFragment implements SwipeRefreshLayout.OnRefreshListener, LoaderManager.LoaderCallbacks<Cursor>,
 		SearchView.OnQueryTextListener, SearchView.OnCloseListener {
 
-	private SwipeRefreshLayout mRootLayout;
-	private ListView mListView;
+	SwipeRefreshLayout mRootLayout;
+    @InjectView(R.id.listview)
+	ListView mListView;
 	private ContactsAdapter mAdapter;
 	private boolean mTest;
-	private DataChangeReceiver mReceiver;
+    @InjectView(R.id.empty_view)
+    ProgressEmptyView emptyView;
 
 	public static android.support.v4.app.Fragment newInstance() {
 		return new ContactsFragment();
@@ -81,21 +84,19 @@ public class ContactsFragment extends BaseFragment implements SwipeRefreshLayout
 
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-		mReceiver = new DataChangeReceiver();
-		return setupView(inflater.inflate(R.layout.fragment_contacts, null));
+		return inflater.inflate(R.layout.fragment_contacts, null);
 	}
 
 	@Override
 	public void onViewCreated(View view, Bundle savedInstanceState) {
-		// TODO Auto-generated method stub
 		super.onViewCreated(view, savedInstanceState);
+        setupView(view);
 		getLoaderManager().initLoader(URL_LOADER, null, this);
 
 	}
 
 	private View setupView(View view) {
-		mListView = (ListView) view.findViewById(R.id.listview);
-		View emptyView = view.findViewById(R.id.empty_view);
+        ButterKnife.inject(this,view);
 		mListView.setEmptyView(emptyView);
 		mRootLayout = (SwipeRefreshLayout) view.findViewById(R.id.refresh_view);
 		mRootLayout.setOnRefreshListener(this);
@@ -105,7 +106,7 @@ public class ContactsFragment extends BaseFragment implements SwipeRefreshLayout
 
 			@Override
 			public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-				((ContactItemView) view).onClick();
+				((ContactItemView) view).click();
 			}
 		});
 
@@ -139,14 +140,13 @@ public class ContactsFragment extends BaseFragment implements SwipeRefreshLayout
 	public void onPause() {
 		// TODO Auto-generated method stub
 		super.onPause();
-		getActivity().unregisterReceiver(mReceiver);
 	}
 
 	@Override
 	public void onResume() {
 		// TODO Auto-generated method stub
 		super.onResume();
-		getActivity().registerReceiver(mReceiver, new IntentFilter(OPDataManager.INTENT_CONTACTS_CHANGED));
+        getLoaderManager().restartLoader(URL_LOADER,null,this);
 
 	}
 
@@ -172,14 +172,14 @@ public class ContactsFragment extends BaseFragment implements SwipeRefreshLayout
 
 	@Override
 	public void onRefresh() {
-		OPDataManager.getInstance().refreshContacts();
+		HOPAccount.currentAccount().refreshContacts();
 		mRootLayout.setRefreshing(false);
 	}
 
 	static String oldQuery;
 
 	void setupContent() {
-		// mAdapter.mContacts = OPDataManager.getDatastoreDelegate()
+		// mAdapter.mContacts = OPDataManager.getInstance()
 		// .getContacts(0);
 		//
 		// mAdapter.notifyDataSetChanged();
@@ -201,38 +201,42 @@ public class ContactsFragment extends BaseFragment implements SwipeRefreshLayout
 
 	@Override
 	public Loader<Cursor> onCreateLoader(int loaderID, Bundle arg1) {
-//        StringBuilder builder = new StringBuilder("not (" + RolodexContactEntry.COLUMN_USER_ID + "=0 and " + ContactsEntry.COLUMN_STABLE_ID + " not null)");
-//        String slectionArgs[] = null;
-//		if (arg1 != null) {
-//			String query = arg1.getString("query");
-//			Log.d("test", "ContactsFragment onCreateLoader query " + query);
-//			if (!TextUtils.isEmpty(query)) {
-//				// Note: instr is available from sqlite 3.7.15
-//				builder.append(" and name like ?");
-//				slectionArgs = new String[] { "%" + query + "%" };
-//			}
-//
-//		}
-		switch (loaderID) {
-		case URL_LOADER:
-			// Returns a new CursorLoader
-			return new CursorLoader(getActivity(), // Parent activity context
-					OPContentProvider.getContentUri(RolodexContactEntry.URI_PATH_INFO),
-
-					null, // Projection to return
-null,//					builder.toString(), // No selection clause
-null,//					slectionArgs, // No selection arguments
-					null // Default sort order
-			);
-		default:
-			// An invalid id was passed in
-			return null;
+//        StringBuilder builder = new StringBuilder();//"not (" + RolodexContactEntry.COLUMN_USER_ID + "=0 and " + ContactsEntry.COLUMN_STABLE_ID + " not null)");
+        String selection = null;
+        String slectionArgs[] = null;
+		if (arg1 != null) {
+			String query = arg1.getString("query");
+			if (!TextUtils.isEmpty(query)) {
+				// Note: instr is available from sqlite 3.7.15
+//				builder.append("name like ?");
+                selection = "name like ?";
+				slectionArgs = new String[] { "%" + query + "%" };
+			}
 		}
+        switch (loaderID) {
+        case URL_LOADER:
+            emptyView.showProgress();
+            return new CursorLoader(getActivity(), // Parent activity context
+                    HOPDataManager.getInstance()
+                            .getContentUri(RolodexContactEntry.URI_PATH_INFO),
+
+                    null, // Projection to return
+                    selection,// builder.toString(), // No selection clause
+                    slectionArgs,// slectionArgs, // No selection arguments
+                    null // Default sort order
+            );
+        default:
+            // An invalid id was passed in
+            return null;
+        }
 	}
 
 	@Override
 	public void onLoadFinished(Loader<Cursor> loader, Cursor cursor) {
 		mAdapter.changeCursor(cursor);
+        if(cursor.getCount()==0){
+            emptyView.showProgress();
+        }
 
 	}
 

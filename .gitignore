@@ -1,6 +1,11 @@
 Debug
 *.userprefs
 .metadata
+**/.idea
+**/build
+**/*.iml
+**/.gradle
+**/gradle*
 Tests/OpenPeerMediaTestApp/bin
 Tests/OpenPeerMediaTestApp/obj
 Tests/OpenPeerMediaTestApp/Libs

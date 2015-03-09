@@ -29,25 +29,16 @@
  *******************************************************************************/
 package com.openpeer.sample.conversation;
 
-import android.content.BroadcastReceiver;
 import android.content.Context;
-import android.content.Intent;
-import android.content.IntentFilter;
 import android.util.AttributeSet;
 import android.view.LayoutInflater;
-import android.view.View;
-import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
-import com.openpeer.javaapi.CallStates;
 import com.openpeer.javaapi.ComposingStates;
-import com.openpeer.javaapi.OPCall;
 import com.openpeer.javaapi.OPRolodexContact;
-import com.openpeer.sample.IntentData;
-import com.openpeer.sample.OPSessionManager;
 import com.openpeer.sample.R;
-import com.openpeer.sdk.model.OPUser;
+import com.openpeer.sdk.model.HOPContact;
 
 public class ComposingStatusView extends LinearLayout {
     private OPRolodexContact mContact;
@@ -69,7 +60,7 @@ public class ComposingStatusView extends LinearLayout {
         this(context, attrs, 0);
     }
 
-    public void update(OPUser user, ComposingStates state) {
+    public void update(HOPContact user, ComposingStates state) {
         mTextView.setText(getContext().getString(R.string.msg_typing, user.getName().split(" ")[0]));
     }
 }

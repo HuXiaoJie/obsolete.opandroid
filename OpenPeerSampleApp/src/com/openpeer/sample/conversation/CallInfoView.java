@@ -36,28 +36,24 @@ import android.content.IntentFilter;
 import android.util.AttributeSet;
 import android.view.LayoutInflater;
 import android.view.View;
-import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.openpeer.javaapi.CallStates;
 import com.openpeer.javaapi.OPCall;
-import com.openpeer.javaapi.OPCallDelegate;
-import com.openpeer.javaapi.OPRolodexContact;
 import com.openpeer.sample.IntentData;
-import com.openpeer.sample.OPSessionManager;
 import com.openpeer.sample.R;
+import com.openpeer.sample.events.CallStateChangeEvent;
+import com.openpeer.sdk.model.CallMediaStatus;
+import com.openpeer.sdk.model.HOPCall;
+import com.openpeer.sdk.model.HOPCallManager;
+
+import de.greenrobot.event.EventBus;
 
 public class CallInfoView extends LinearLayout {
-	private OPRolodexContact mContact;
 
-	private ImageView mImageView;
-	private TextView mTitleView;
 	private TextView mTimeView;
-
-	CallStatus mState;
-
-	private OPCall mCall;
+	private HOPCall mCall;
 	BroadcastReceiver mDelegate;
 
 	public CallInfoView(Context context) {
@@ -67,9 +63,7 @@ public class CallInfoView extends LinearLayout {
 	public CallInfoView(Context context, AttributeSet attrs, int defStyle) {
 		super(context, attrs, defStyle);
 		LayoutInflater.from(context).inflate(R.layout.layout_call_info, this);
-		mImageView = (ImageView) findViewById(R.id.image_view);
 
-		mTitleView = (TextView) findViewById(R.id.title);
 		mTimeView = (TextView) findViewById(R.id.duration);
 	}
 
@@ -77,33 +71,27 @@ public class CallInfoView extends LinearLayout {
 		this(context, attrs, 0);
 	}
 
-	public void bindCall(OPCall call) {
-		mCall = call;
-		mState = OPSessionManager.getInstance().getMediaStateForCall(call.getPeer().getPeerURI());
-		mDelegate = new BroadcastReceiver(){
+	public void bindCall(HOPCall call) {
+        mCall = call;
+
+        getContext().registerReceiver(mDelegate, new IntentFilter(IntentData
+                                                                      .ACTION_CALL_STATE_CHANGE));
+        this.setOnClickListener(new View.OnClickListener() {
+
             @Override
-            public void onReceive(Context context, Intent intent) {
-                String callId = intent.getStringExtra(IntentData.ARG_CALL_ID);
-                CallStates state = (CallStates) intent.getSerializableExtra(IntentData.ARG_CALL_STATE);
-                if (callId.equals(mCall.getCallID())) {
-                    onCallStateChanged(mCall, state);
-                }
+            public void onClick(View v) {
+
+                Intent intent = new Intent(getContext(), CallActivity.class);
+                intent.putExtra(IntentData.ARG_CALL_ID, mCall.getCallID());
+                getContext().startActivity(intent);
             }
-        };
-        getContext().registerReceiver(mDelegate,new IntentFilter(IntentData.ACTION_CALL_STATE_CHANGE));
-		this.setOnClickListener(new View.OnClickListener() {
-
-			@Override
-			public void onClick(View v) {
-
-				CallActivity.launchForCall(getContext(), mCall.getPeer().getPeerURI());
-			}
-		});
-		startShowDuration();
-	}
+        });
+        startShowDuration();
+        EventBus.getDefault().register(this);
+    }
 
 	public void unbind() {
-        getContext().unregisterReceiver(mDelegate);
+        EventBus.getDefault().unregister(this);
 		mCall = null;
 	}
 
@@ -114,11 +102,11 @@ public class CallInfoView extends LinearLayout {
 	private Runnable timerThread = new Runnable() {
 
 		public void run() {
-			if (!isShown()) {
+			if (!isShown() || mCall == null) {
 				return;
 			}
 
-			long timeInMilliseconds = mState.getDuration();
+			long timeInMilliseconds = System.currentTimeMillis()-mCall.getAnswerTimeInMillis();
 
 			int secs = (int) (timeInMilliseconds / 1000);
 			int mins = secs / 60;
@@ -127,22 +115,23 @@ public class CallInfoView extends LinearLayout {
 			mTimeView.postDelayed(this, 1000);
 		}
 	};
-    public void onCallStateChanged(OPCall call, final CallStates state) {
+
+    public void onEvent(CallStateChangeEvent event) {
+        HOPCall call = event.getCall();
+        final CallStates state = event.getState();
         if (!call.getCallID().equals(mCall.getCallID())) {
             return;
         }
-
-        switch (state) {
-            case CallState_Closing:
-            case CallState_Closed:
-                post(new Runnable() {
-                    public void run() {
-                        setVisibility(View.GONE);
-                    }
-                });
-                break;
-            default:
-                break;
+        switch (state){
+        case CallState_Closed:
+            post(new Runnable() {
+                public void run() {
+                    setVisibility(View.GONE);
+                }
+            });
+            break;
+        default:
+            break;
         }
 
     }

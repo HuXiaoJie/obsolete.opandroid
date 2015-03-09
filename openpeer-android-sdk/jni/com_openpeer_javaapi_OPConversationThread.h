@@ -34,10 +34,17 @@ JNIEXPORT jstring JNICALL Java_com_openpeer_javaapi_OPConversationThread_toDebug
 /*
  * Class:     com_openpeer_javaapi_OPConversationThread
  * Method:    create
- * Signature: (Lcom/openpeer/javaapi/OPAccount;Ljava/util/List;)Lcom/openpeer/javaapi/OPConversationThread;
+ * Signature: (Lcom/openpeer/javaapi/OPAccount;Ljava/util/List;Ljava/util/List;Ljava/lang/String;Lcom/openpeer/javaapi/OPElement;)Lcom/openpeer/javaapi/OPConversationThread;
  */
 JNIEXPORT jobject JNICALL Java_com_openpeer_javaapi_OPConversationThread_create
-  (JNIEnv *, jclass, jobject, jobject);
+  (JNIEnv *, jclass, jobject, jobject, jobject, jstring, jobject);
+/*
+ * Class:     com_openpeer_javaapi_OPConversationThread
+ * Method:    getMetaData
+ * Signature: ()Ljava/lang/String;
+ */
+JNIEXPORT jstring JNICALL Java_com_openpeer_javaapi_OPConversationThread_getMetaData
+  (JNIEnv *, jobject);
 
 /*
  * Class:     com_openpeer_javaapi_OPConversationThread
@@ -177,6 +184,14 @@ JNIEXPORT jobject JNICALL Java_com_openpeer_javaapi_OPConversationThread_getMess
 
 /*
  * Class:     com_openpeer_javaapi_OPConversationThread
+ * Method:    setMessageDeliveryState
+ * Signature: (Ljava/lang/String;Lcom/openpeer/javaapi/MessageDeliveryStates;)V
+ */
+JNIEXPORT void JNICALL Java_com_openpeer_javaapi_OPConversationThread_setMessageDeliveryState
+  (JNIEnv *, jobject, jstring, jobject);
+
+/*
+ * Class:     com_openpeer_javaapi_OPConversationThread
  * Method:    markAllMessagesRead
  * Signature: ()V
  */
@@ -190,6 +205,8 @@ JNIEXPORT void JNICALL Java_com_openpeer_javaapi_OPConversationThread_markAllMes
  */
 JNIEXPORT void JNICALL Java_com_openpeer_javaapi_OPConversationThread_releaseCoreObjects
   (JNIEnv *, jobject);
+
+IConversationThreadPtr* getCoreThreadPtr(JNIEnv *, jobject);
 
 #ifdef __cplusplus
 }

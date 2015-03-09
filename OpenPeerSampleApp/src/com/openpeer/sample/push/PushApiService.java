@@ -29,10 +29,7 @@
  *******************************************************************************/
 package com.openpeer.sample.push;
 
-import com.openpeer.javaapi.OPMessage;
-
 import retrofit.Callback;
-import retrofit.RestAdapter;
 import retrofit.http.Body;
 import retrofit.http.Headers;
 import retrofit.http.POST;
@@ -48,6 +45,6 @@ public interface PushApiService {
 
     @Headers({HEADER_VERSION, HEADER_CONTENT_TYPE})
     @POST(UA_PUSH_API)
-    void push(@Body PushMessage message, Callback<PushResult> cb);
+    void push(@Body UAPushMessage message, Callback<PushResult> cb);
 
 }

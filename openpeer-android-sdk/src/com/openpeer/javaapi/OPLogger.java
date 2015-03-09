@@ -30,26 +30,49 @@
 package com.openpeer.javaapi;
 
 public class OPLogger {
-    static final int appId = getApplicationSubsystemID();
-//    public static final String moduleApplication = "openpeer_application";
-//    public static final String moduleSDK = "openpeer_sdk";
-//    public static final String moduleMedia = "openpeer_media";
-//    public static final String moduleWebRTC = "openpeer_webrtc";
-//    public static final String moduleCore = "openpeer_core";
-//    public static final String moduleStackMessage = "openpeer_stack_message";
-//    public static final String moduleStack = "openpeer_stack";
-//    public static final String moduleServices = "openpeer_services";
-//    public static final String moduleServicesWire = "openpeer_services_wire";
-//    public static final String moduleServicesIce = "openpeer_services_ice";
-//    public static final String moduleServicesTurn = "openpeer_services_turn";
-//    public static final String moduleServicesRudp = "openpeer_services_rudp";
-//    public static final String moduleServicesHttp = "openpeer_services_http";
-//    public static final String moduleServicesMls = "openpeer_services_mls";
-//    public static final String moduleServicesTcp = "openpeer_services_tcp_messaging";
-//    public static final String moduleServicesTransport = "openpeer_services_transport_stream";
-//    public static final String moduleZsLib = "zsLib";
-//    public static final String moduleZsLibSocket = "zsLib_socket";
-//    public static final String moduleJavaScript = "openpeer_javascript";
+    private static OPLogger instance;
+
+    public static OPLogger getInstance() {
+        if (instance == null) {
+            instance = new OPLogger();
+        }
+        return instance;
+    }
+
+    private int appId;
+
+    private int getAppId() {
+        if (appId == 0) {
+            appId = getApplicationSubsystemID();
+        }
+        return appId;
+    }
+
+    // public static final String moduleApplication = "openpeer_application";
+    // public static final String moduleSDK = "openpeer_sdk";
+    // public static final String moduleMedia = "openpeer_media";
+    // public static final String moduleWebRTC = "openpeer_webrtc";
+    // public static final String moduleCore = "openpeer_core";
+    // public static final String moduleStackMessage = "openpeer_stack_message";
+    // public static final String moduleStack = "openpeer_stack";
+    // public static final String moduleServices = "openpeer_services";
+    // public static final String moduleServicesWire = "openpeer_services_wire";
+    // public static final String moduleServicesIce = "openpeer_services_ice";
+    // public static final String moduleServicesTurn = "openpeer_services_turn";
+    // public static final String moduleServicesRudp = "openpeer_services_rudp";
+    // public static final String moduleServicesHttp = "openpeer_services_http";
+    // public static final String moduleServicesMls = "openpeer_services_mls";
+    // public static final String moduleServicesTcp = "openpeer_services_tcp_messaging";
+    // public static final String moduleServicesTransport = "openpeer_services_transport_stream";
+    // public static final String moduleZsLib = "zsLib";
+    // public static final String moduleZsLibSocket = "zsLib_socket";
+    // public static final String moduleJavaScript = "openpeer_javascript";
+    // temporary solution for unit test workaround.
+    private boolean mUnitTest;
+
+    public static void setIsUnitTest(Boolean isUnitTest) {
+        getInstance().mUnitTest = isUnitTest;
+    }
 
     /**
      * Helper function to log through OpenPeer logging utility. This function will retrieve the class,method and line number so there's no
@@ -59,7 +82,9 @@ public class OPLogger {
      * @param message
      */
     public static void debug(OPLogLevel level, String message) {
-        log(level, OPLogSeverity.Informational, message);
+        if (!getInstance().mUnitTest) {
+            log(level, OPLogSeverity.Informational, message);
+        }
     }
 
     /**
@@ -70,7 +95,9 @@ public class OPLogger {
      * @param message
      */
     public static void error(OPLogLevel level, String message) {
-        log(level, OPLogSeverity.Error, message);
+        if (!getInstance().mUnitTest) {
+            log(level, OPLogSeverity.Error, message);
+        }
     }
 
     /**
@@ -90,7 +117,7 @@ public class OPLogger {
         String className = fullClassName.substring(fullClassName.lastIndexOf(".") + 1);
         String methodName = trace.getMethodName();
         int lineNumber = trace.getLineNumber();
-        log(appId,
+        log(getInstance().getAppId(),
                 severity,
                 level,
                 message,

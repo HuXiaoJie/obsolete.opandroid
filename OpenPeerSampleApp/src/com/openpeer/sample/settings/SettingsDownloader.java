@@ -1,17 +1,11 @@
 package com.openpeer.sample.settings;
 
 import com.google.gson.JsonElement;
-import com.openpeer.sample.push.HackApiService;
-import com.openpeer.sdk.app.OPSdkConfig;
-
-import java.util.UUID;
 
 import retrofit.Callback;
 import retrofit.RestAdapter;
-import retrofit.http.Body;
 import retrofit.http.GET;
 import retrofit.http.Headers;
-import retrofit.http.POST;
 
 /*******************************************************************************
  * 

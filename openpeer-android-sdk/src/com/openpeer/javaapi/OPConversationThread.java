@@ -29,18 +29,45 @@
  *******************************************************************************/
 package com.openpeer.javaapi;
 
-import java.util.List;
-
 import android.util.Log;
 
-import com.openpeer.sdk.app.OPDataManager;
-import com.openpeer.sdk.model.OPUser;
+import com.openpeer.sdk.model.HOPDataManager;
+import com.openpeer.sdk.model.HOPContact;
+import com.openpeer.sdk.model.GroupChatMode;
+import com.openpeer.sdk.model.HOPParticipantInfo;
+import com.openpeer.sdk.model.ThreadMetaData;
+import com.openpeer.sdk.utils.HOPModelUtils;
+
+import java.util.List;
 
 public class OPConversationThread {
 
     private static final String TAG = OPConversationThread.class
             .getSimpleName();
 
+    HOPParticipantInfo mHOPParticipantInfo;
+    GroupChatMode mConversationType;
+
+    public HOPParticipantInfo getParticipantInfo() {
+        if (mHOPParticipantInfo == null) {
+            List<HOPContact> users = HOPModelUtils.getParticipantsOfThread(this);
+            mHOPParticipantInfo = new HOPParticipantInfo(HOPModelUtils.getWindowId(users), users);
+        }
+        return mHOPParticipantInfo;
+    }
+
+    public void setParticipantInfo(HOPParticipantInfo mParticipants) {
+        this.mHOPParticipantInfo = mParticipants;
+    }
+
+    public GroupChatMode getConverationType() {
+        if (mConversationType == null) {
+            String metadata = getMetaData();
+            ThreadMetaData threadMetaData = ThreadMetaData.fromJsonBlob(metadata);
+            mConversationType = GroupChatMode.valueOf(threadMetaData.getConversationType());
+        }
+        return mConversationType;
+    }
     /**
      * Helper function to make sure required fields are populated.
      * 
@@ -50,7 +77,7 @@ public class OPConversationThread {
     public OPMessage getMessageById(String messageID) {
         OPMessage message = getMessage(messageID);
         OPContact from = message.getFrom();
-        OPUser user = OPDataManager.getDatastoreDelegate().getUser(from,
+        HOPContact user = HOPDataManager.getInstance().getUser(from,
                 getIdentityContactList(from));
         message.setSenderId(user.getUserId());
         return message;
@@ -113,8 +140,12 @@ public class OPConversationThread {
             boolean includeCommaPrefix);
 
     public static native OPConversationThread create(OPAccount account,
-            List<OPIdentityContact> identityContactsOfSelf);
+            List<OPIdentityContact> identityContactsOfSelf,
+            List<OPContactProfileInfo> addContacts,
+            String threadID, 
+            String metaData);
 
+    public  native String getMetaData();
     public static native List<OPConversationThread> getConversationThreads(
             OPAccount account);
 
@@ -157,6 +188,8 @@ public class OPConversationThread {
             String messageType, String message, boolean signMessage);
 
     private native OPMessage getMessage(String messageID);
+    
+    public native void getMessageDeliveryState(String messageID, MessageDeliveryStates state);
 
     public native MessageDeliveryStates getMessageDeliveryState(String messageID);
 
@@ -167,6 +200,8 @@ public class OPConversationThread {
     private native void setStatusInThread(OPElement contactStatusInThreadOfSelf);
 
     public native void markAllMessagesRead();
+
+    public String getConversationId(){return getThreadID();}
 
     private native void releaseCoreObjects();
 

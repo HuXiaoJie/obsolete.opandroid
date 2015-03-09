@@ -2,16 +2,16 @@
  *
  *  Copyright (c) 2014 , Hookflash Inc.
  *  All rights reserved.
- *  
+ *
  *  Redistribution and use in source and binary forms, with or without
  *  modification, are permitted provided that the following conditions are met:
- *  
+ *
  *  1. Redistributions of source code must retain the above copyright notice, this
  *  list of conditions and the following disclaimer.
  *  2. Redistributions in binary form must reproduce the above copyright notice,
  *  this list of conditions and the following disclaimer in the documentation
  *  and/or other materials provided with the distribution.
- *  
+ *
  *  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
  *  ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
  *  WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
@@ -22,7 +22,7 @@
  *  ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
  *  (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  *  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- *  
+ *
  *  The views and conclusions contained in the software and documentation are those
  *  of the authors and should not be interpreted as representing official policies,
  *  either expressed or implied, of the FreeBSD Project.
@@ -40,10 +40,11 @@ import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
+
 import com.openpeer.sample.R;
 import com.openpeer.sample.conversation.ConversationActivity;
-import com.openpeer.sdk.app.OPDataManager;
-import com.openpeer.sdk.datastore.DatabaseContracts.RolodexContactEntry;
+import com.openpeer.sdk.model.HOPDataManager;
+import com.openpeer.sdk.model.GroupChatMode;
 import com.squareup.picasso.Picasso;
 
 public class ContactItemView extends RelativeLayout {
@@ -54,7 +55,6 @@ public class ContactItemView extends RelativeLayout {
     private View mChatView;
     private View mInviteView;
     long mUserId;
-    long[] mUserIds;
     private long rolodexId;
 
     public ContactItemView(Context context) {
@@ -77,41 +77,39 @@ public class ContactItemView extends RelativeLayout {
     }
 
     public void updateData(Cursor cursor) {
-        // RolodexContactEntry._ID,
-        // RolodexContactEntry.COLUMN_OPENPEER_CONTACT_ID,
-        // RolodexContactEntry.COLUMN_CONTACT_NAME,
-        // RolodexContactEntry.COLUMN_IDENTITY_URI
         rolodexId = cursor.getLong(0);
         mUserId = cursor.getLong(1);
         mTitleView.setText(cursor.getString(2));
-        String avatar = OPDataManager.getDatastoreDelegate().getAvatar(
-                rolodexId, 48, 48);
-        Picasso.with(getContext()).load(avatar).into(mImageView);
+        String avatar = HOPDataManager.getInstance().getAvatarUri(
+            rolodexId, 48, 48);
+        if(!TextUtils.isEmpty(avatar)) {
+            Picasso.with(getContext()).load(avatar).into(mImageView);
+        }
 
         if (mUserId != 0) {
             mInviteView.setVisibility(View.GONE);
-            mChatView.setVisibility(View.VISIBLE);
-            final long mUserIds[] = { mUserId };
+//            mChatView.setVisibility(View.VISIBLE);
+            final long mUserIds[] = {mUserId};
 
             mChatView.setOnClickListener(new View.OnClickListener() {
 
                 @Override
                 public void onClick(View v) {
                     Log.d("test", "Chat button tapped");
-                    ConversationActivity.launchForChat(getContext(), mUserIds, null);
+                    click();
                 }
             });
 
         } else {
-            mInviteView.setVisibility(View.VISIBLE);
+//            mInviteView.setVisibility(View.VISIBLE);
             mInviteView.setOnClickListener(new View.OnClickListener() {
 
                 @Override
                 public void onClick(View v) {
                     Toast.makeText(
-                            getContext(),
-                            "To be implemented: Invite your friends to use Open peer!",
-                            Toast.LENGTH_LONG).show();
+                        getContext(),
+                        "To be implemented: Invite your friends to use Open peer!",
+                        Toast.LENGTH_LONG).show();
                 }
             });
 
@@ -119,9 +117,12 @@ public class ContactItemView extends RelativeLayout {
         }
     }
 
-    public void onClick() {
-        final long userIds[] = { mUserId };
-        ConversationActivity.launchForChat(getContext(), userIds, null);
+    public void click() {
+        final long userIds[] = {mUserId};
+        ConversationActivity.launchForChat(getContext(),
+                                           GroupChatMode.contact.toString(),
+                                           null,
+                                           userIds);
     }
 
 }

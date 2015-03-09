@@ -155,6 +155,7 @@ IdentityContact identityContactFromJava(jobject identityContactObject) {
     jstring name = (jstring) jni_env->CallObjectMethod(
         identityContactObject, getNameMethodID);
 
+    jobject avatarList = jni_env->CallObjectMethod(identityContactObject, getAvatarsMethodID);
     coreIdentityContact.mDisposition =
         (RolodexContact::Dispositions) OpenPeerCoreManager::getIntValueFromEnumObject(
             disposition,
@@ -168,6 +169,7 @@ IdentityContact identityContactFromJava(jobject identityContactObject) {
     coreIdentityContact.mVProfileURL = jni_env->GetStringUTFChars(
         vProfileURL, NULL);
     coreIdentityContact.mName = jni_env->GetStringUTFChars(name, NULL);
+    coreIdentityContact.mAvatars = avatarListFromJava(avatarList);
 
     jclass cls = findClass("com/openpeer/javaapi/OPPeerFilePublic");
     jfieldID fid = jni_env->GetFieldID(cls, "mPeerFileString",
@@ -218,5 +220,65 @@ IdentityContact identityContactFromJava(jobject identityContactObject) {
 
   }
   return coreIdentityContact;
+}
 
+RolodexContact::AvatarList avatarListFromJava(jobject javaAvatarList) {
+  JNIEnv* jni_env = getEnv();
+  RolodexContact::AvatarList coreAvatarList;
+
+  jclass arrayListClass = findClass("java/util/ArrayList");
+
+  jmethodID listGetMethodID = jni_env->GetMethodID(arrayListClass, "get",
+      "(I)Ljava/lang/Object;");
+  // Fetch "int java.util.List.size()" MethodID
+  jmethodID sizeMethodID = jni_env->GetMethodID(arrayListClass, "size",
+      "()I");
+
+  // Call "int java.util.List.size()" method and get count of items in the list.
+  int listItemsCount = (int) jni_env->CallIntMethod(javaAvatarList,
+      sizeMethodID);
+
+  if (listItemsCount == 0) {
+    __android_log_print(ANDROID_LOG_ERROR, "com.openpeer.jni",
+        "OPConversationThread native addContacts no IdentityContqcts!!!");
+    return coreAvatarList;
+  }
+
+  for (int i = 0; i < listItemsCount; ++i) {
+
+    // Call "java.util.List.get" method and get IdentityContact object by index.
+    jobject avatarObject = jni_env->CallObjectMethod(
+        javaAvatarList, listGetMethodID, i);
+
+    if (avatarObject != NULL) {
+      RolodexContact::Avatar coreAvatar = avatarFromJava(avatarObject);
+      //add core identity contacts to list
+      coreAvatarList.push_front(coreAvatar);
+    }
+  }
+  return coreAvatarList;
+}
+RolodexContact::Avatar avatarFromJava(jobject javaAvatar) {
+  JNIEnv* jni_env = getEnv();
+  RolodexContact::Avatar coreAvatar;
+
+  jclass avatarClass = findClass(
+      "com/openpeer/javaapi/OPRolodexContact$OPAvatar");
+
+  jmethodID getNameMethodID = jni_env->GetMethodID(avatarClass,
+      "getName", "()Ljava/lang/String;");
+  jmethodID getURLMethodID = jni_env->GetMethodID(avatarClass,
+      "getURL", "()Ljava/lang/String;");
+  jmethodID getWidthMethodID = jni_env->GetMethodID(avatarClass,
+      "getWidth", "()I");
+  jmethodID getHeightMethodID = jni_env->GetMethodID(avatarClass,
+      "getHeight", "()I");
+  jstring name = (jstring) jni_env->CallObjectMethod(
+      javaAvatar, getNameMethodID);
+  jstring url = (jstring) jni_env->CallObjectMethod(
+      javaAvatar, getURLMethodID);
+
+  coreAvatar.mName = jni_env->GetStringUTFChars(name, NULL);
+  coreAvatar.mURL = jni_env->GetStringUTFChars(url, NULL);
+  return coreAvatar;
 }

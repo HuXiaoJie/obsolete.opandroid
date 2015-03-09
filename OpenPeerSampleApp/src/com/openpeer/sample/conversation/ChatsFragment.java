@@ -34,6 +34,7 @@ import java.util.List;
 
 import android.content.Context;
 import android.database.Cursor;
+import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.CursorLoader;
@@ -48,16 +49,15 @@ import android.widget.ListView;
 
 import com.openpeer.sample.BaseFragment;
 import com.openpeer.sample.R;
-import com.openpeer.sdk.app.OPDataManager;
-import com.openpeer.sdk.datastore.DatabaseContracts;
-import com.openpeer.sdk.datastore.OPContentProvider;
-import com.openpeer.sdk.model.OPConversation;
+import com.openpeer.sdk.model.HOPDataManager;
+import com.openpeer.sdk.datastore.DatabaseContracts.WindowViewEntry;
+import com.openpeer.sdk.model.HOPConversation;
 
 public class ChatsFragment extends BaseFragment implements
         LoaderManager.LoaderCallbacks<Cursor> {
 
     private ChatInfoAdaptor mAdapter;
-    private List<OPConversation> mSessions;
+    private List<HOPConversation> mSessions;
     private ListView mMessagesList;
 
     public static ChatsFragment newInstance() {
@@ -91,9 +91,7 @@ public class ChatsFragment extends BaseFragment implements
     @Override
     public void onResume() {
         super.onResume();
-        mSessions = getSessions();
-        // CallbackHandler.getInstance().registerConversationThreadDelegate(
-        // mConvThreadDelegate);
+        getLoaderManager().restartLoader(URL_LOADER,null,this);
     }
 
     @Override
@@ -124,9 +122,9 @@ public class ChatsFragment extends BaseFragment implements
         return view;
     }
 
-    private List<OPConversation> getSessions() {
+    private List<HOPConversation> getSessions() {
         if (mSessions == null) {
-            mSessions = new ArrayList<OPConversation>();
+            mSessions = new ArrayList<HOPConversation>();
             // TODO: do some setup
         }
         return mSessions;
@@ -176,7 +174,7 @@ public class ChatsFragment extends BaseFragment implements
             // Returns a new CursorLoader
             return new CursorLoader(
                     getActivity(), // Parent activity context
-                    OPDataManager.getDatastoreDelegate().getChatsUri(),
+                    getChatsUri(),
 
                     null,// LIST_PROJECTION, // Projection to return
                     null, // No selection clause
@@ -205,5 +203,8 @@ public class ChatsFragment extends BaseFragment implements
     public static interface ChatsViewListener {
         public void onChatsEmptyViewClick();
     }
-
+    public Uri getChatsUri() {
+        return HOPDataManager.getInstance()
+            .getContentUri(WindowViewEntry.URI_PATH_INFO_CONTEXT);
+    }
 }

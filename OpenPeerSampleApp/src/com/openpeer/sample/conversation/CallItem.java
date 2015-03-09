@@ -48,7 +48,7 @@ public class CallItem {
     long peerId;
     int callClosedReason;
     int direction;// 0-incoming 1-outgoing
-    CallStates state;
+    String state;
     String peerName;
     String callId;
 
@@ -87,7 +87,7 @@ public class CallItem {
         direction = Integer.parseInt(callInfo[POS_DIRECTION]);
         String event = callInfo[POS_EVENT];
         if (!TextUtils.isEmpty(event)) {
-            state = CallStates.valueOf(event);
+            state = event;
         }
     }
 
@@ -103,7 +103,7 @@ public class CallItem {
         return time;
     }
 
-    public CallStates getState() {
+    public String getState() {
         return state;
     }
 }

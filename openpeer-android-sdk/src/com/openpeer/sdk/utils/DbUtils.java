@@ -28,6 +28,7 @@ import android.content.Context;
 import android.database.Cursor;
 import android.database.DatabaseUtils;
 import android.database.sqlite.SQLiteDatabase;
+import android.database.sqlite.SQLiteException;
 
 /** Database utils, for example to execute SQL scripts */
 // TODO add unit tests
@@ -129,5 +130,23 @@ public class DbUtils{
             cursor.close();
         }
     }
+    
+    public static long simpleQueryForId(SQLiteDatabase db, String tableName,
+            String selection, String[] selectionArgs) throws SQLiteException {
+
+        Cursor cursor = db.query(tableName, new String[] { "_id" }, selection,
+                selectionArgs, null, null, null);
+        if (cursor == null) {
+            throw new SQLiteException();
+        }
+        if (cursor.getCount() > 0) {
+            cursor.moveToFirst();
+            long id = cursor.getLong(0);
+            cursor.close();
+            return id;
+        }
+        return 0;
+    }
+
 
 }

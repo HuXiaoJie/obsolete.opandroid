@@ -30,12 +30,11 @@
 package com.openpeer.javaapi;
 
 
-public abstract class OPIdentityDelegate {
+public interface OPIdentityDelegate {
 
 	public abstract void onIdentityStateChanged(
 			OPIdentity identity,
-            IdentityStates state
-            );
-	public abstract void onIdentityPendingMessageForInnerBrowserWindowFrame(OPIdentity identity);
+            IdentityStates state);
+    public abstract void onIdentityPendingMessageForInnerBrowserWindowFrame(OPIdentity identity);
 	public abstract void onIdentityRolodexContactsDownloaded(OPIdentity identity);
 }

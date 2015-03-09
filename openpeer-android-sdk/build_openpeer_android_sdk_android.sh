@@ -73,7 +73,7 @@ mkdir -p build
 echo "------------------- Building ortc-lib for ANDROID platform ---------------"
 pushd `pwd`
 
-rm -rf ./obj
+#rm -rf ./obj
 
 export ANDROIDNDK_PATH=$Input
 export NDK_PROJECT_PATH=`pwd`

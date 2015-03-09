@@ -32,12 +32,6 @@ package com.openpeer.javaapi;
 import java.util.Arrays;
 import java.util.List;
 
-import android.database.Cursor;
-
-import com.openpeer.sdk.app.OPDataManager;
-import com.openpeer.sdk.datastore.DatabaseContracts;
-import com.openpeer.sdk.datastore.DatabaseContracts.RolodexContactEntry;
-
 public class OPRolodexContact {
 
     public static class OPAvatar {

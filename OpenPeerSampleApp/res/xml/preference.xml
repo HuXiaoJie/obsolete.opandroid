@@ -144,6 +144,28 @@
         -->
     </PreferenceScreen>
 
+    <PreferenceScreen
+        android:key="appSettings"
+        android:title="App settings">
+
+        <Preference
+            android:defaultValue=""
+            android:key="identityProviderUrl"
+            android:title="Identity Provider Url"/>
+        <Preference
+            android:defaultValue=""
+            android:key="outerFrameUrl"
+            android:title="Outer Frame Url"/>
+        <Preference
+            android:defaultValue=""
+            android:key="appId"
+            android:title="OpenPeer app id"/>
+        <Preference
+            android:defaultValue=""
+            android:key="myPeerUri"
+            android:title="My peer uri"/>
+
+    </PreferenceScreen>
     <PreferenceCategory
         android:key="about"
         android:title="@string/label_about">

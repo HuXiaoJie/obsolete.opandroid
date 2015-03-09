@@ -18,7 +18,7 @@
 		android:layout_centerHorizontal="true"
 		android:visibility="gone" />
 
-	<com.openpeer.sdk.app.OPIdentityLoginWebview
+	<com.openpeer.sdk.login.HOPIdentityLoginWebview
 		android:id="@+id/webview_identity_login"
 		android:layout_width="match_parent"
 		android:layout_height="match_parent"

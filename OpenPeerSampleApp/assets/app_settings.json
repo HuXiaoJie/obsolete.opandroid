@@ -1,20 +1,20 @@
-{"op": {
-       "defaultOutgoingTelnetServer": "log.opp.me:8115",
-       "outerFrameURL": "http://identity.opp.me:5005/outer-new.html",
-       "redirectAfterLoginCompleteURL": "http://identity.opp.me:5005/outer-new.html?reload=true",
-       "identityProviderDomain": "bruce1-test-com.app.opp.me",
-       "identityFederateBaseURI": "identity://bruce1.test.com/",
-       "namespaceGrantServiceURL": "http://jsouter-v1-rel-lespaulinst2-i.hcs.io/grant.html",
-       "lockBoxServiceDomain": "opp.me",
-       "isLoggerEnabled": true,
-       "logLevelForServicesHttp": "trace",
-       "id": "bruce1.test.com",
-       "sharedSecret": "43bygjbugiio-i19salj3",
-
-       "openpeer/common/application-name":"OpenPeer Native Sample App",
-"openpeer/common/application-image-url":"http://fake-image-url",
-"openpeer/common/application-url":"http://fake-application-url",
-"openpeer/calculated/user-agent":"OpenPeerNativeSampleApp",
-"application/chatMode":"ContactsBased"
-   }
+{
+    "op": {
+        "defaultOutgoingTelnetServer": "log.opp.me:8115",
+        "outerFrameURL": "http://identity.opp.me:5005/outer-new.html",
+        "redirectAfterLoginCompleteURL": "http://identity.opp.me:5005/outer-new.html?reload=true",
+        "identityProviderDomain": "bruce2-test-com.app.opp.me",
+        "identityFederateBaseURI": "identity://facebook.com/",
+        "namespaceGrantServiceURL": "http://jsouter-v1-rel-lespaulinst2-i.hcs.io/grant.html",
+        "lockBoxServiceDomain": "opp.me",
+        "isLoggerEnabled": true,
+        "logLevelForServicesHttp": "trace",
+        "id": "bruce2.test.com",
+        "applicationID": "bruce2.test.com",
+        "sharedSecret": "2gesmj0acxc04-i1cjar6b",
+        "applicationSharedSecret": "2gesmj0acxc04-i1cjar6b",
+        "openpeer/common/application-name": "OpenPeer Native Sample App",
+        "openpeer/common/application-image-url": "http://fake-image-url",
+        "openpeer/common/application-url": "http://fake-application-url",
+    }
 }

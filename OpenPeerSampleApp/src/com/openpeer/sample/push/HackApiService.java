@@ -1,12 +1,11 @@
 package com.openpeer.sample.push;
 
-import com.openpeer.sdk.app.OPSdkConfig;
+import com.openpeer.sdk.app.HOPSettingsHelper;
 
 import java.util.UUID;
 
 import retrofit.Callback;
 import retrofit.http.Body;
-import retrofit.http.GET;
 import retrofit.http.Headers;
 import retrofit.http.POST;
 
@@ -65,8 +64,8 @@ public interface HackApiService {
         }
 
         public HackApiCommon(String method, String id) {
-            this.$domain = OPSdkConfig.getInstance().getLockboxServiceDomain();
-            this.$appid = OPSdkConfig.getInstance().getAppId();
+            this.$domain = HOPSettingsHelper.getInstance().getLockboxServiceDomain();
+            this.$appid = HOPSettingsHelper.getInstance().getAppId();
             this.$id = id;
             this.$handler = HANDLER_HACK;
             this.$method = method;

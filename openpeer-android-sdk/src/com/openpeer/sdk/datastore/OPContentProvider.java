@@ -29,10 +29,6 @@
  *******************************************************************************/
 package com.openpeer.sdk.datastore;
 
-import static com.openpeer.sdk.datastore.DatabaseContracts.COLUMN_CBC_ID;
-
-import java.util.List;
-
 import android.content.ContentProvider;
 import android.content.ContentUris;
 import android.content.ContentValues;
@@ -41,18 +37,17 @@ import android.content.pm.PackageManager;
 import android.content.pm.PackageManager.NameNotFoundException;
 import android.content.pm.ProviderInfo;
 import android.database.Cursor;
+import android.database.sqlite.SQLiteConstraintException;
 import android.database.sqlite.SQLiteDatabase;
 import android.net.Uri;
 import android.provider.BaseColumns;
 import android.text.TextUtils;
 import android.util.Log;
 
-import com.openpeer.sdk.app.OPSdkConfig;
+import com.openpeer.sdk.model.HOPDataManager;
 import com.openpeer.sdk.datastore.DatabaseContracts.AccountEntry;
-import com.openpeer.sdk.datastore.DatabaseContracts.AssociatedIdentityEntry;
 import com.openpeer.sdk.datastore.DatabaseContracts.AvatarEntry;
 import com.openpeer.sdk.datastore.DatabaseContracts.CallEntry;
-import com.openpeer.sdk.datastore.DatabaseContracts.ContactsViewEntry;
 import com.openpeer.sdk.datastore.DatabaseContracts.ConversationEntry;
 import com.openpeer.sdk.datastore.DatabaseContracts.IdentityContactEntry;
 import com.openpeer.sdk.datastore.DatabaseContracts.MessageEntry;
@@ -60,14 +55,14 @@ import com.openpeer.sdk.datastore.DatabaseContracts.OpenpeerContactEntry;
 import com.openpeer.sdk.datastore.DatabaseContracts.ParticipantEntry;
 import com.openpeer.sdk.datastore.DatabaseContracts.RolodexContactEntry;
 import com.openpeer.sdk.datastore.DatabaseContracts.WindowViewEntry;
-import com.openpeer.sdk.model.GroupChatMode;
 
-public class OPContentProvider extends ContentProvider {
+import java.util.Arrays;
+import java.util.List;
+
+public class OPContentProvider extends ContentProvider implements ContentUriResolver {
 
     private OPDatabaseHelper mOpenHelper;
 
-    static final int USER = 100;
-    private static final int CONTACT = 6;
     private static final String TAG = OPContentProvider.class.getSimpleName();
 
     UriMatcher mUriMatcher;
@@ -78,50 +73,49 @@ public class OPContentProvider extends ContentProvider {
     static enum MatcherInfo {
         ACCOUNTS(AccountEntry.TABLE_NAME),
         ACCOUNT(AccountEntry.TABLE_NAME + "/#"),
-        IDENTTIIES(AssociatedIdentityEntry.TABLE_NAME),
-        IDENTITY(AssociatedIdentityEntry.TABLE_NAME + "/#"),
+        IDENTTIIES(DatabaseContracts.AccountIdentityEntry.TABLE_NAME),
+        IDENTITY(DatabaseContracts.AccountIdentityEntry.TABLE_NAME + "/#"),
 
-        MESSAGES_WINDOW(MessageEntry.URI_PATH_INFO_WINDOW),
-        MESSAGES_CONTEXT(MessageEntry.URI_PATH_INFO_CONTEXT),
-
-        MESSAGE_WINDOW(MessageEntry.URI_PATH_INFO_WINDOW_ID),
-        MESSAGE_THREAD(MessageEntry.URI_PATH_INFO_CONTEXT_ID),
+        CONVERSATION_HISTORY(MessageEntry.URI_PATH_INFO_CONTEXT),//Messages/Events of a conversation
+        CONVERSATION_MESSAGE(MessageEntry.URI_PATH_INFO_CONTEXT_ID),//Messages/Events of a conversation
 
         MESSAGES(MessageEntry.TABLE_NAME),
         MESSAGE(MessageEntry.TABLE_NAME + "/#"),
+        MESSAGE_EVENTS(DatabaseContracts.MessageEventEntry.TABLE_NAME),
+        MESSAGE_EVENT(DatabaseContracts.MessageEventEntry.TABLE_NAME + "/#"),
 
-        // CONTACTS(DatabaseContracts.ContactsViewEntry.URI_PATH_CONTACTS),
-        // CONTACT(DatabaseContracts.ContactsViewEntry.URI_PATH_CONTACTS_ID),
-        // CONTACTS_OPENPEER(
-        // DatabaseContracts.ContactsViewEntry.URI_PATH_OP_CONTACTS),
-        // CONTACT_OPENPEER(
-        // DatabaseContracts.ContactsViewEntry.URI_PATH_OP_CONTACTS_ID),
-
-        CONVERSATIONS(ConversationEntry.URI_PATH_INFO),
-        CONVERSATION(ConversationEntry.URI_PATH_INFO_ID),
+        CONVERSATIONS(ConversationEntry.URI_PATH_INFO),//Conversations table for direct access
+        CONVERSATION(ConversationEntry.URI_PATH_INFO_ID),// Conversation item
+        CONVERSATION_EVENTS(DatabaseContracts.ConversationEventEntry.URI_PATH_INFO),//Conversations table for direct access
+        CONVERSATION_EVENT(DatabaseContracts.ConversationEventEntry.URI_PATH_INFO_ID),// Conversation item
 
         WINDOW_PARTICIPANTS(ParticipantEntry.URI_PATH_INFO),
         WINDOW_PARTICIPANT(ParticipantEntry.URI_PATH_INFO_ID),
 
-        HISTORY_CONTACT_BASED(WindowViewEntry.URI_PATH_INFO_CBC),
-        HISTORY_CONTEXT_BASED(WindowViewEntry.URI_PATH_INFO_CONTEXT),
+        CONVERSATIONS_VIEW(WindowViewEntry.URI_PATH_INFO_CONTEXT),//Conversation informations to construct the conversations view
+        OPENPEER_CONTACTs(OpenpeerContactEntry.URI_PATH_INFO),
         OPENPEER_CONTACT(OpenpeerContactEntry.URI_PATH_INFO_ID),
         OPENPEER_CONTACT_DETAIL(OpenpeerContactEntry.URI_PATH_INFO_DETAIL),
         OPENPEER_CONTACT_DETAIL_ID(OpenpeerContactEntry.URI_PATH_INFO_DETAIL_ID),
+
+        IDENTITY_PROVIDERS(DatabaseContracts.IdentityProviderEntry.TABLE_NAME),
 
         // USER(UserEntry.TABLE_NAME + "/#"),
 
         IDENTITY_CONTACTS(IdentityContactEntry.TABLE_NAME),
         IDENTITY_CONTACT(IdentityContactEntry.TABLE_NAME + "/#"),
 
-        ROLODEX_CONTACTS(RolodexContactEntry.TABLE_NAME),
+        ROLODEX_CONTACTS(RolodexContactEntry.URI_PATH_INFO),
         ROLODEX_CONTACT(IdentityContactEntry.TABLE_NAME + "/#"),
+        ROLODEX_CONTACTS_ALL(RolodexContactEntry.TABLE_NAME),
 
         AVATARS(AvatarEntry.TABLE_NAME),
         AVATAR(AvatarEntry.TABLE_NAME + "/#"),
 
         CALLS(CallEntry.TABLE_NAME),
-        CALL(CallEntry.TABLE_NAME + "/#");
+        CALL(CallEntry.TABLE_NAME + "/#"),
+        CALL_EVENTS(DatabaseContracts.CallEventEntry.TABLE_NAME),
+        CALL_EVENT(DatabaseContracts.CallEventEntry.TABLE_NAME + "/#");
 
         private final String mPath;
 
@@ -140,7 +134,7 @@ public class OPContentProvider extends ContentProvider {
      * @param path
      * @return
      */
-    public static Uri getContentUri(String path) {
+    public Uri getContentUri(String path) {
         return Uri.parse(SCHEME + sAuthority + path);
     }
 
@@ -148,12 +142,7 @@ public class OPContentProvider extends ContentProvider {
     public int delete(Uri uri, String selection, String[] selectionArgs) {
         MatcherInfo value = MatcherInfo.values()[mUriMatcher.match(uri)];
         StringBuilder stringBuilder = new StringBuilder();
-        switch (value) {
 
-        case MESSAGES_WINDOW:
-            return 0;
-
-        }
         String table = uri.getLastPathSegment();
         SQLiteDatabase db = mOpenHelper.getWritableDatabase();
         int result = db.delete(table, selection, selectionArgs);
@@ -179,7 +168,7 @@ public class OPContentProvider extends ContentProvider {
         MatcherInfo value = MatcherInfo.values()[mUriMatcher.match(uri)];
         StringBuilder stringBuilder = new StringBuilder();
         switch (value) {
-        case MESSAGES_WINDOW:
+        case MESSAGES:
             return insertMessage(uri, values);
 
         default:
@@ -194,12 +183,16 @@ public class OPContentProvider extends ContentProvider {
                 break;
             }
             if (tableName != null) {
-                SQLiteDatabase db = mOpenHelper.getWritableDatabase();
-                long rowId = db.insert(tableName, null, values);
+                try {
+                    SQLiteDatabase db = mOpenHelper.getWritableDatabase();
+                    long rowId = db.insertWithOnConflict(tableName, null, values, SQLiteDatabase.CONFLICT_ABORT);
 
-                if (rowId != -1) {
-                    getContext().getContentResolver().notifyChange(uri, null);
-                    return ContentUris.withAppendedId(uri, rowId);
+
+                    if (rowId != -1) {
+                        getContext().getContentResolver().notifyChange(uri, null);
+                        return ContentUris.withAppendedId(uri, rowId);
+                    }
+                }catch(SQLiteConstraintException e){
                 }
             }
         }
@@ -207,13 +200,17 @@ public class OPContentProvider extends ContentProvider {
     }
 
     private Uri insertMessage(Uri uri, ContentValues values) {
-        SQLiteDatabase db = mOpenHelper.getWritableDatabase();
-        long result = db.insert(DatabaseContracts.MessageEntry.TABLE_NAME,
-                null, values);
-        getContext().getContentResolver().notifyChange(
+        try {
+            SQLiteDatabase db = mOpenHelper.getWritableDatabase();
+            long result = db.insertWithOnConflict(DatabaseContracts.MessageEntry.TABLE_NAME,
+                                                  null, values, SQLiteDatabase.CONFLICT_ABORT);
+            getContext().getContentResolver().notifyChange(
                 ContentUris.withAppendedId(uri, result), null);
-        notifyChatHistoryChange();
-        return uri;
+            notifyChatHistoryChange();
+            return uri;
+        } catch(SQLiteConstraintException e) {
+        }
+        return null;
     }
 
     @Override
@@ -221,6 +218,7 @@ public class OPContentProvider extends ContentProvider {
         mOpenHelper = OPDatabaseHelper.getInstance(getContext());
         initMatcher();
         instance = this;
+        HOPDataManager.getInstance().setContentUriProvider(this);
         return true;
     }
 
@@ -235,72 +233,35 @@ public class OPContentProvider extends ContentProvider {
         StringBuilder stringBuilder = new StringBuilder();
 
         switch (value) {
-        case MESSAGES_WINDOW:
+        case CONVERSATION_HISTORY:{
+            stringBuilder.append(QUERY_MESSAGES)
+                .append("where " + MessageEntry.COLUMN_CONTEXT_ID)
+                .append("=?");
+
+            stringBuilder.append(" union " + QUERY_CALL)
+                .append(" where ")
+                .append(MessageEntry.COLUMN_CONTEXT_ID + "=?");
             stringBuilder
-                    .append(DatabaseContracts.QUERY_MESSAGES);
-            int windowId = Integer.parseInt(uri.getLastPathSegment());
-            stringBuilder.append("where " + DatabaseContracts.COLUMN_CBC_ID
-                    + "="
-                    + windowId);
-            stringBuilder.append(
-                    " union " + DatabaseContracts.QUERY_CALL)
-                    .append(" where ")
-                    .append(DatabaseContracts.COLUMN_CBC_ID + "=" + windowId);
-//            stringBuilder
-//                    .append(" union "
-//                            + DatabaseContracts.QUERY_CONVERSATION_EVENT)
-//                    .append(" and ").append("ce.participants=" + windowId);
+                .append(" union "
+                            + QUERY_CONVERSATION_EVENT)
+                .append(" where ").append("c.conversation_id=?");
             stringBuilder.append(" order by time");
 
-            Cursor cursor = mOpenHelper.getReadableDatabase().rawQuery(
-                    stringBuilder.toString(), selectionArgs);
-            cursor.setNotificationUri(getContext().getContentResolver(), uri);
-            return cursor;
-            // return queryMessages(uri, projection, stringBuilder.toString(),
-            // selectionArgs, sortOrder);
-        case MESSAGE_WINDOW:
-            return queryMessage(uri, projection, selection, selectionArgs,
-                    sortOrder);
-        case MESSAGES_CONTEXT:
-            stringBuilder.append(DatabaseContracts.QUERY_MESSAGES)
-                    .append("where " + MessageEntry.COLUMN_CONTEXT_ID)
-                    .append("=?");
-
-            stringBuilder.append(" union " + DatabaseContracts.QUERY_CALL)
-                    .append(" where ")
-                    .append(MessageEntry.COLUMN_CONTEXT_ID + "=?");
-            stringBuilder
-                    .append(" union "
-                            + DatabaseContracts.QUERY_CONVERSATION_EVENT)
-                    .append(" and ").append("c.context_id=?");
-            stringBuilder.append(" order by time");
-
-            String contextId = uri.getLastPathSegment();
+            String conversationId = uri.getLastPathSegment();
             String args[];
-            // if (selectionArgs != null) {
-            // args = new String[selectionArgs.length + 1];
-            // args[0] = contextId;
-            // for (int i = 0; i < selectionArgs.length; i++) {
-            // args[i + 1] = selectionArgs[i];
-            // }
-            // } else {
-            args = new String[] { contextId, contextId,contextId };
-            // }
+
+            args = new String[]{conversationId, conversationId, conversationId};
 
             Cursor contextCursor = mOpenHelper.getReadableDatabase().rawQuery(
-                    stringBuilder.toString(), args);
-            contextCursor.setNotificationUri(getContext().getContentResolver(),
-                    uri);
+                stringBuilder.toString(), args);
+            contextCursor.setNotificationUri(getContext().getContentResolver(), uri);
             return contextCursor;
-        case MESSAGE_THREAD:
-            return queryMessage(uri, projection, selection, selectionArgs,
-                    sortOrder);
+        }
         case OPENPEER_CONTACT:
             return queryOpenPeerContact(uri, projection, selection,
                     selectionArgs,
                     sortOrder);
         case OPENPEER_CONTACT_DETAIL:
-
             return queryOpenPeerContactDetail(uri, projection,
                     selection,
                     selectionArgs,
@@ -319,14 +280,11 @@ public class OPContentProvider extends ContentProvider {
             return queryRolodexContacts(uri, projection, selection,
                     selectionArgs,
                     sortOrder);
-        case HISTORY_CONTACT_BASED:
-            return queryContactBasedChatHistory(uri, projection, selection,
-                    selectionArgs,
-                    sortOrder);
-        case HISTORY_CONTEXT_BASED:
-            return queryContextBasedChatHistory(uri, projection, selection,
-                    selectionArgs,
-                    sortOrder);
+
+        case CONVERSATIONS_VIEW:
+            return queryConversationHisotry(uri, projection, selection,
+                                            selectionArgs,
+                                            sortOrder);
 
         default:
             break;
@@ -365,25 +323,9 @@ public class OPContentProvider extends ContentProvider {
     /**
      * @return
      */
-    private Cursor queryContextBasedChatHistory(Uri uri, String[] projection,
-            String selection, String[] selectionArgs, String sortOrder) {
-        String rawQuery = DatabaseContracts.QUERY_OPENPEER_CHATS_CONTEXT_BASED;
-        if (!TextUtils.isEmpty(selection)) {
-            rawQuery = rawQuery + " where " + selection;
-        }
-        Cursor cursor = mOpenHelper.getReadableDatabase().rawQuery(rawQuery,
-                selectionArgs);
-        cursor.setNotificationUri(getContext().getContentResolver(), uri);
-
-        return cursor;
-    }
-
-    /**
-     * @return
-     */
-    private Cursor queryContactBasedChatHistory(Uri uri, String[] projection,
-            String selection, String[] selectionArgs, String sortOrder) {
-        String rawQuery = DatabaseContracts.QUERY_OPENPEER_CHATS_CONTACT_BASED;
+    private Cursor queryConversationHisotry(Uri uri, String[] projection,
+                                            String selection, String[] selectionArgs, String sortOrder) {
+        String rawQuery = QUERY_CHATS;
         if (!TextUtils.isEmpty(selection)) {
             rawQuery = rawQuery + " where " + selection;
         }
@@ -407,15 +349,12 @@ public class OPContentProvider extends ContentProvider {
     private Cursor queryOpenPeerContact(Uri uri, String[] projection,
             String selection, String[] selectionArgs, String sortOrder) {
         long id = Integer.parseInt(uri.getLastPathSegment());
-        // String rawQuery =
-        // "select oc._id as openpeer_id, oc.stable_id, pf.peer_uri as peer_uri,pf.peerfile_public as peerfile_public,oc.name as name, oc.identity_uri as identity_uri,ip.identity_provider_domain as identity_provider_domain from openpeer_contact oc"
-        // +
-        // " left join peefile_public pf on oc.peerfile_id=left join rolodex_contact rc on oc._id=rc.openpeer_contact_id left join identity_contact ic on rc.identity_contact_id=ic._id left join identity_provider ip on rc.identity_provider_id=ip._id"
-        // + " where oc.id=" + id;
-        String rawQuery = "select oc._id as openpeer_contact_id, oc.stable_id as stable_id, pf.peer_uri as peer_uri,pf.peerfile_public as peerfile_public from openpeer_contact oc left join peerfile_public pf on oc.peerfile_id=pf._id where oc._id="
-                + id;
+        String rawQuery = "select oc._id as openpeer_contact_id, oc.stable_id as stable_id, " +
+            "pf.peer_uri as peer_uri,pf.peerfile_public as peerfile_public from openpeer_contact " +
+            "oc left join peerfile_public pf on oc.peerfile_id=pf._id where oc._id="
+            + id;
         Cursor cursor = mOpenHelper.getReadableDatabase().rawQuery(rawQuery,
-                null);
+                                                                   null);
         return cursor;
     }
 
@@ -434,11 +373,11 @@ public class OPContentProvider extends ContentProvider {
         String rawQuery = null;
 
         if (!TextUtils.isEmpty(selection)) {
-            rawQuery = DatabaseContracts.QUERY_OPENPEER_CONTACT_DETAIL
+            rawQuery = QUERY_OPENPEER_CONTACT_DETAIL
                     + " where "
                     + selection;
         } else {
-            rawQuery = DatabaseContracts.QUERY_OPENPEER_CONTACT_DETAIL;
+            rawQuery = QUERY_OPENPEER_CONTACT_DETAIL;
         }
         Cursor cursor = mOpenHelper.getReadableDatabase().rawQuery(
                 rawQuery,
@@ -451,20 +390,13 @@ public class OPContentProvider extends ContentProvider {
             String[] selectionArgs) {
         int result;
         MatcherInfo value = MatcherInfo.values()[mUriMatcher.match(uri)];
-        StringBuilder stringBuilder = new StringBuilder();
 
         switch (value) {
-        case MESSAGES_WINDOW:
-            int windowId = Integer.parseInt(uri.getLastPathSegment());
-            stringBuilder.append(DatabaseContracts.COLUMN_CBC_ID + "="
-                    + windowId);
-            if (!TextUtils.isEmpty(selection)) {
-                stringBuilder.append(" and ").append(selection);
-            }
-            return updateMessages(uri, values, stringBuilder.toString(),
+        case CONVERSATION_HISTORY:
+            return updateMessages(uri, values, selection,
                     selectionArgs);
-        case MESSAGES:
-            return updateMessage(uri, values, selection, selectionArgs);
+        case CONVERSATIONS:
+
         default:
             String table = uri.getLastPathSegment();
             SQLiteDatabase db = mOpenHelper.getWritableDatabase();
@@ -476,53 +408,23 @@ public class OPContentProvider extends ContentProvider {
     private int updateMessages(Uri uri, ContentValues values, String selection,
             String[] selectionArgs) {
         SQLiteDatabase db = mOpenHelper.getReadableDatabase();
-
-        int result = db.update(MessageEntry.TABLE_NAME, values, selection,
-                selectionArgs);
-        if (result != 0) {
-            getContext().getContentResolver().notifyChange(uri, null);
-            notifyChatHistoryChange();
+        String conversationId = uri.getLastPathSegment();
+        String conversationCondition = ConversationEntry.COLUMN_CONVERSATION_ID + "=?";
+        if (!TextUtils.isEmpty(selection)) {
+            selection = selection + " and " + conversationCondition;
+        } else {
+            selection = conversationCondition;
         }
-        return result;
-    }
-
-    private int updateMessage(Uri uri, ContentValues values, String selection,
-            String[] selectionArgs) {
-        SQLiteDatabase db = mOpenHelper.getReadableDatabase();
-
-        int result = db.update(MessageEntry.TABLE_NAME, values, selection,
-                selectionArgs);
+        if (selectionArgs != null) {
+            selectionArgs = Arrays.copyOf(selectionArgs, selectionArgs.length + 1);
+            selectionArgs[selectionArgs.length - 1] = conversationId;
+        } else {
+            selectionArgs = new String[]{conversationId};
+        }
+        int result = db.update(MessageEntry.TABLE_NAME, values, selection, selectionArgs);
         if (result != 0) {
             getContext().getContentResolver().notifyChange(uri, null);
             notifyChatHistoryChange();
-            Cursor cursor = db.query(
-                    MessageEntry.TABLE_NAME,
-                    null, // The columns to return from the query
-                    selection, // The columns for the where clause
-                    selectionArgs, // The values for the where clause
-                    null, // don't group the rows
-                    null, // don't filter by row groups
-                    null // The sort order
-                    );
-            if (cursor == null || cursor.getCount() == 0) {
-                return result;
-            }
-            switch (getGroupChatMode()) {
-            case ContactsBased:
-                cursor.moveToFirst();
-                long windowId = cursor
-                        .getLong(cursor
-                                .getColumnIndex(DatabaseContracts.COLUMN_CBC_ID));
-                long rowId = cursor.getLong(0);
-                String url = MessageEntry.URI_PATH_WINDOW_ID_URI_BASE
-                        + windowId + "/" + rowId;
-                cursor.close();
-                getContext().getContentResolver().notifyChange(
-                        getContentUri(url), null);
-                break;
-            default:
-                break;
-            }
         }
         return result;
     }
@@ -632,36 +534,9 @@ public class OPContentProvider extends ContentProvider {
         return cursor;
     }
 
-    Cursor queryWindows(Uri uri, String[] projection, String selection,
-            String[] selectionArgs, String sortOrder) {
-        SQLiteDatabase db = mOpenHelper.getReadableDatabase();
-        Cursor cursor = db.query(
-                DatabaseContracts.WindowViewEntry.TABLE_NAME,
-                projection, // The columns to return from the query
-                selection, // The columns for the where clause
-                selectionArgs, // The values for the where clause
-                null, // don't group the rows
-                null, // don't filter by row groups
-                sortOrder // The sort order
-                );
-        Log.d("test", "query uri " + uri + " result " + cursor.getCount());
-        cursor.setNotificationUri(getContext().getContentResolver(), uri);
-        return cursor;
-    }
-
     void notifyChatHistoryChange() {
-        switch (OPSdkConfig.getInstance().getGroupChatMode()) {
-        case ContactsBased:
-            getContext().getContentResolver().notifyChange(
-                    getContentUri(WindowViewEntry.URI_PATH_INFO_CBC), null);
-            break;
-        case ContextBased:
             getContext().getContentResolver().notifyChange(
                     getContentUri(WindowViewEntry.URI_PATH_INFO_CONTEXT), null);
-        default:
-            break;
-        }
-
     }
 
     /**
@@ -670,10 +545,6 @@ public class OPContentProvider extends ContentProvider {
     public static OPContentProvider getInstance() {
         // TODO Auto-generated method stub
         return instance;
-    }
-
-    GroupChatMode getGroupChatMode() {
-        return GroupChatMode.ContactsBased;
     }
 
     static String getIdClause(Uri uri) {
@@ -687,5 +558,15 @@ public class OPContentProvider extends ContentProvider {
             selection = selection + getIdClause(uri);
         }
         return selection;
+    }
+
+    private static final String QUERY_OPENPEER_CONTACT_DETAIL = "select oc._id as _id, oc.stable_id as stable_id, oc.peer_uri as peer_uri,oc.peerfile_public as peerfile_public,rc._id as rolodex_id,rc.name as name, rc.identity_uri as identity_uri,rc.profile_url as profile_url,rc.vprofile_url as vprofile_url, ip.domain as domain, ic.identity_proof_bundle as identity_proof_bundle,ic.priority as priority,ic.weight as weight,ic.last_update_time as last_update_time,ic.expire as expire from openpeer_contact oc left join rolodex_contact rc on oc._id=rc.openpeer_contact_id left join identity_contact ic on rc.identity_contact_id=ic._id left join identity_provider ip on rc.identity_provider_id=ip._id";
+    private static final String QUERY_CHATS = "SELECT d._id as _id,d.conversation_id as conversation_id,d.type as type,d.cbc_id as cbc_id,d.openpeer_contact_id as openpeer_contact_id,d.rolodex_id as rolodex_id,d.name as name,c.text as last_message,c.time as last_message_time, e.count as unread_count from (select z._id as _id,z.participants as cbc_id,z.type as type,z.conversation_id as conversation_id,group_concat(a.openpeer_contact_id,',') as openpeer_contact_id,group_concat(b._id,',') as rolodex_id,group_concat(b.name,',') as name from conversation z left join participants a on z.participants=a.cbc_id left join rolodex_contact b  on a.openpeer_contact_id=b.openpeer_contact_id and b.is_primary=1 group by conversation_id) d inner join (select conversation_id,text,time from message group by conversation_id) c on(c.conversation_id=d._id)  left join (select count(*) as count,conversation_id from message where read=0 group by conversation_id) e on(e.conversation_id=d._id) group by d.conversation_id";
+    private static final String QUERY_MESSAGES = "select m._id as _id, message_id,sender_id,type, text,time,outgoing_message_status,edit_status,rc.name as name from message m left join rolodex_contact rc on m.sender_id=rc.openpeer_contact_id ";
+    private static final String QUERY_CALL = "select ce._id+30000 as _id,c.call_id as message_id, c.peer_id as sender_id,c.type as type, c.call_id||','||c.peer_id||','||c.direction||','||ce.event as text,ce.time as time,'' as outgoing_delivery_status,0 as edit_status,rc.name as name from call c inner join call_event ce on ce.call_id=c.call_id and ce.event not in ('CallState_Preparing','CallState_Closing')  left join rolodex_contact rc on c.peer_id=rc.openpeer_contact_id ";
+    private static final String QUERY_CONVERSATION_EVENT = "select ce._id+60000 as _id,ce._id as message_id, 0 as sender_id,ce.event as type,ce.content as text,ce.time as time,'' as outgoing_delivery_status,0 as edit_status, '' as name from conversation_event ce left join conversation c on ce.conversation_id=c.conversation_id";
+
+    public void onSignout(){
+        mOpenHelper.closeAndDeleteDB();
     }
 }

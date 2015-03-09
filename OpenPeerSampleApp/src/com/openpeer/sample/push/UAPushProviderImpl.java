@@ -31,7 +31,6 @@ package com.openpeer.sample.push;
 
 import android.util.Base64;
 
-import com.openpeer.javaapi.OPMessage;
 import com.urbanairship.AirshipConfigOptions;
 import com.urbanairship.UAirship;
 
@@ -60,8 +59,7 @@ public class UAPushProviderImpl {
 
     }
 
-    public void pushMessage(OPMessage message, PushToken token, Callback<PushResult> callback) {
-        PushMessage msg = PushMessage.fromOPMessage(message, token);
+    public void pushMessage(UAPushMessage msg,  Callback<PushResult> callback) {
         service.push(msg, callback);
     }
 

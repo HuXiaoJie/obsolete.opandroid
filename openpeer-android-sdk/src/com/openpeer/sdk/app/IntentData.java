@@ -37,10 +37,17 @@ public class IntentData {
      */
     public static final String ACTION_ACCOUNT_SHUTDOWN = "com.openpeer.sdk.ACCOUNT_SHUTDOWN";
     public static final String ACTION_IDENTITY_SHUTDOWN = "com.openpeer.sdk.IDENTITY_SHUTDOWN";
+    public static final String ACTION_CALL_STATE_CHANGE = "com.openpeer.CALL_STATE";
+    public static final String ACTION_CALL_INCOMING = "com.openpeer.CALL_INCOMING";
+
     /**
      * Signout is completed. Sent when account shutdown state received after logout initiated
      */
     public static final String ACTION_SIGNOUT_DONE = "com.openpeer.sdk.SIGNOUT_DONE";
 
     public static final String PARAM_IDENTITY_URI = "identityUri";
+
+    public static final String ARG_CALL_STATE = "callState";
+    public static final String ARG_CALL_ID = "callId";
+    public static final String ARG_PEER_USER_ID = "userId";
 }

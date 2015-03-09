@@ -29,31 +29,20 @@
  *******************************************************************************/
 package com.openpeer.sample.push;
 
-import android.app.Notification;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.support.v4.content.LocalBroadcastManager;
-import android.text.TextUtils;
 import android.util.Log;
 
-import com.openpeer.javaapi.AccountStates;
-import com.openpeer.javaapi.MessageDeliveryStates;
-import com.openpeer.javaapi.OPMessage;
-import com.openpeer.sample.OPNotificationBuilder;
-import com.openpeer.sdk.app.OPDataManager;
-import com.openpeer.sdk.model.MessageEditState;
-import com.openpeer.sdk.model.OPUser;
-import com.openpeer.sdk.utils.OPModelUtils;
+import com.openpeer.sdk.model.HOPAccount;
 import com.urbanairship.actions.DeepLinkAction;
 import com.urbanairship.actions.LandingPageAction;
 import com.urbanairship.actions.OpenExternalUrlAction;
 import com.urbanairship.push.GCMMessageHandler;
-import com.urbanairship.push.PushManager;
 
 import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 import retrofit.Callback;
@@ -63,13 +52,6 @@ import retrofit.client.Response;
 public class PushIntentReceiver extends BroadcastReceiver {
     private static final String logTag = "PushIntentReceiver";
     public static final String EXTRA_MESSAGE_ID_KEY = "_uamid";
-
-    static final String KEY_PEER_URI = "peerURI";
-    static final String KEY_SENDER_NAME = "senderName";
-    static final String KEY_MESSAGE_ID = "messageId";
-    static final String KEY_REPLACES_MESSAGE_ID = "replacesMessageId";
-
-    static final String KEY_SEND_TIME = "date";
 
     // A set of actions that launch activities when a push is opened. Update
     // with any custom actions that also start activities when a push is opened.
@@ -89,46 +71,19 @@ public class PushIntentReceiver extends BroadcastReceiver {
             return;
         }
 
-        if (action.equals(PushManager.ACTION_PUSH_RECEIVED)) {
+        if (action.equals(com.urbanairship.push.PushManager.ACTION_PUSH_RECEIVED)) {
 
-            int id = intent.getIntExtra(PushManager.EXTRA_NOTIFICATION_ID, 0);
+            int id = intent.getIntExtra(com.urbanairship.push.PushManager.EXTRA_NOTIFICATION_ID, 0);
 
             Log.i(logTag, "Received push notification. Alert: "
-                    + intent.getStringExtra(PushManager.EXTRA_ALERT)
+                    + intent.getStringExtra(com.urbanairship.push.PushManager.EXTRA_ALERT)
                     + " [NotificationID=" + id + "]");
 
             logPushExtras(intent);
 
-            String senderUri = intent.getStringExtra(KEY_PEER_URI);
-            String messageId = intent.getStringExtra(KEY_MESSAGE_ID);
-            String replacesMessageId = intent
-                    .getStringExtra(KEY_REPLACES_MESSAGE_ID);
+            //TODO: Now notify observer
 
-            OPUser sender = OPDataManager.getDatastoreDelegate()
-                    .getUserByPeerUri(senderUri);
-            if (sender == null) {
-                Log.e(logTag, "onReceive Couldn't find user for peer "
-                        + senderUri);
-                return;
-            }
-
-            OPMessage opMessage = new OPMessage(
-                    sender.getUserId(),
-                    OPMessage.OPMessageType.TYPE_TEXT,
-                    intent.getStringExtra(PushManager.EXTRA_ALERT),
-                    Long.parseLong(intent.getStringExtra(KEY_SEND_TIME)) * 1000,
-                    messageId,
-                    MessageEditState.Normal);
-            if (replacesMessageId != null) {
-                opMessage.setReplacesMessageId(replacesMessageId);
-            }
-            long windowId = OPModelUtils.getWindowId(new long[] { sender
-                    .getUserId() });
-
-            OPDataManager.getDatastoreDelegate().saveMessage(opMessage,
-                    windowId, "", 0);
-
-        } else if (action.equals(PushManager.ACTION_NOTIFICATION_OPENED)) {
+        } else if (action.equals(com.urbanairship.push.PushManager.ACTION_NOTIFICATION_OPENED)) {
 
         } else if (action.equals(GCMMessageHandler.ACTION_GCM_DELETED_MESSAGES)) {
             Log.i(logTag,
@@ -136,16 +91,13 @@ public class PushIntentReceiver extends BroadcastReceiver {
                             + intent.getStringExtra(GCMMessageHandler.EXTRA_GCM_TOTAL_DELETED)
                             + " messages."
                     );
-        } else if (action.equals(PushManager.ACTION_REGISTRATION_FINISHED)) {
-            String apid = intent.getStringExtra(PushManager.EXTRA_APID);
+        } else if (action.equals(com.urbanairship.push.PushManager.ACTION_REGISTRATION_FINISHED)) {
+            String apid = intent.getStringExtra(com.urbanairship.push.PushManager.EXTRA_APID);
             Log.i(logTag, "Push registration finished " + apid);
             if (apid != null
-                    && OPDataManager.getInstance().getSharedAccount() != null
-                    && OPDataManager.getInstance().getSharedAccount()
-                            .getState() == AccountStates.AccountState_Ready) {
-                OPPushManager.getInstance().associateDeviceToken(
-                        OPDataManager.getInstance().getSharedAccount()
-                                .getPeerUri(),
+                    && HOPAccount.isAccountReady()) {
+                PushManager.getInstance().associateDeviceToken(
+                        HOPAccount.selfContact().getPeerUri(),
                         apid,
                         new Callback<HackApiService.HackAssociateResult>() {
                             @Override
@@ -172,7 +124,7 @@ public class PushIntentReceiver extends BroadcastReceiver {
 
     /**
      * Log the values sent in the payload's "extra" dictionary.
-     * 
+     *
      * @param intent
      *            A PushManager.ACTION_NOTIFICATION_OPENED or ACTION_PUSH_RECEIVED intent.
      */
@@ -184,9 +136,9 @@ public class PushIntentReceiver extends BroadcastReceiver {
             List<String> ignoredKeys = (List<String>) Arrays.asList(
                     "collapse_key",// c2dm collapse key
                     "from",// c2dm sender
-                    PushManager.EXTRA_NOTIFICATION_ID,// int id of generated notification (ACTION_PUSH_RECEIVED only)
-                    PushManager.EXTRA_PUSH_ID,// internal UA push id
-                    PushManager.EXTRA_ALERT);// ignore alert
+                    com.urbanairship.push.PushManager.EXTRA_NOTIFICATION_ID,// int id of generated notification (ACTION_PUSH_RECEIVED only)
+                    com.urbanairship.push.PushManager.EXTRA_PUSH_ID,// internal UA push id
+                    com.urbanairship.push.PushManager.EXTRA_ALERT);// ignore alert
             if (ignoredKeys.contains(key)) {
                 continue;
             }
@@ -195,45 +147,6 @@ public class PushIntentReceiver extends BroadcastReceiver {
                             + intent.getStringExtra(key) + "]"
                     );
         }
-    }
-
-    public Notification buildNotification(String alert,
-            Map<String, String> extras) {
-
-        String replacesMessageId = extras.get(KEY_REPLACES_MESSAGE_ID);
-        if (!TextUtils.isEmpty(replacesMessageId)) {
-            Log.d(logTag,
-                    "buildNotification don't notify for replacesMessageId "
-                            + replacesMessageId);
-            return null;
-        }
-
-        String senderUri = extras.get(KEY_PEER_URI);
-        String senderName = extras.get(KEY_SENDER_NAME);
-        String messageId = extras.get(KEY_MESSAGE_ID);
-
-        Log.d("test", "peerURI " + senderUri + " sender name " + senderName
-                + " message id " + messageId);
-        OPUser sender = OPDataManager.getDatastoreDelegate().getUserByPeerUri(
-                senderUri);
-        if (sender == null) {
-            Log.e("test", "Couldn't find user for peer " + senderUri);
-        }
-        OPMessage message = new OPMessage(sender.getUserId(),
-                OPMessage.OPMessageType.TYPE_TEXT,
-                alert,
-                Long.parseLong(extras.get(KEY_SEND_TIME)),
-                messageId,
-                MessageEditState.Normal);
-
-        return OPNotificationBuilder.buildNotificationForMessage(
-                new long[] { message.getSenderId() }, message);
-    }
-
-    public int getNextId(String alert, Map<String, String> extras) {
-        String senderUri = extras.get(KEY_PEER_URI);
-
-        return senderUri.hashCode();
     }
 
 }

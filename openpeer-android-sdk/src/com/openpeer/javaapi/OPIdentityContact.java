@@ -29,21 +29,9 @@
  *******************************************************************************/
 package com.openpeer.javaapi;
 
-import java.util.ArrayList;
 import java.util.List;
 
-import com.openpeer.javaapi.OPRolodexContact.OPAvatar;
-import com.openpeer.sdk.app.OPDataManager;
-import com.openpeer.sdk.datastore.DatabaseContracts;
-import com.openpeer.sdk.datastore.DatabaseContracts.IdentityContactEntry;
-import com.openpeer.sdk.datastore.DatabaseContracts.OpenpeerContactEntry;
-import com.openpeer.sdk.datastore.DatabaseContracts.RolodexContactEntry;
-import com.openpeer.sdk.model.OPUser;
-
-import android.database.Cursor;
-import android.provider.BaseColumns;
 import android.text.format.Time;
-import android.util.Log;
 
 public class OPIdentityContact extends OPRolodexContact {
 

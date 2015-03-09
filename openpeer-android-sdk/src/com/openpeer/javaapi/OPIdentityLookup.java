@@ -31,7 +31,7 @@ package com.openpeer.javaapi;
 
 import java.util.List;
 
-import com.openpeer.sdk.app.OPSdkConfig;
+import com.openpeer.sdk.app.HOPSettingsHelper;
 
 import android.util.Log;
 
@@ -54,7 +54,7 @@ public class OPIdentityLookup {
 				account,
 				delegate,
 				identityLookupInfos,
-				OPSdkConfig.getInstance().getIdentityProviderDomain());
+				HOPSettingsHelper.getInstance().getIdentityProviderDomain());
 	}
 
 	private long nativeClassPointer;

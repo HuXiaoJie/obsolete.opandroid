@@ -26,12 +26,6 @@ LOCAL_SRC_FILES := \
 include $(PREBUILT_STATIC_LIBRARY)
 
 include $(CLEAR_VARS)
-LOCAL_MODULE := libacm2
-LOCAL_SRC_FILES := \
-    $(WEBRTC_LIBS_PATH)/libacm2.a
-include $(PREBUILT_STATIC_LIBRARY)
-
-include $(CLEAR_VARS)
 LOCAL_MODULE := libaudio_conference_mixer
 LOCAL_SRC_FILES := \
     $(WEBRTC_LIBS_PATH)/libaudio_conference_mixer.a
@@ -146,15 +140,9 @@ LOCAL_SRC_FILES := \
 include $(PREBUILT_STATIC_LIBRARY)
 
 include $(CLEAR_VARS)
-LOCAL_MODULE := libNetEq
+LOCAL_MODULE := libneteq
 LOCAL_SRC_FILES := \
-    $(WEBRTC_LIBS_PATH)/libNetEq.a
-include $(PREBUILT_STATIC_LIBRARY)
-
-include $(CLEAR_VARS)
-LOCAL_MODULE := libNetEq4
-LOCAL_SRC_FILES := \
-    $(WEBRTC_LIBS_PATH)/libNetEq4.a
+    $(WEBRTC_LIBS_PATH)/libneteq.a
 include $(PREBUILT_STATIC_LIBRARY)
 
 include $(CLEAR_VARS)
@@ -206,6 +194,12 @@ LOCAL_SRC_FILES := \
 include $(PREBUILT_STATIC_LIBRARY)
 
 include $(CLEAR_VARS)
+LOCAL_MODULE := libvideo_capture_module_internal_impl
+LOCAL_SRC_FILES := \
+    $(WEBRTC_LIBS_PATH)/libvideo_capture_module_internal_impl.a
+include $(PREBUILT_STATIC_LIBRARY)
+
+include $(CLEAR_VARS)
 LOCAL_MODULE := libvideo_coding_utility
 LOCAL_SRC_FILES := \
     $(WEBRTC_LIBS_PATH)/libvideo_coding_utility.a
@@ -230,9 +224,81 @@ LOCAL_SRC_FILES := \
 include $(PREBUILT_STATIC_LIBRARY)
 
 include $(CLEAR_VARS)
+LOCAL_MODULE := libvideo_render_module_internal_impl
+LOCAL_SRC_FILES := \
+    $(WEBRTC_LIBS_PATH)/libvideo_render_module_internal_impl.a
+include $(PREBUILT_STATIC_LIBRARY)
+
+include $(CLEAR_VARS)
 LOCAL_MODULE := libvoice_engine
 LOCAL_SRC_FILES := \
     $(WEBRTC_LIBS_PATH)/libvoice_engine.a
+include $(PREBUILT_STATIC_LIBRARY)
+
+include $(CLEAR_VARS)
+LOCAL_MODULE := libwebrtc
+LOCAL_SRC_FILES := \
+    $(WEBRTC_LIBS_PATH)/libwebrtc.a
+include $(PREBUILT_STATIC_LIBRARY)
+
+include $(CLEAR_VARS)
+LOCAL_MODULE := libwebrtc_common
+LOCAL_SRC_FILES := \
+    $(WEBRTC_LIBS_PATH)/libwebrtc_common.a
+include $(PREBUILT_STATIC_LIBRARY)
+
+include $(CLEAR_VARS)
+LOCAL_MODULE := librtc_base_approved
+LOCAL_SRC_FILES := \
+    $(WEBRTC_LIBS_PATH)/librtc_base_approved.a
+include $(PREBUILT_STATIC_LIBRARY)
+
+include $(CLEAR_VARS)
+LOCAL_MODULE := libred
+LOCAL_SRC_FILES := \
+    $(WEBRTC_LIBS_PATH)/libred.a
+include $(PREBUILT_STATIC_LIBRARY)
+
+include $(CLEAR_VARS)
+LOCAL_MODULE := libaudio_encoder_interface
+LOCAL_SRC_FILES := \
+    $(WEBRTC_LIBS_PATH)/libaudio_encoder_interface.a
+include $(PREBUILT_STATIC_LIBRARY)
+
+include $(CLEAR_VARS)
+LOCAL_MODULE := libaudio_decoder_interface
+LOCAL_SRC_FILES := \
+    $(WEBRTC_LIBS_PATH)/libaudio_decoder_interface.a
+include $(PREBUILT_STATIC_LIBRARY)
+
+include $(CLEAR_VARS)
+LOCAL_MODULE := libfield_trial_default
+LOCAL_SRC_FILES := \
+    $(WEBRTC_LIBS_PATH)/libfield_trial_default.a
+include $(PREBUILT_STATIC_LIBRARY)
+
+include $(CLEAR_VARS)
+LOCAL_MODULE := libmetrics_default
+LOCAL_SRC_FILES := \
+    $(WEBRTC_LIBS_PATH)/libmetrics_default.a
+include $(PREBUILT_STATIC_LIBRARY)
+
+include $(CLEAR_VARS)
+LOCAL_MODULE := libjpeg_turbo
+LOCAL_SRC_FILES := \
+    $(WEBRTC_LIBS_PATH)/libjpeg_turbo.a
+include $(PREBUILT_STATIC_LIBRARY)
+
+include $(CLEAR_VARS)
+LOCAL_MODULE := libopenmax_dl
+LOCAL_SRC_FILES := \
+    $(WEBRTC_LIBS_PATH)/libopenmax_dl.a
+include $(PREBUILT_STATIC_LIBRARY)
+
+include $(CLEAR_VARS)
+LOCAL_MODULE := libopenmax_dl_armv7
+LOCAL_SRC_FILES := \
+    $(WEBRTC_LIBS_PATH)/libopenmax_dl_armv7.a
 include $(PREBUILT_STATIC_LIBRARY)
 
 include $(CLEAR_VARS)
@@ -275,6 +341,12 @@ include $(CLEAR_VARS)
 LOCAL_MODULE := libwebrtc_vp8
 LOCAL_SRC_FILES := \
     $(WEBRTC_LIBS_PATH)/libwebrtc_vp8.a
+include $(PREBUILT_STATIC_LIBRARY)
+
+include $(CLEAR_VARS)
+LOCAL_MODULE := libwebrtc_vp9
+LOCAL_SRC_FILES := \
+    $(WEBRTC_LIBS_PATH)/libwebrtc_vp9.a
 include $(PREBUILT_STATIC_LIBRARY)
 
 include $(CLEAR_VARS)
@@ -476,12 +548,10 @@ LOCAL_SRC_FILES := \
 LOCAL_LDLIBS += -llog -lGLESv2 -lOpenSLES -latomic\
 
 LOCAL_WHOLE_STATIC_LIBRARIES := \
-libvoice_engine \
 libaudio_conference_mixer \
 libaudio_processing_neon \
 libaudio_processing \
 libaudio_coding_module \
-libacm2 \
 libcpu_features \
 libcpu_features_android \
 libaudio_device \
@@ -498,8 +568,7 @@ libisac_neon \
 libiSAC \
 libiSACFix \
 libmedia_file \
-libNetEq \
-libNetEq4 \
+libneteq \
 libopus \
 libpaced_sender \
 libPCM16B \
@@ -508,10 +577,24 @@ librbe_components \
 librtp_rtcp \
 libsystem_wrappers \
 libvideo_capture_module \
+libvideo_capture_module_internal_impl \
 libvideo_coding_utility \
 libvideo_engine_core \
 libvideo_processing \
 libvideo_render_module \
+libvideo_render_module_internal_impl \
+libvoice_engine \
+libwebrtc \
+libwebrtc_common \
+librtc_base_approved \
+libred \
+libaudio_encoder_interface \
+libaudio_decoder_interface \
+libfield_trial_default \
+libmetrics_default \
+libjpeg_turbo \
+libopenmax_dl \
+libopenmax_dl_armv7 \
 libvpx \
 libvpx_intrinsics_neon \
 libwebrtc_i420 \
@@ -519,6 +602,7 @@ libwebrtc_opus \
 libwebrtc_utility \
 libwebrtc_video_coding \
 libwebrtc_vp8 \
+libwebrtc_vp9 \
 libyuv \
 libyuv_neon \
 libortc_android \

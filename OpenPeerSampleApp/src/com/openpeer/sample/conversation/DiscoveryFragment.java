@@ -54,9 +54,10 @@ import android.widget.SearchView;
 import com.openpeer.sample.BaseFragment;
 import com.openpeer.sample.R;
 import com.openpeer.sample.contacts.ContactItemView;
-import com.openpeer.sdk.app.OPDataManager;
+import com.openpeer.sample.view.ProgressEmptyView;
+import com.openpeer.sdk.model.HOPDataManager;
 import com.openpeer.sdk.datastore.DatabaseContracts.RolodexContactEntry;
-import com.openpeer.sdk.datastore.OPContentProvider;
+import com.openpeer.sdk.model.HOPAccount;
 
 public class DiscoveryFragment extends BaseFragment implements
         SwipeRefreshLayout.OnRefreshListener,
@@ -65,6 +66,7 @@ public class DiscoveryFragment extends BaseFragment implements
     private SwipeRefreshLayout mRootLayout;
     private ListView mListView;
     private ContactsAdapter mAdapter;
+    private ProgressEmptyView emptyView;
     private boolean mTest;
 
     public static DiscoveryFragment newInstance() {
@@ -86,7 +88,7 @@ public class DiscoveryFragment extends BaseFragment implements
 
     private View setupView(View view) {
         mListView = (ListView) view.findViewById(R.id.listview);
-        View emptyView = view.findViewById(R.id.empty_view);
+        emptyView = (ProgressEmptyView)view.findViewById(R.id.empty_view);
         mListView.setEmptyView(emptyView);
         mRootLayout = (SwipeRefreshLayout) view.findViewById(R.id.refresh_view);
         mRootLayout.setOnRefreshListener(this);
@@ -97,7 +99,7 @@ public class DiscoveryFragment extends BaseFragment implements
             @Override
             public void onItemClick(AdapterView<?> parent, View view,
                     int position, long id) {
-                ((ContactItemView) view).onClick();
+                ((ContactItemView) view).click();
             }
         });
 
@@ -138,6 +140,7 @@ public class DiscoveryFragment extends BaseFragment implements
     public void onResume() {
         // TODO Auto-generated method stub
         super.onResume();
+        getLoaderManager().restartLoader(URL_LOADER,null,this);
 
     }
 
@@ -163,14 +166,14 @@ public class DiscoveryFragment extends BaseFragment implements
 
     @Override
     public void onRefresh() {
-        OPDataManager.getInstance().refreshContacts();
+        HOPAccount.currentAccount().refreshContacts();
         mRootLayout.setRefreshing(false);
     }
 
     static String oldQuery;
 
     void setupContent() {
-        // mAdapter.mContacts = OPDataManager.getDatastoreDelegate()
+        // mAdapter.mContacts = OPDataManager.getInstance()
         // .getContacts(0);
         //
         // mAdapter.notifyDataSetChanged();
@@ -208,9 +211,10 @@ public class DiscoveryFragment extends BaseFragment implements
         }
         switch (loaderID) {
         case URL_LOADER:
+            emptyView.showProgress();
             // Returns a new CursorLoader
             return new CursorLoader(getActivity(), // Parent activity context
-                    OPContentProvider
+                    HOPDataManager.getInstance()
                             .getContentUri(RolodexContactEntry.URI_PATH_INFO),
 
                     null, // Projection to return
@@ -227,13 +231,14 @@ public class DiscoveryFragment extends BaseFragment implements
     @Override
     public void onLoadFinished(Loader<Cursor> loader, Cursor cursor) {
         mAdapter.changeCursor(cursor);
-
+        if(cursor.getCount()==0){
+            emptyView.showProgress();
+        }
     }
 
     @Override
     public void onLoaderReset(Loader<Cursor> arg0) {
         mAdapter.changeCursor(null);
-
     }
 
     // End: CursorCallback implementation

@@ -40,12 +40,13 @@ import android.widget.TextView;
 import com.openpeer.javaapi.OPMessage;
 import com.openpeer.sample.R;
 import com.openpeer.sample.util.DateFormatUtils;
-import com.openpeer.sdk.model.OPConversation;
-import com.openpeer.sdk.model.OPUser;
+import com.openpeer.sdk.model.HOPDataManager;
+import com.openpeer.sdk.model.HOPContact;
+import com.openpeer.sdk.model.HOPConversation;
 
 public class PeerMessageView extends RelativeLayout {
     OPMessage mMessage;
-    OPConversation mSession;
+    HOPConversation mSession;
     ImageView avatarView;
     TextView title;
     View editedIndicator;
@@ -78,16 +79,14 @@ public class PeerMessageView extends RelativeLayout {
     public void update(OPMessage data) {
         mMessage = data;
 
-        OPUser user = mSession
-                .getUserBySenderId(data.getSenderId());
+        HOPContact user = HOPDataManager.getInstance().getUserById(data.getSenderId());
         if (user != null) {
             if (user.getName() != null) {
                 title.setText(user.getName());
             }
         }
 
-        time.setText(DateFormatUtils.getSameDayTime(data.getTime()
-                .toMillis(true)));
+        time.setText(DateFormatUtils.getSameDayTime(data.getTime().toMillis(false)));
         switch (data.getEditState()) {
         case Deleted:
             text.setText(R.string.msg_deleted);
@@ -112,7 +111,7 @@ public class PeerMessageView extends RelativeLayout {
     /**
      * @param session
      */
-    public void setSession(OPConversation session) {
+    public void setSession(HOPConversation session) {
         mSession = session;
     }
 }

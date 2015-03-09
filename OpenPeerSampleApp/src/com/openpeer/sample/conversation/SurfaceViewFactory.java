@@ -44,7 +44,7 @@ public class SurfaceViewFactory {
 	public static SurfaceView getLocalView(Context context) {
 		SurfaceView view = mLocalView.get();
 		if (view == null) {
-			view = ViERenderer.CreateLocalRenderer(context);
+			view = ViERenderer.CreateRenderer(context);
 			mLocalView = new WeakReference<SurfaceView>(view);
 		}
 		return view;

@@ -37,16 +37,17 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.openpeer.javaapi.OPMessage;
-import com.openpeer.javaapi.OPMessage.OPMessageType;
 import com.openpeer.sample.R;
 import com.openpeer.sample.util.DateFormatUtils;
+import com.openpeer.sdk.model.HOPAccount;
+import com.openpeer.sdk.model.HOPDataManager;
+import com.openpeer.sdk.model.HOPConversation;
 import com.openpeer.sdk.model.MessageEditState;
-import com.openpeer.sdk.model.OPConversation;
 
 public class SelfMessageView extends RelativeLayout {
     private static final long FREEZING_PERIOD = 60 * 60 * 1000l;
     OPMessage mMessage;
-    OPConversation mSession;
+    HOPConversation mSession;
     TextView title;
 
     TextView time;
@@ -82,7 +83,7 @@ public class SelfMessageView extends RelativeLayout {
         mMessage = data;
 
         time.setText(DateFormatUtils.getSameDayTime(data.getTime()
-                .toMillis(true)));
+                .toMillis(false)));
 
         switch (data.getEditState()) {
         case Deleted:
@@ -131,7 +132,7 @@ public class SelfMessageView extends RelativeLayout {
     /**
      * @param session
      */
-    public void setSession(OPConversation session) {
+    public void setSession(HOPConversation session) {
         mSession = session;
     }
 
@@ -140,8 +141,8 @@ public class SelfMessageView extends RelativeLayout {
     }
 
     public void onDeleteSelected() {
-        OPMessage message = new OPMessage(0,
-                OPMessageType.TYPE_TEXT,
+        OPMessage message = new OPMessage(HOPAccount.selfContactId(),
+                OPMessage.TYPE_TEXT,
                 "",
                 System.currentTimeMillis(),
                 OPMessage.generateUniqueId());

@@ -8,5 +8,10 @@
 <target name="-post-build">
    <delete dir="src/org"/>
 </target>
-
+<target name="-post-compile" >
+    <echo>Post Compile: add assests from ${asset.absolute.dir} to ${out.library.jar.file}</echo>
+    <jar destfile="${out.library.jar.file}" update="true">
+        <zipfileset dir="${asset.absolute.dir}" prefix="assets" excludes="**/*.java ${android.package.excludes}"/>
+    </jar>
+</target>
 </project>

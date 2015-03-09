@@ -1,3 +1,13 @@
+opandroid SDK v0.5.11 changes:
+- OPDatastoreDelegate and OPDatastoreDelegateImpl refactoring
+- Aligned SDK and sample app versioning
+opandroid SDK v0.5.10 changes:
+- Switched to new server
+
+opandroid SDK v0.5.9 changes:
+- Added qr scanning and app settings download 
+
+opandroid SDK v0.5.8 changes:
 opandroid SDK v0.5.2 changes
 - Video and Audio call support
 - Chat and chat history

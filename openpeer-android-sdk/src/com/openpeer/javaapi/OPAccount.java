@@ -32,30 +32,9 @@ package com.openpeer.javaapi;
 
 import java.util.List;
 
-import com.openpeer.sdk.app.OPSdkConfig;
+import com.openpeer.sdk.app.HOPSettingsHelper;
 
 public class OPAccount {
-    /*
-     * Database record id
-     */
-    private long mAccountId;
-    private long mSelfContactId;
-
-    public long getSelfContactId() {
-        return mSelfContactId;
-    }
-
-    public void setSelfContactId(long id) {
-        this.mSelfContactId = id;
-    }
-
-    public long getAccountId() {
-        return mAccountId;
-    }
-
-    public void setAccountId(long id) {
-        this.mAccountId = id;
-    }
 
     /**
      * 
@@ -63,15 +42,6 @@ public class OPAccount {
      */
     public AccountStates getState() {
         return getState(0, "");
-    }
-
-    /**
-     * Convenience method to get the peerURI of the account
-     * 
-     * @return
-     */
-    public String getPeerUri() {
-        return OPContact.getForSelf(this).getPeerURI();
     }
 
     /**
@@ -91,9 +61,9 @@ public class OPAccount {
         return login(accountDelegate,
                 conversationThreadDelegate,
                 callDelegate,
-                OPSdkConfig.getInstance().getOuterFrameUrl(),
-                OPSdkConfig.getInstance().getGrantId(),
-                OPSdkConfig.getInstance().getIdentityProviderDomain(),
+                HOPSettingsHelper.getInstance().getOuterFrameUrl(),
+                HOPSettingsHelper.getInstance().getGrantId(),
+                HOPSettingsHelper.getInstance().getIdentityProviderDomain(),
                 false);
     }
 
@@ -110,13 +80,13 @@ public class OPAccount {
      *            valid relogin string cached from last session
      * @return
      */
-    public static OPAccount relogin(OPAccountDelegate delegate,
+    public static OPAccount relogin(OPAccountDelegate accountDelegate,
             OPConversationThreadDelegate conversationThreadDelegate,
             OPCallDelegate callDelegate, String reloginInformation) {
-        return relogin(delegate,
+        return relogin(accountDelegate,
                 conversationThreadDelegate,
                 callDelegate,
-                OPSdkConfig.getInstance().getOuterFrameUrl(),
+                HOPSettingsHelper.getInstance().getOuterFrameUrl(),
                 reloginInformation);
 
     }
@@ -166,7 +136,7 @@ public class OPAccount {
 
     /**
      * This function should be called during logout. This is Asynchronorous call, application should handle the SHUTDOWN state change
-     * {@link com.openpeer.javaapi.OPAccountDeleget}
+     * {@link com.openpeer.javaapi.OPAccountDelegate}
      */
     public native void shutdown();
 

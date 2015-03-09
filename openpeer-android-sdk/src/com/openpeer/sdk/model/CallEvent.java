@@ -40,7 +40,7 @@ public class CallEvent {
      * @param state
      * @param time
      */
-    public CallEvent(String callId, CallStates state, long time) {
+    public CallEvent(String callId, String state, long time) {
         super();
         this.callId = callId;
         this.state = state;
@@ -48,14 +48,14 @@ public class CallEvent {
     }
 
     String callId;
-    CallStates state;
+    String state;
     long time;
 
-    public CallStates getState() {
+    public String getState() {
         return state;
     }
 
-    public void setState(CallStates state) {
+    public void setState(String state) {
         this.state = state;
     }
 

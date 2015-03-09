@@ -67,6 +67,8 @@
             -pre-clean
     -->
     <import file="custom_rules.xml" optional="true" />
+    <property name="java.target" value="1.7" />
+    <property name="java.source" value="1.7" />
 
     <!-- Import the actual build file.
 

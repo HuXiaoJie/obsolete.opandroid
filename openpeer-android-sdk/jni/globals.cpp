@@ -59,5 +59,12 @@ JNIEnv* getEnv() {
 }
 
 jclass findClass(const char* name) {
-    return static_cast<jclass>(getEnv()->CallObjectMethod(gClassLoader, gFindClassMethod, getEnv()->NewStringUTF(name)));
+    // return static_cast<jclass>(getEnv()->CallObjectMethod(gClassLoader, gFindClassMethod, getEnv()->NewStringUTF(name)));
+    jobject cls = getEnv()->CallObjectMethod(gClassLoader, gFindClassMethod, getEnv()->NewStringUTF(name));
+    if (cls == 0 && getEnv()->ExceptionCheck()) {
+//        getEnv()->ExceptionDescribe();
+        getEnv()->ExceptionClear();
+        cls = getEnv()->FindClass(name);
+    }
+   return static_cast<jclass>(cls);
 }

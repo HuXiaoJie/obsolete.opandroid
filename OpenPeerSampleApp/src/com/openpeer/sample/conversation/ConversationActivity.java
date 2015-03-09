@@ -34,36 +34,25 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.view.MenuItem;
 
-import com.openpeer.javaapi.OPContact;
-import com.openpeer.javaapi.OPConversationThread;
 import com.openpeer.sample.BaseActivity;
 import com.openpeer.sample.IntentData;
 import com.openpeer.sample.R;
-import com.openpeer.sdk.app.OPDataManager;
+import com.openpeer.sdk.model.HOPAccount;
 
 public class ConversationActivity extends BaseActivity {
 
-    public static Intent getIntentForNotification(Context context,
-            OPConversationThread thread, String messageId, OPContact contact) {
+    public static void launchForChat(Context context, String type,String conversationId,long userIds[]) {
         Intent intent = new Intent(context, ConversationActivity.class);
-        // set intent data
-        return intent;
-    }
-
-    public static void launchForChat(Context context, long[] peerContactId,
-            String contextId) {
-        Intent intent = new Intent(context, ConversationActivity.class);
-        intent.putExtra(IntentData.ARG_CONVERSATION_ACTION,
-                IntentData.ACTION_CHAT);
-        intent.putExtra(IntentData.ARG_PEER_USER_IDS, peerContactId);
-        intent.putExtra(IntentData.ARG_CONTEXT_ID, contextId);
+        intent.putExtra(IntentData.ARG_CONVERSATION_ACTION, IntentData.ACTION_CHAT);
+        intent.putExtra(IntentData.ARG_CONVERSATION_TYPE,type);
+        intent.putExtra(IntentData.ARG_PEER_USER_IDS, userIds);
+        intent.putExtra(IntentData.ARG_CONVERSATION_ID, conversationId);
 
         context.startActivity(intent);
     }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        // TODO Auto-generated method stub
         super.onCreate(savedInstanceState);
 
         setContentView(R.layout.activity_container);
@@ -72,13 +61,11 @@ public class ConversationActivity extends BaseActivity {
         Intent intent = getIntent();
 
         getActionBar().setTitle(R.string.label_chat);
-        ChatFragment cFragment = ChatFragment.newInstance(
-                intent.getLongArrayExtra(IntentData.ARG_PEER_USER_IDS),
-                intent.getStringExtra(IntentData.ARG_CONTEXT_ID));
+        ChatFragment cFragment = new ChatFragment();
+        cFragment.setArguments(intent.getExtras());
         setContentFragment(cFragment);
 
-        if (OPDataManager.getInstance().getSharedAccount() == null
-                || !OPDataManager.getInstance().isAccountReady()) {
+        if (!HOPAccount.isAccountReady()) {
             // BaseActivity.showInvalidStateWarning(this);
             return;
         }

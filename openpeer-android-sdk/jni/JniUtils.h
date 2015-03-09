@@ -18,6 +18,7 @@
 #include "openpeer/core/IContact.h"
 #include "openpeer/core/IHelper.h"
 #include "openpeer/core/ILogger.h"
+#include "openpeer/core/types.h"
 #include "OpenPeerCoreManager.h"
 
 #include <android/log.h>
@@ -33,5 +34,6 @@
 
 IdentityContactList identityContactListFromJava(jobject identityContacts);
 IdentityContact identityContactFromJava(jobject identityContactObject);
-
+RolodexContact::AvatarList avatarListFromJava(jobject javaAvatarList);
+RolodexContact::Avatar avatarFromJava(jobject javaAvatar);
 #endif

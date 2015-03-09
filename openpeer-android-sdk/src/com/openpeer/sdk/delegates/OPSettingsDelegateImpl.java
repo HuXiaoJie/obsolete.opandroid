@@ -48,7 +48,6 @@ public class OPSettingsDelegateImpl extends OPSettingsDelegate {
     private Context mContext;
     private static OPSettingsDelegateImpl instance;
     private static final String TABLE_SETTINGS = "settings";
-    static final String QUERY_STRING = "select value from settings where key=?";
     private OPCoreDBHelper mDBHelper;
 
     private static final String COLUMN_KEY = "key";
@@ -67,17 +66,6 @@ public class OPSettingsDelegateImpl extends OPSettingsDelegate {
         }
         return instance;
     }
-
-    // private String simpleQueryForString(String key, String defaultValue) {
-    // SQLiteStatement query = mDBHelper.getReadableDatabase().compileStatement(QUERY_STRING);
-    // query.bindString(1, key);
-    // try {
-    // return query.simpleQueryForString();
-    // } catch (SQLiteDoneException e) {
-    //
-    // }
-    // return defaultValue;
-    // }
 
     private String simpleQueryForString(String key, String defaultValue) {
         String where = COLUMN_KEY + "=?";
