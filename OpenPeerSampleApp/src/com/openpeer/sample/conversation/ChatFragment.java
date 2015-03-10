@@ -68,6 +68,7 @@ import com.openpeer.sample.BaseActivity;
 import com.openpeer.sample.BaseFragment;
 import com.openpeer.sample.IntentData;
 import com.openpeer.sample.OPNotificationBuilder;
+import com.openpeer.sample.PhotoHelper;
 import com.openpeer.sample.R;
 import com.openpeer.sample.contacts.ProfilePickerActivity;
 import com.openpeer.sample.events.ConversationComposingStatusChangeEvent;
@@ -92,6 +93,9 @@ import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
 
+import butterknife.ButterKnife;
+import butterknife.InjectView;
+import butterknife.OnClick;
 import de.greenrobot.event.EventBus;
 
 public class ChatFragment extends BaseFragment implements
@@ -103,6 +107,8 @@ public class ChatFragment extends BaseFragment implements
     private ListView mMessagesList;
     private TextView mComposeBox;
     private View mSendButton;
+    @InjectView(R.id.camera)
+    private View mCameraButton;
     private MessagesAdaptor mAdapter;
     Loader mLoader;
 
@@ -220,6 +226,7 @@ public class ChatFragment extends BaseFragment implements
     }
 
     View setupView(View view) {
+        ButterKnife.inject(view);
         mCallInfoView = (CallInfoView) view.findViewById(R.id.call_info);
         View emptyView = view.findViewById(R.id.empty_view);
         mMessagesList = (ListView) view.findViewById(R.id.listview);
@@ -675,6 +682,15 @@ public class ChatFragment extends BaseFragment implements
             }
         }
         break;
+            case PhotoHelper.ACTIVITY_REQUEST_CODE_TAKE_PICTURE:{
+                uploadImage(data.getData());
+            }
+            break;
+            case PhotoHelper.ACTIVITY_REQUEST_CODE_GET_PICTURE_FROM_STORAGE:{
+                uploadImage(data.getData());
+
+            }
+            break;
         }
         super.onActivityResult(requestCode, resultCode, data);
     }
@@ -855,6 +871,15 @@ public class ChatFragment extends BaseFragment implements
 
     void setTitle(String title) {
         getActivity().getActionBar().setTitle(title);
+    }
+
+    @OnClick(R.id.camera)
+    public void onCameraClick(){
+        PhotoHelper.getInstance().showPhotoAlert(getActivity());
+    }
+
+    void uploadImage(Uri photoUri){
+
     }
     // End of SessionListener implementation
 }
