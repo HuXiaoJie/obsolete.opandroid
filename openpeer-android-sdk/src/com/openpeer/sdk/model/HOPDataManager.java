@@ -1393,8 +1393,9 @@ public class HOPDataManager {
 
             return identityContactId;
 
+        } else {
+            return  saveIdentityContactTable(contact);
         }
-        return 0;
 
     }
 
