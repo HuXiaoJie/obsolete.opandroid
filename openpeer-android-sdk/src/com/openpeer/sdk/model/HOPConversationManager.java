@@ -234,7 +234,7 @@ public class HOPConversationManager implements OPConversationThreadDelegate {
     }
 
     public OPConversationThread getThread(GroupChatMode conversationType, String conversationId,
-                                          HOPParticipantInfo HOPParticipantInfo,
+                                          HOPParticipantInfo participantInfo,
                                           boolean createNew) {
         if (!HOPAccount.isAccountReady()) {
             return null;
@@ -250,13 +250,13 @@ public class HOPConversationManager implements OPConversationThreadDelegate {
             thread = OPConversationThread.create(
                 HOPAccount.currentAccount().getAccount(),
                 HOPAccount.currentAccount().identityContacts(),
-                HOPModelUtils.getProfileInfo(HOPParticipantInfo.getParticipants()),
+                HOPModelUtils.getProfileInfo(participantInfo.getParticipants()),
                 conversationId,
                 metaData);
-            thread.setParticipantInfo(HOPParticipantInfo);
+            thread.setParticipantInfo(participantInfo);
 
             cacheThread(thread);
-            cacheCbcToThread(HOPParticipantInfo.getCbcId(), thread);
+            cacheCbcToThread(participantInfo.getCbcId(), thread);
         }
         return thread;
     }

@@ -1,5 +1,7 @@
 package com.openpeer.sample.delegates;
 
+import android.graphics.Bitmap;
+
 import com.openpeer.javaapi.ComposingStates;
 import com.openpeer.javaapi.ContactConnectionStates;
 import com.openpeer.javaapi.OPContact;
@@ -7,7 +9,9 @@ import com.openpeer.javaapi.OPLogLevel;
 import com.openpeer.javaapi.OPLogger;
 import com.openpeer.javaapi.OPMessage;
 import com.openpeer.sample.OPApplication;
+import com.openpeer.sample.PhotoHelper;
 import com.openpeer.sample.conversation.ConversationSwitchSystemMessage;
+import com.openpeer.sample.conversation.FileShareSystemMessage;
 import com.openpeer.sample.events.ConversationComposingStatusChangeEvent;
 import com.openpeer.sample.events.ConversationContactsChangeEvent;
 import com.openpeer.sample.events.ConversationSwitchEvent;
@@ -23,10 +27,19 @@ import com.openpeer.sdk.model.HOPConversationDelegate;
 import com.openpeer.sdk.model.HOPConversationManager;
 import com.openpeer.sdk.model.HOPSystemMessage;
 import com.openpeer.sdk.utils.JSONUtils;
+import com.parse.GetCallback;
+import com.parse.GetDataCallback;
+import com.parse.ParseException;
+import com.parse.ParseFile;
+import com.parse.ParseObject;
+import com.parse.ParseQuery;
+import com.parse.ProgressCallback;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+
+import java.io.ByteArrayOutputStream;
 
 public class HOPConversationDelegateImpl implements HOPConversationDelegate {
 
@@ -47,8 +60,8 @@ public class HOPConversationDelegateImpl implements HOPConversationDelegate {
                                                    ComposingStates composingStates,
                                                    HOPContact HOPContact) {
         new ConversationComposingStatusChangeEvent(conversation,
-                                                   HOPContact,
-                                                   composingStates).post();
+                HOPContact,
+                composingStates).post();
     }
 
     @Override
@@ -56,17 +69,17 @@ public class HOPConversationDelegateImpl implements HOPConversationDelegate {
         if (message.getMessageType().equals(OPMessage.TYPE_JSON_SYSTEM_MESSAGE)) {
             OPContact opContact = message.getFrom();
             HOPContact sender = HOPDataManager.getInstance().
-                getUserByPeerUri(opContact.getPeerURI());
+                    getUserByPeerUri(opContact.getPeerURI());
             String messageText = message.getMessage();
             try {
                 JSONObject systemObject = new JSONObject(messageText).getJSONObject
-                    (HOPSystemMessage.KEY_ROOT);
+                        (HOPSystemMessage.KEY_ROOT);
 
                 handleSystemMessage(conversation, sender, systemObject,
-                                    message.getTime().toMillis(false));
-            } catch(JSONException e) {
+                        message.getTime().toMillis(false));
+            } catch (JSONException e) {
                 OPLogger.error(OPLogLevel.LogLevel_Basic, "Error:invalid system message " +
-                    message.getMessage());
+                        message.getMessage());
             }
         }
         return false;
@@ -76,7 +89,7 @@ public class HOPConversationDelegateImpl implements HOPConversationDelegate {
     public boolean onConversationPushMessage(HOPConversation conversation, OPMessage message,
                                              HOPContact HOPContact) {
         OPApplication.getPushService().onConversationThreadPushMessage(conversation, message,
-                                                                       HOPContact);
+                HOPContact);
         return true;
     }
 
@@ -90,7 +103,7 @@ public class HOPConversationDelegateImpl implements HOPConversationDelegate {
 
     @Override
     public void onConversationMessageDeliveryStateChanged(HOPConversation conversation, OPMessage
-        message) {
+            message) {
 
     }
 
@@ -112,17 +125,17 @@ public class HOPConversationDelegateImpl implements HOPConversationDelegate {
         try {
             if (systemMessage.has(HOPSystemMessage.KEY_CALL_STATUS)) {
                 JSONObject callSystemMessage = systemMessage
-                    .getJSONObject(HOPSystemMessage.KEY_CALL_STATUS);
+                        .getJSONObject(HOPSystemMessage.KEY_CALL_STATUS);
                 handleCallSystemMessage(callSystemMessage,
-                                        sender,
-                                        conversation.getId(),
-                                        time);
+                        sender,
+                        conversation.getId(),
+                        time);
 
             } else if (systemMessage.has(HOPSystemMessage.KEY_CONTACTS_REMOVED)) {
                 JSONArray contactsRemovedMessage = systemMessage
-                    .getJSONArray(HOPSystemMessage.KEY_CONTACTS_REMOVED);
+                        .getJSONArray(HOPSystemMessage.KEY_CONTACTS_REMOVED);
                 String selfPeerUri = HOPAccount.selfContact().getPeerUri();
-                for (Object peerUri : (Object[])JSONUtils.toArray(contactsRemovedMessage)) {
+                for (Object peerUri : (Object[]) JSONUtils.toArray(contactsRemovedMessage)) {
                     if (peerUri.equals(selfPeerUri)) {
                         conversation.setDisabled(true);
                         new ConversationContactsChangeEvent(conversation).post();
@@ -130,15 +143,56 @@ public class HOPConversationDelegateImpl implements HOPConversationDelegate {
                 }
             } else if (systemMessage.has(ConversationSwitchSystemMessage.KEY_CONVERSATION_SWITCH)) {
                 JSONObject object = systemMessage.
-                    getJSONObject(ConversationSwitchSystemMessage.KEY_CONVERSATION_SWITCH);
+                        getJSONObject(ConversationSwitchSystemMessage.KEY_CONVERSATION_SWITCH);
                 HOPConversation from = HOPConversationManager.getInstance().getConversationById(
-                    object.getString(ConversationSwitchSystemMessage.KEY_FROM_CONVERSATION_ID));
+                        object.getString(ConversationSwitchSystemMessage.KEY_FROM_CONVERSATION_ID));
 
                 if (from != null && conversation != null) {
                     new ConversationSwitchEvent(from, conversation).post();
                 }
+            } else if (systemMessage.has(FileShareSystemMessage.KEY_FILE_SHARE)) {
+                JSONObject object = systemMessage.getJSONObject(FileShareSystemMessage
+                        .KEY_FILE_SHARE);
+                String objectId = object.getString(FileShareSystemMessage.KEY_OBJECT_id);
+                ParseQuery query = ParseQuery.getQuery("ImageUpload");
+                query.getInBackground(objectId, new GetCallback() {
+                    @Override
+                    public void done(final ParseObject parseObject, ParseException e) {
+                        if (e == null) {
+                            final ParseFile imageFile = (ParseFile) parseObject.get("ImageFile");
+                            imageFile.getDataInBackground(new GetDataCallback() {
+                                @Override
+                                public void done(byte[] bytes, ParseException e) {
+                                    if (e == null) {
+                                        Bitmap thumbNail = PhotoHelper.createThumbnail(bytes);
+                                        ByteArrayOutputStream stream = new ByteArrayOutputStream();
+                                        // Compress image to lower quality scale 1 - 100
+                                        thumbNail.compress(Bitmap.CompressFormat.PNG, 100, stream);
+                                        ParseFile thumbNailFile = new ParseFile(stream
+                                                .toByteArray());
+                                        parseObject.put("thumbNail", thumbNailFile);
+                                        parseObject.pinInBackground();
+                                    }
+                                }
+                            }, new ProgressCallback() {
+                                @Override
+                                public void done(Integer integer) {
+
+                                }
+                            });
+                        } else {
+                            e.printStackTrace();
+                        }
+                    }
+
+                    @Override
+                    public void done(Object o, Throwable throwable) {
+
+                    }
+                });
+//                ParseObject parseObject = ParseObject.fe
             }
-        } catch(JSONException e) {
+        } catch (JSONException e) {
             e.printStackTrace();
         }
     }
@@ -152,33 +206,33 @@ public class HOPConversationDelegateImpl implements HOPConversationDelegate {
             String calleeUrl = message.getString(CallSystemMessage.KEY_CALL_STATUS_CALLEE);
             if (calleeUrl.equals(HOPAccount.selfContact().getPeerUri())) {
                 HOPDataManager.getInstance().saveCall(message.getString(CallSystemMessage.KEY_ID),
-                                                      conversationId,
-                                                      user.getUserId(),
-                                                      HOPCall.DIRECTION_INCOMING,
-                                                      message.getString(CallSystemMessage
-                                                                            .KEY_CALL_STATUS_MEDIA_TYPE));
+                        conversationId,
+                        user.getUserId(),
+                        HOPCall.DIRECTION_INCOMING,
+                        message.getString(CallSystemMessage
+                                .KEY_CALL_STATUS_MEDIA_TYPE));
                 CallEvent event = new CallEvent(callId,
-                                                message.getString(CallSystemMessage
-                                                                      .KEY_CALL_STATUS_STATUS),
-                                                timestamp);
+                        message.getString(CallSystemMessage
+                                .KEY_CALL_STATUS_STATUS),
+                        timestamp);
                 HOPDataManager.getInstance().saveCallEvent(callId, conversationId, event);
             } else {
                 if (call == null) {// i'm tototally not connected with the peer
                     //couldn't find call in memory. try to save call
                     HOPDataManager.getInstance().saveCall(
-                        message.getString(CallSystemMessage.KEY_ID),
-                        conversationId,
-                        user.getUserId(),
-                        HOPCall.DIRECTION_INCOMING,
-                        message.getString(CallSystemMessage.KEY_CALL_STATUS_MEDIA_TYPE));
+                            message.getString(CallSystemMessage.KEY_ID),
+                            conversationId,
+                            user.getUserId(),
+                            HOPCall.DIRECTION_INCOMING,
+                            message.getString(CallSystemMessage.KEY_CALL_STATUS_MEDIA_TYPE));
                     CallEvent event = new CallEvent(callId,
-                                                    message.getString(CallSystemMessage
-                                                                          .KEY_CALL_STATUS_STATUS),
-                                                    timestamp);
+                            message.getString(CallSystemMessage
+                                    .KEY_CALL_STATUS_STATUS),
+                            timestamp);
                     HOPDataManager.getInstance().saveCallEvent(callId, conversationId, event);
                 }
             }
-        } catch(JSONException e) {
+        } catch (JSONException e) {
             e.printStackTrace();
         }
     }
