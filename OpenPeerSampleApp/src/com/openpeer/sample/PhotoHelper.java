@@ -18,9 +18,10 @@ import android.os.Build;
 import android.os.Environment;
 import android.provider.DocumentsContract;
 import android.provider.MediaStore;
-import android.util.Log;
+import android.support.v4.app.Fragment;
 import android.widget.Toast;
 
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -38,7 +39,8 @@ public class PhotoHelper {
     public final static int ROTATE_180 = 180;
     public final static int ROTATE_270 = 270;
     public final static int ROTATE_360 = 360;
-    public static final String PHOTO_PATH = "photo_%s.jpg";
+    public static final String PHOTO_FILE_NAME = "photo_%s.jpg";
+    public static final String PHOTO_PATH = "/hookflash.peely/photos";
     private static PhotoHelper instance;
     private Uri lastPhotoUri;
 
@@ -53,9 +55,8 @@ public class PhotoHelper {
         return instance;
     }
 
-    public void showPhotoAlert(final Activity activity) {
-
-        Log.d("activity is: ", activity.toString());
+    public void showPhotoAlert(final Fragment fragment) {
+        final Activity activity = fragment.getActivity();
         final boolean hasCamera = activity.getPackageManager().hasSystemFeature(PackageManager
                 .FEATURE_CAMERA);
         DialogInterface.OnClickListener takePhoto = new DialogInterface.OnClickListener() {
@@ -63,11 +64,11 @@ public class PhotoHelper {
             @Override
             public void onClick(DialogInterface dialog, int which) {
                 if (hasCamera) {
-                    lastPhotoUri = preparePhotoUri(activity);
+                    lastPhotoUri = preparePhotoUri();
 
                     Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
                     intent.putExtra(MediaStore.EXTRA_OUTPUT, lastPhotoUri);
-                    activity.startActivityForResult(intent, ACTIVITY_REQUEST_CODE_TAKE_PICTURE);
+                    fragment.startActivityForResult(intent, ACTIVITY_REQUEST_CODE_TAKE_PICTURE);
                 } else {
                     Toast.makeText(activity, "Device has no camera", Toast.LENGTH_SHORT).show();
                 }
@@ -79,18 +80,23 @@ public class PhotoHelper {
             public void onClick(DialogInterface dialog, int which) {
                 Intent photoPickerIntent = new Intent(Intent.ACTION_GET_CONTENT);
                 photoPickerIntent.setType("image/*");
-                activity.startActivityForResult(photoPickerIntent,
+                fragment.startActivityForResult(photoPickerIntent,
                         ACTIVITY_REQUEST_CODE_GET_PICTURE_FROM_STORAGE);
             }
         };
-        showTwoVariantsAlert(activity, activity.getString(R.string.label_take_photo),
+        showTwoVariantsAlert(fragment, activity.getString(R.string.label_take_photo),
                 activity.getString(R.string.label_choose_existing), takePhoto, getPhotoFromAlbum,
                 null);
     }
 
-    public Uri preparePhotoUri(Activity activity) {
-        File photoDir = Environment.getExternalStorageDirectory();
-        File photo = new File(photoDir, String.format(PHOTO_PATH,
+    public Uri preparePhotoUri() {
+        File photoDir = new File(Environment.getExternalStorageDirectory().getAbsolutePath() +
+                PHOTO_PATH);
+        if (!(photoDir.exists() && photoDir.isDirectory())) {
+            photoDir.mkdirs();
+        }
+
+        File photo = new File(photoDir, String.format(PHOTO_FILE_NAME,
                 String.valueOf(Calendar.getInstance().getTimeInMillis())));
         Uri photoUri = Uri.fromFile(photo);
 
@@ -99,7 +105,7 @@ public class PhotoHelper {
 
     public Uri getTempUri(Activity activity) {
         File photoDir = Environment.getExternalStorageDirectory();
-        File photo = new File(photoDir, String.format(PHOTO_PATH,
+        File photo = new File(photoDir, String.format(PHOTO_FILE_NAME,
                 "temp"));
         Uri photoUri = Uri.fromFile(photo);
 
@@ -113,8 +119,8 @@ public class PhotoHelper {
             if (path == null) {
                 return null;
             }
-            imageBitmap = getScaledBitmapFromUrl(path, THUMBNAIL_SIZE_PX, THUMBNAIL_SIZE_PX,
-                    isFromStorage);
+            imageBitmap = getScaledBitmapFromUrl(path, THUMBNAIL_SIZE_PX, THUMBNAIL_SIZE_PX
+            );
             Bitmap rotatedBitmap = getRotatedCameraBitmap(path, imageBitmap);
             return rotatedBitmap;
         }
@@ -133,17 +139,49 @@ public class PhotoHelper {
         return true;
     }
 
+    public static Bitmap createThumbnail(String path) {
+        return getScaledBitmapFromUrl(path, THUMBNAIL_SIZE_PX, THUMBNAIL_SIZE_PX);
+    }
+
+    public static Bitmap createThumbnail(byte[] bytes) {
+        return getScaledBitmapFromBytes(bytes, THUMBNAIL_SIZE_PX, THUMBNAIL_SIZE_PX);
+    }
+
+    public static Bitmap getBitmap(String path) {
+        return getScaledBitmapFromUrl(path, 0, 0);
+    }
+
+    private static Bitmap getScaledBitmapFromBytes(byte[] bytes, int requiredWidth,
+                                                   int requiredHeight) {
+        BitmapFactory.Options options = new BitmapFactory.Options();
+        if (requiredWidth > 0) {
+            options.inJustDecodeBounds = true;
+            BitmapFactory.decodeStream(new ByteArrayInputStream(bytes), null, options);
+            options.inSampleSize = calculateInSampleSize(options, requiredWidth,
+                    requiredHeight);
+
+        }
+        options.inJustDecodeBounds = false;
+
+        Bitmap bm = BitmapFactory.decodeStream(new ByteArrayInputStream(bytes), null,
+                options);
+        return bm;
+    }
+
     private static Bitmap getScaledBitmapFromUrl(String imageUrl, int requiredWidth,
-                                                 int requiredHeight,
-                                                 boolean isFromStorage) {
+                                                 int requiredHeight) {
         URL url;
         try {
             url = new URL("file://" + imageUrl);
 
             BitmapFactory.Options options = new BitmapFactory.Options();
-            options.inJustDecodeBounds = true;
-            BitmapFactory.decodeStream(url.openConnection().getInputStream(), null, options);
-            options.inSampleSize = calculateInSampleSize(options, requiredWidth, requiredHeight);
+            if (requiredWidth > 0) {
+                options.inJustDecodeBounds = true;
+                BitmapFactory.decodeStream(url.openConnection().getInputStream(), null, options);
+                options.inSampleSize = calculateInSampleSize(options, requiredWidth,
+                        requiredHeight);
+
+            }
             options.inJustDecodeBounds = false;
 
             Bitmap bm = BitmapFactory.decodeStream(url.openConnection().getInputStream(), null,
@@ -230,7 +268,7 @@ public class PhotoHelper {
 
     //getting path of uri with complicated scheme
     @SuppressLint("NewApi")
-    public String getPath(Uri uri) {
+    public static String getPath(Uri uri) {
         final boolean isKitKat = Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT;
         Context context = OPApplication.getInstance();
 
@@ -339,11 +377,11 @@ public class PhotoHelper {
         return "com.android.providers.media.documents".equals(uri.getAuthority());
     }
 
-    private void showTwoVariantsAlert(Context context, String button1Text, String button2Text,
+    private void showTwoVariantsAlert(Fragment fragment, String button1Text, String button2Text,
                                       DialogInterface.OnClickListener button1Action,
                                       DialogInterface.OnClickListener button2Action,
                                       String message) {
-        AlertDialog dialog = new AlertDialog.Builder(context).create();
+        AlertDialog dialog = new AlertDialog.Builder(fragment.getActivity()).create();
         if (message != null) {
             dialog.setMessage(message);
         }

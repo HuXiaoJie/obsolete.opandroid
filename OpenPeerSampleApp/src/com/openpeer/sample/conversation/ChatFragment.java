@@ -70,6 +70,7 @@ import com.openpeer.sample.IntentData;
 import com.openpeer.sample.OPNotificationBuilder;
 import com.openpeer.sample.PhotoHelper;
 import com.openpeer.sample.R;
+import com.openpeer.sample.UploadPhotoService;
 import com.openpeer.sample.contacts.ProfilePickerActivity;
 import com.openpeer.sample.events.ConversationComposingStatusChangeEvent;
 import com.openpeer.sample.events.ConversationContactsChangeEvent;
@@ -108,7 +109,7 @@ public class ChatFragment extends BaseFragment implements
     private TextView mComposeBox;
     private View mSendButton;
     @InjectView(R.id.camera)
-    private View mCameraButton;
+    View mCameraButton;
     private MessagesAdaptor mAdapter;
     Loader mLoader;
 
@@ -190,7 +191,7 @@ public class ChatFragment extends BaseFragment implements
 
         mConversation.setComposingStatus(ComposingStates.ComposingState_Active);
         EventBus.getDefault().register(this);
-        getLoaderManager().restartLoader(URL_LOADER,null,this);
+        getLoaderManager().restartLoader(URL_LOADER, null, this);
     }
 
     @Override
@@ -226,7 +227,7 @@ public class ChatFragment extends BaseFragment implements
     }
 
     View setupView(View view) {
-        ButterKnife.inject(view);
+        ButterKnife.inject(this,view);
         mCallInfoView = (CallInfoView) view.findViewById(R.id.call_info);
         View emptyView = view.findViewById(R.id.empty_view);
         mMessagesList = (ListView) view.findViewById(R.id.listview);
@@ -683,12 +684,13 @@ public class ChatFragment extends BaseFragment implements
         }
         break;
             case PhotoHelper.ACTIVITY_REQUEST_CODE_TAKE_PICTURE:{
-                uploadImage(data.getData());
+                if(resultCode==Activity.RESULT_OK) {
+                    uploadImage(PhotoHelper.getInstance().getLastPhotoUri());
+                }
             }
             break;
             case PhotoHelper.ACTIVITY_REQUEST_CODE_GET_PICTURE_FROM_STORAGE:{
                 uploadImage(data.getData());
-
             }
             break;
         }
@@ -874,12 +876,17 @@ public class ChatFragment extends BaseFragment implements
     }
 
     @OnClick(R.id.camera)
-    public void onCameraClick(){
-        PhotoHelper.getInstance().showPhotoAlert(getActivity());
+    public void onCameraClick(View view){
+        PhotoHelper.getInstance().showPhotoAlert(this);
     }
 
-    void uploadImage(Uri photoUri){
-
+    void uploadImage(Uri photoUri) {
+        Intent intent = new Intent();//getActivity().getApplicationContext(),UploadPhotoService.class);
+        intent.setAction(UploadPhotoService.ACTION_UPLOAD);
+        intent.setData(photoUri);
+//        intent.putExtra(UploadPhotoService.TAG_FILE_NAME, photoUri);
+        intent.putExtra(UploadPhotoService.TAG_CONERSATION_ID, mConversation.getConversationId());
+        getActivity().startService(intent);
     }
     // End of SessionListener implementation
 }
