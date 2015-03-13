@@ -44,6 +44,7 @@ import java.util.ArrayList;
 import java.util.Hashtable;
 import java.util.List;
 import java.util.Observable;
+import java.util.UUID;
 
 /**
  * A session represents exact state of a conversation thread.
@@ -424,6 +425,11 @@ public class HOPConversation extends Observable {
         return HOPConversationManager.getInstance().onConversationParticipantsChanged(conversation,newParticipants);
     }
 
+    public static OPMessage createMessage(String messageType, String text) {
+        OPMessage message = new OPMessage(HOPDataManager.getInstance().getCurrentUserId(),
+                messageType, text, System.currentTimeMillis(), UUID.randomUUID().toString());
+        return message;
+    }
 
     /**
      * @return

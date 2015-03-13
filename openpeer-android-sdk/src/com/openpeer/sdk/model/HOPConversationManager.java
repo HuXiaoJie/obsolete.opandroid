@@ -33,6 +33,7 @@
 package com.openpeer.sdk.model;
 
 import android.text.TextUtils;
+import android.util.Log;
 
 import com.openpeer.javaapi.ComposingStates;
 import com.openpeer.javaapi.ContactConnectionStates;
@@ -410,6 +411,7 @@ public class HOPConversationManager implements OPConversationThreadDelegate {
         }
         HOPConversation conversation = HOPConversationManager.getInstance().getConversation
             (conversationThread, true);
+        Log.d("HOPConversationManager", "message received " + message.getMessage());
         if (message.getMessageType().equals(OPMessage.TYPE_TEXT)) {
             conversation.onMessageReceived(conversationThread, message);
         }

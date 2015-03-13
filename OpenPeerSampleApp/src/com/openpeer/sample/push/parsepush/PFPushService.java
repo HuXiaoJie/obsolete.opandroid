@@ -87,7 +87,7 @@ public class PFPushService implements PushServiceInterface {
             }
             Parse.setLogLevel(Parse.LOG_LEVEL_VERBOSE);
             ParseCrashReporting.enable(OPApplication.getInstance());
-            Parse.enableLocalDatastore(OPApplication.getInstance());
+//            Parse.enableLocalDatastore(OPApplication.getInstance());
             Parse.initialize(OPApplication.getInstance(),
                     parseAppId,
                     parseClientKey);

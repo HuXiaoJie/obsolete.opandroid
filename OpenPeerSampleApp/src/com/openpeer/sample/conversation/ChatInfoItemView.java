@@ -72,6 +72,7 @@ public class ChatInfoItemView extends RelativeLayout {
     }
 
     public void updateData(final ChatInfo chatInfo) {
+
         mTitleView.setText(chatInfo.getNameString());
         String msg = chatInfo.getLastMessage();
         Long time = chatInfo.getLastMessageTime();

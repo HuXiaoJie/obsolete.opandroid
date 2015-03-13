@@ -587,7 +587,7 @@ public class HOPDataManager {
         values.put(DatabaseContracts.MessageEntry.COLUMN_MESSAGE_READ, 1);
         String where = DatabaseContracts.MessageEntry.COLUMN_MESSAGE_READ + "=0 ";
         String url = DatabaseContracts.MessageEntry.URI_PATH_INFO_CONTEXT_URI_BASE + conversation
-            .getConversationId();
+            .getId();
 
         int count = update(url, values, where, null);
         OPLogger.debug(OPLogLevel.LogLevel_Debug, "markMessagesRead update count " + count);
@@ -611,9 +611,9 @@ public class HOPDataManager {
             saveMessageEvent(event);
         }
         String where = DatabaseContracts.MessageEntry.COLUMN_MESSAGE_ID + "=?";
-        String args[] = new String[]{message.getReplacesMessageId()};
-        String url = DatabaseContracts.MessageEntry.URI_PATH_INFO_CONTEXT + conversation
-            .getConversationId();
+        String args[] = new String[]{TextUtils.isEmpty(message.getReplacesMessageId()) ? message
+                .getMessageId() : message.getReplacesMessageId()};
+        String url = DatabaseContracts.MessageEntry.URI_PATH_INFO_CONTEXT_URI_BASE + conversation.getId();
 
         ContentValues values = new ContentValues();
         values.put(DatabaseContracts.MessageEntry.COLUMN_MESSAGE_ID, message.getMessageId());
@@ -623,8 +623,7 @@ public class HOPDataManager {
                    message.getMessageType());
         values.put(DatabaseContracts.MessageEntry.COLUMN_SENDER_ID, message.getSenderId());
         values.put(DatabaseContracts.MessageEntry.COLUMN_CBC_ID, conversation.getCurrentCbcId());
-        values.put(DatabaseContracts.MessageEntry.COLUMN_CONTEXT_ID, conversation
-            .getConversationId());
+        values.put(DatabaseContracts.MessageEntry.COLUMN_CONTEXT_ID, conversation.getId());
 
         values.put(DatabaseContracts.MessageEntry.COLUMN_MESSAGE_READ, message.isRead());
         values.put(DatabaseContracts.MessageEntry.COLUMN_EDIT_STATUS, message.getEditState()

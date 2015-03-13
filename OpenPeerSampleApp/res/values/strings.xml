@@ -82,5 +82,6 @@
 
     <string name="label_take_photo">Take Photo</string>
     <string name="label_choose_existing">Choose existing</string>
+    <string name="label_photo">Photo</string>
 
 </resources>

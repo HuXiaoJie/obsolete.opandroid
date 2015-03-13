@@ -6,9 +6,13 @@
     <dimen name="padding_spacing_internal">5dp</dimen>
     <dimen name="profile_image_size_in_list">64dp</dimen>
     <dimen name="profile_image_size_in_chat">64dp</dimen>
+    <dimen name="thumbnail_size_in_chat">100dp</dimen>
     <dimen name="badge_image_size_in_contact">16dp</dimen>
     <dimen name="width_local_video">135dp</dimen>
     <dimen name="height_local_video">240dp</dimen>
+    <!-- Default screen margins, per the Android Design guidelines. -->
+    <dimen name="activity_horizontal_margin">16dp</dimen>
+    <dimen name="activity_vertical_margin">16dp</dimen>
 
 
 </resources>

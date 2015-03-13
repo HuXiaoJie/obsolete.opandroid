@@ -76,6 +76,7 @@ import com.openpeer.sample.events.ConversationComposingStatusChangeEvent;
 import com.openpeer.sample.events.ConversationContactsChangeEvent;
 import com.openpeer.sample.events.ConversationSwitchEvent;
 import com.openpeer.sample.events.ConversationTopicChangeEvent;
+import com.openpeer.sample.view.IViewBinder;
 import com.openpeer.sdk.model.HOPDataManager;
 import com.openpeer.sdk.datastore.DatabaseContracts.MessageEntry;
 import com.openpeer.sdk.datastore.OPModelCursorHelper;
@@ -351,6 +352,8 @@ public class ChatFragment extends BaseFragment implements
         private final static int VIEWTYPE_STATUS_VIEW = 2;
         private final static int VIEWTYPE_CALL_VIEW = 3;
         private final static int VIEWTYPE_CONVERSATION_EVENT_VIEW = 4;
+        private final static int VIEWTYPE_SELF_PHOTO_VIEW = 5;
+        private final static int VIEWTYPE_PEER_PHOTO_VIEW = 6;
 
         int myLastReadMessagePosition = -1;
         int myLastDeliveredMessagePosition = -1;
@@ -420,6 +423,7 @@ public class ChatFragment extends BaseFragment implements
         public int getItemViewType(Cursor cursor) {
             String type = cursor.getString(cursor
                                                .getColumnIndex(MessageEntry.COLUMN_MESSAGE_TYPE));
+
             if (OPMessage.TYPE_INERNAL_CALL_AUDIO.equals(type)
                 || OPMessage.TYPE_INERNAL_CALL_VIDEO.equals(type)) {
                 return VIEWTYPE_CALL_VIEW;
@@ -431,14 +435,21 @@ public class ChatFragment extends BaseFragment implements
             long sender_id = cursor.getLong(cursor
                                                 .getColumnIndex(MessageEntry.COLUMN_SENDER_ID));
             if (sender_id == HOPAccount.selfContactId()) {
+                if(type.equals(OPMessage.TYPE_INERNAL_FILE_PHOTO)){
+                    return VIEWTYPE_SELF_PHOTO_VIEW;
+                }
                 return VIEWTYPE_SELF_MESSAGE_VIEW;
+            } else {
+                if(type.equals(OPMessage.TYPE_INERNAL_FILE_PHOTO)){
+                    return VIEWTYPE_PEER_PHOTO_VIEW;
+                }
             }
             return VIEWTYPE_RECIEVED_MESSAGE_VIEW;
         }
 
         @Override
         public int getViewTypeCount() {
-            return 5;
+            return 7;
         }
 
         public View getView(int position, View convertView, ViewGroup parent) {
@@ -479,6 +490,8 @@ public class ChatFragment extends BaseFragment implements
                         } else if (convertView instanceof ConversationEventView) {
                             ((ConversationEventView) convertView)
                                 .update(message);
+                        } else {
+                            ((IViewBinder<OPMessage>)convertView).update(message);
                         }
                     }
                 }
@@ -527,7 +540,14 @@ public class ChatFragment extends BaseFragment implements
             case VIEWTYPE_CONVERSATION_EVENT_VIEW:
                 view = (ConversationEventView) LayoutInflater.from(context)
                     .inflate(R.layout.item_conversation_event, null);
-
+                break;
+                case VIEWTYPE_SELF_PHOTO_VIEW: {
+                    view = LayoutInflater.from(context).inflate(R.layout.item_photo_self,null);
+                }
+                break;
+                case VIEWTYPE_PEER_PHOTO_VIEW:{
+                    view = LayoutInflater.from(context).inflate(R.layout.item_photo_peer,null);
+                }
                 break;
             }
 
@@ -881,7 +901,7 @@ public class ChatFragment extends BaseFragment implements
     }
 
     void uploadImage(Uri photoUri) {
-        Intent intent = new Intent();//getActivity().getApplicationContext(),UploadPhotoService.class);
+        Intent intent = new Intent(getActivity().getApplicationContext(),UploadPhotoService.class);
         intent.setAction(UploadPhotoService.ACTION_UPLOAD);
         intent.setData(photoUri);
 //        intent.putExtra(UploadPhotoService.TAG_FILE_NAME, photoUri);

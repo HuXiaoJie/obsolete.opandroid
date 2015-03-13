@@ -1,6 +1,7 @@
 package com.openpeer.sample.delegates;
 
 import android.graphics.Bitmap;
+import android.util.Log;
 
 import com.openpeer.javaapi.ComposingStates;
 import com.openpeer.javaapi.ContactConnectionStates;
@@ -16,6 +17,7 @@ import com.openpeer.sample.events.ConversationComposingStatusChangeEvent;
 import com.openpeer.sample.events.ConversationContactsChangeEvent;
 import com.openpeer.sample.events.ConversationSwitchEvent;
 import com.openpeer.sample.events.ConversationTopicChangeEvent;
+import com.openpeer.sample.util.FileUtil;
 import com.openpeer.sdk.model.HOPDataManager;
 import com.openpeer.sdk.model.CallEvent;
 import com.openpeer.sdk.model.CallSystemMessage;
@@ -39,10 +41,14 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.BufferedOutputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
 
 public class HOPConversationDelegateImpl implements HOPConversationDelegate {
-
+    public static final String TAG = "ConversationDelegate";
     private static HOPConversationDelegateImpl instance;
 
     public static HOPConversationDelegateImpl getInstance() {
@@ -67,20 +73,14 @@ public class HOPConversationDelegateImpl implements HOPConversationDelegate {
     @Override
     public boolean onConversationMessage(HOPConversation conversation, OPMessage message) {
         if (message.getMessageType().equals(OPMessage.TYPE_JSON_SYSTEM_MESSAGE)) {
+            Log.d(TAG, "onConversationMessage processing system message" + message.getMessage());
+
             OPContact opContact = message.getFrom();
             HOPContact sender = HOPDataManager.getInstance().
                     getUserByPeerUri(opContact.getPeerURI());
             String messageText = message.getMessage();
-            try {
-                JSONObject systemObject = new JSONObject(messageText).getJSONObject
-                        (HOPSystemMessage.KEY_ROOT);
-
-                handleSystemMessage(conversation, sender, systemObject,
-                        message.getTime().toMillis(false));
-            } catch (JSONException e) {
-                OPLogger.error(OPLogLevel.LogLevel_Basic, "Error:invalid system message " +
-                        message.getMessage());
-            }
+            handleSystemMessage(conversation, sender, message,
+                    message.getTime().toMillis(false));
         }
         return false;
     }
@@ -119,10 +119,15 @@ public class HOPConversationDelegateImpl implements HOPConversationDelegate {
         return true;
     }
 
-    public static void handleSystemMessage(HOPConversation conversation, HOPContact sender,
-                                           JSONObject systemMessage,
+    public static void handleSystemMessage(final HOPConversation conversation, HOPContact sender,
+                                           final OPMessage message,
                                            long time) {
         try {
+            String messageText = message.getMessage();
+            JSONObject systemMessage = new JSONObject(messageText).getJSONObject
+                    (HOPSystemMessage.KEY_ROOT);
+
+
             if (systemMessage.has(HOPSystemMessage.KEY_CALL_STATUS)) {
                 JSONObject callSystemMessage = systemMessage
                         .getJSONObject(HOPSystemMessage.KEY_CALL_STATUS);
@@ -151,27 +156,51 @@ public class HOPConversationDelegateImpl implements HOPConversationDelegate {
                     new ConversationSwitchEvent(from, conversation).post();
                 }
             } else if (systemMessage.has(FileShareSystemMessage.KEY_FILE_SHARE)) {
-                JSONObject object = systemMessage.getJSONObject(FileShareSystemMessage
+                final JSONObject object = systemMessage.getJSONObject(FileShareSystemMessage
                         .KEY_FILE_SHARE);
-                String objectId = object.getString(FileShareSystemMessage.KEY_OBJECT_id);
-                ParseQuery query = ParseQuery.getQuery("ImageUpload");
-                query.getInBackground(objectId, new GetCallback() {
+                final String objectId = object.getString(FileShareSystemMessage.KEY_OBJECT_id);
+                ParseQuery<ParseObject> query = ParseQuery.getQuery("ImageUpload");
+                query.getInBackground(objectId, new GetCallback<ParseObject>() {
                     @Override
                     public void done(final ParseObject parseObject, ParseException e) {
                         if (e == null) {
                             final ParseFile imageFile = (ParseFile) parseObject.get("ImageFile");
+                            final String imageName = parseObject.getString("ImageName");
+
                             imageFile.getDataInBackground(new GetDataCallback() {
                                 @Override
                                 public void done(byte[] bytes, ParseException e) {
                                     if (e == null) {
+                                        Log.d(TAG, "Image downloaded " + imageName);
                                         Bitmap thumbNail = PhotoHelper.createThumbnail(bytes);
-                                        ByteArrayOutputStream stream = new ByteArrayOutputStream();
-                                        // Compress image to lower quality scale 1 - 100
-                                        thumbNail.compress(Bitmap.CompressFormat.PNG, 100, stream);
-                                        ParseFile thumbNailFile = new ParseFile(stream
-                                                .toByteArray());
-                                        parseObject.put("thumbNail", thumbNailFile);
-                                        parseObject.pinInBackground();
+                                        final String thumbNailPath = PhotoHelper.getThumnailPath
+                                                (objectId);
+                                        try {
+                                            FileOutputStream stream = new FileOutputStream
+                                                    (thumbNailPath);
+
+                                            // Compress image to lower quality scale 1 - 100
+                                            thumbNail.compress(Bitmap.CompressFormat.PNG, 100,
+                                                    stream);
+                                            String imagePath = PhotoHelper.getImageCachePath
+                                                    (objectId);
+                                            FileUtil.saveFile(imagePath, bytes);
+
+                                            message.setMessageType(OPMessage
+                                                    .TYPE_INERNAL_FILE_PHOTO);
+                                            message.setMessage(FileShareSystemMessage.createStoreMessageText(
+                                                            objectId,
+                                                            "file://" + imagePath,
+                                                            "file://" + thumbNailPath,
+                                                            "downloaded"));
+                                            HOPDataManager.getInstance().saveMessage(message,
+                                                    conversation.getId(),
+                                                    conversation.getParticipantInfo());
+                                        } catch (FileNotFoundException e1) {
+                                            e.printStackTrace();
+                                        }
+                                    } else {
+                                        e.printStackTrace();
                                     }
                                 }
                             }, new ProgressCallback() {
@@ -185,10 +214,6 @@ public class HOPConversationDelegateImpl implements HOPConversationDelegate {
                         }
                     }
 
-                    @Override
-                    public void done(Object o, Throwable throwable) {
-
-                    }
                 });
 //                ParseObject parseObject = ParseObject.fe
             }
@@ -209,11 +234,9 @@ public class HOPConversationDelegateImpl implements HOPConversationDelegate {
                         conversationId,
                         user.getUserId(),
                         HOPCall.DIRECTION_INCOMING,
-                        message.getString(CallSystemMessage
-                                .KEY_CALL_STATUS_MEDIA_TYPE));
+                        message.getString(CallSystemMessage.KEY_CALL_STATUS_MEDIA_TYPE));
                 CallEvent event = new CallEvent(callId,
-                        message.getString(CallSystemMessage
-                                .KEY_CALL_STATUS_STATUS),
+                        message.getString(CallSystemMessage.KEY_CALL_STATUS_STATUS),
                         timestamp);
                 HOPDataManager.getInstance().saveCallEvent(callId, conversationId, event);
             } else {
@@ -226,8 +249,7 @@ public class HOPConversationDelegateImpl implements HOPConversationDelegate {
                             HOPCall.DIRECTION_INCOMING,
                             message.getString(CallSystemMessage.KEY_CALL_STATUS_MEDIA_TYPE));
                     CallEvent event = new CallEvent(callId,
-                            message.getString(CallSystemMessage
-                                    .KEY_CALL_STATUS_STATUS),
+                            message.getString(CallSystemMessage.KEY_CALL_STATUS_STATUS),
                             timestamp);
                     HOPDataManager.getInstance().saveCallEvent(callId, conversationId, event);
                 }

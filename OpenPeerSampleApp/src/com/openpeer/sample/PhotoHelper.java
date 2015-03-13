@@ -23,10 +23,13 @@ import android.widget.Toast;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.net.URLDecoder;
 import java.util.Calendar;
 
 public class PhotoHelper {
@@ -35,11 +38,14 @@ public class PhotoHelper {
     public static final int ACTIVITY_REQUEST_CODE_TAKE_PICTURE = 10000;
     public static final int ACTIVITY_REQUEST_CODE_GET_PICTURE_FROM_STORAGE =
             ACTIVITY_REQUEST_CODE_TAKE_PICTURE + 1;
+    public static final String DATA_PATH = Environment.getExternalStorageDirectory()
+            .getAbsolutePath();
     public final static int ROTATE_90 = 90;
     public final static int ROTATE_180 = 180;
     public final static int ROTATE_270 = 270;
     public final static int ROTATE_360 = 360;
     public static final String PHOTO_FILE_NAME = "photo_%s.jpg";
+    public static final String PHOTO_THUMBNAIL_NAME = "thumbnail_%s.jpg";
     public static final String PHOTO_PATH = "/hookflash.peely/photos";
     private static PhotoHelper instance;
     private Uri lastPhotoUri;
@@ -90,8 +96,7 @@ public class PhotoHelper {
     }
 
     public Uri preparePhotoUri() {
-        File photoDir = new File(Environment.getExternalStorageDirectory().getAbsolutePath() +
-                PHOTO_PATH);
+        File photoDir = new File(DATA_PATH + PHOTO_PATH);
         if (!(photoDir.exists() && photoDir.isDirectory())) {
             photoDir.mkdirs();
         }
@@ -143,12 +148,20 @@ public class PhotoHelper {
         return getScaledBitmapFromUrl(path, THUMBNAIL_SIZE_PX, THUMBNAIL_SIZE_PX);
     }
 
+    public static Bitmap createThumbnail(Uri uri) {
+        return getScaledBitmapFromUrl(uri, THUMBNAIL_SIZE_PX, THUMBNAIL_SIZE_PX);
+    }
+
     public static Bitmap createThumbnail(byte[] bytes) {
         return getScaledBitmapFromBytes(bytes, THUMBNAIL_SIZE_PX, THUMBNAIL_SIZE_PX);
     }
 
     public static Bitmap getBitmap(String path) {
         return getScaledBitmapFromUrl(path, 0, 0);
+    }
+
+    public static Bitmap getBitmap(Uri uri) {
+        return getScaledBitmapFromUrl(uri, 0, 0);
     }
 
     private static Bitmap getScaledBitmapFromBytes(byte[] bytes, int requiredWidth,
@@ -166,6 +179,31 @@ public class PhotoHelper {
         Bitmap bm = BitmapFactory.decodeStream(new ByteArrayInputStream(bytes), null,
                 options);
         return bm;
+    }
+
+    private static Bitmap getScaledBitmapFromUrl(Uri imageUrl, int requiredWidth,
+                                                 int requiredHeight) {
+        try {
+            BitmapFactory.Options options = new BitmapFactory.Options();
+            if (requiredWidth > 0) {
+                options.inJustDecodeBounds = true;
+                BitmapFactory.decodeStream(OPApplication.getInstance().getContentResolver()
+                        .openInputStream(imageUrl), null, options);
+                options.inSampleSize = calculateInSampleSize(options, requiredWidth,
+                        requiredHeight);
+            }
+            options.inJustDecodeBounds = false;
+
+            Bitmap bm = BitmapFactory.decodeStream(OPApplication.getInstance().getContentResolver
+                            ().openInputStream(imageUrl), null,
+                    options);
+            return bm;
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return null;
     }
 
     private static Bitmap getScaledBitmapFromUrl(String imageUrl, int requiredWidth,
@@ -266,6 +304,14 @@ public class PhotoHelper {
         return squaredBitmap;
     }
 
+    public static String getImageCachePath(String fileName) {
+        return DATA_PATH + PHOTO_PATH + String.format(PHOTO_FILE_NAME, fileName);
+    }
+
+    public static String getThumnailPath(String fileName) {
+        return DATA_PATH + PHOTO_PATH + String.format(PHOTO_THUMBNAIL_NAME, fileName);
+    }
+
     //getting path of uri with complicated scheme
     @SuppressLint("NewApi")
     public static String getPath(Uri uri) {
@@ -316,7 +362,12 @@ public class PhotoHelper {
                         split[1]
                 };
 
-                return getDataColumn(context, contentUri, selection, selectionArgs);
+                String path= getDataColumn(context, contentUri, selection, selectionArgs);
+                try {
+                    return URLDecoder.decode(path, "utf-8");
+                } catch (UnsupportedEncodingException e){
+                    e.printStackTrace();
+                }
             }
         }
         // MediaStore (and general)

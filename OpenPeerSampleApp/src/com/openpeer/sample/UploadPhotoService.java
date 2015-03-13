@@ -13,9 +13,13 @@ import android.util.Log;
 import android.widget.Toast;
 
 
+import com.openpeer.javaapi.OPMessage;
 import com.openpeer.sample.conversation.FileShareSystemMessage;
 import com.openpeer.sample.events.FileUploadEvent;
+import com.openpeer.sample.util.FileUtil;
+import com.openpeer.sdk.model.HOPConversation;
 import com.openpeer.sdk.model.HOPConversationManager;
+import com.openpeer.sdk.model.HOPDataManager;
 import com.parse.ParseException;
 import com.parse.ParseFile;
 import com.parse.ParseObject;
@@ -24,6 +28,8 @@ import com.parse.SaveCallback;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.math.BigInteger;
 import java.security.SecureRandom;
 import java.util.ArrayList;
@@ -56,9 +62,24 @@ public class UploadPhotoService extends IntentService {
 
     void upload(final Uri uri, final String conversationId) {
         Log.d(TAG, "upload uri " + uri + " conversationId " + conversationId);
-        final String fileName = uri.getLastPathSegment();
-        String path = PhotoHelper.getPath(uri);
-        Bitmap bitmap = PhotoHelper.getBitmap(path);
+        final HOPConversation conversation = HOPConversationManager.getInstance().
+                getConversationById(conversationId);
+        String imageCacheFileName = "" + uri.hashCode();
+        final String path = PhotoHelper.getImageCachePath(imageCacheFileName);
+        final String thumbNailPath = PhotoHelper.getThumnailPath(imageCacheFileName);
+        final OPMessage message = FileShareSystemMessage.createStoreMessage("", uri.toString(),
+                "file:" + thumbNailPath, "uploading");
+
+        Bitmap thumbNail = PhotoHelper.createThumbnail(uri);
+        byte[] thumbNailData;
+        ByteArrayOutputStream thumbNailStream = new ByteArrayOutputStream();
+        thumbNail.compress(Bitmap.CompressFormat.PNG, 100, thumbNailStream);
+        thumbNailData = thumbNailStream.toByteArray();
+        FileUtil.saveFile(thumbNailPath, thumbNailData);
+        HOPDataManager.getInstance().saveMessage(message, conversation.getId(),
+                conversation.getParticipantInfo());
+        // Compress image to lower quality scale 1 - 100
+        Bitmap bitmap = PhotoHelper.getBitmap(uri);
         final int imageSize = bitmap.getByteCount();
         final int width = bitmap.getWidth();
         final int height = bitmap.getHeight();
@@ -66,7 +87,24 @@ public class UploadPhotoService extends IntentService {
         // Compress image to lower quality scale 1 - 100
         bitmap.compress(Bitmap.CompressFormat.PNG, 100, stream);
 
-        byte[] data = stream.toByteArray();
+        final byte[] data = stream.toByteArray();
+        try {
+            stream.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        final ParseFile thumbNailFile = new ParseFile(thumbNailData);
+        try {
+            thumbNailFile.save();
+        } catch (ParseException e) {
+            e.printStackTrace();
+            message.setMessage(String.format(FileShareSystemMessage
+                            .MESSAGE_STORE_FORMAT, "",
+                    "file://" + path,
+                    "file://" + thumbNailPath,
+                    "failed"));
+            HOPDataManager.getInstance().updateMessage(message, conversation);
+        }
         final ParseFile parseFile = new ParseFile(data);
         parseFile.saveInBackground(new SaveCallback() {
             @Override
@@ -75,7 +113,7 @@ public class UploadPhotoService extends IntentService {
                 final ParseObject imgupload = new ParseObject("ImageUpload");
 
                 // Create a column named "ImageName" and set the string
-                imgupload.put("ImageName", fileName);
+                imgupload.put("ImageName", uri.toString());
 
                 // Create a column named "ImageFile" and insert the image
                 imgupload.put("ImageFile", parseFile);
@@ -84,14 +122,32 @@ public class UploadPhotoService extends IntentService {
                 imgupload.saveInBackground(new SaveCallback() {
                     @Override
                     public void done(ParseException e) {
-                        new FileUploadEvent(100, fileName, imgupload.getObjectId());
-                        if (!TextUtils.isEmpty(conversationId)) {
-                            //Send system message
-                            HOPConversationManager.getInstance().
-                                    getConversationById(conversationId).sendMessage(
-                                    FileShareSystemMessage.createFileShareSystemMessage(imgupload
-                                                    .getObjectId(),
-                                            imageSize, width, height), false);
+                        if (e == null) {
+                            new FileUploadEvent(100, uri.toString(),
+                                    imgupload.getObjectId()).post();
+                            if (!TextUtils.isEmpty(conversationId)) {
+                                //Send system message
+                                HOPConversationManager.getInstance().
+                                        getConversationById(conversationId).sendMessage(
+                                        FileShareSystemMessage.createFileShareSystemMessage
+                                                (imgupload.getObjectId(),
+                                                        imageSize, width, height), false);
+                                message.setMessage(String.format(FileShareSystemMessage
+                                                .MESSAGE_STORE_FORMAT, imgupload.getObjectId(),
+                                        "file://" + path,
+                                        "file://" + thumbNailPath,
+                                        "uploaded"));
+                                HOPDataManager.getInstance().updateMessage(message, conversation);
+                                FileUtil.saveFile(path, data);
+                            }
+                        } else {
+                            message.setMessage(String.format(FileShareSystemMessage
+                                            .MESSAGE_STORE_FORMAT, imgupload.getObjectId(),
+                                    "file://" + path,
+                                    "file://" + thumbNailPath,
+                                    "failed"));
+                            HOPDataManager.getInstance().updateMessage(message, conversation);
+                            e.printStackTrace();
                         }
                     }
                 });
@@ -99,7 +155,7 @@ public class UploadPhotoService extends IntentService {
         }, new ProgressCallback() {
             @Override
             public void done(Integer value) {
-                new FileUploadEvent(value, fileName, null);
+                new FileUploadEvent(value, uri.toString(), null).post();
             }
         });
     }
