@@ -15,6 +15,7 @@ import com.openpeer.sample.BackgroundingManager;
 import com.openpeer.sample.OPNotificationBuilder;
 import com.openpeer.sample.conversation.ConversationActivity;
 import com.openpeer.sample.conversation.ConversationSwitchSystemMessage;
+import com.openpeer.sample.conversation.FileShareSystemMessage;
 import com.openpeer.sample.delegates.HOPConversationDelegateImpl;
 import com.openpeer.sample.events.ConversationSwitchEvent;
 import com.openpeer.sdk.model.HOPDataManager;
@@ -152,6 +153,9 @@ public class PFPushReceiver extends ParsePushBroadcastReceiver {
                     if (fromConversation != null) {
                         new ConversationSwitchEvent(fromConversation, conversation).post();
                     }
+                } else if (systemObject.has(FileShareSystemMessage.KEY_FILE_SHARE)) {
+                    HOPConversationDelegateImpl.handleFileShareSystemMessage(conversation, sender,
+                                                                             systemObject, date);
                 }
             }
             break;
