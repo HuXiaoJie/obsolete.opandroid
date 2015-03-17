@@ -34,6 +34,7 @@ import android.content.ContentUris;
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
+import android.database.sqlite.SQLiteConstraintException;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteException;
 import android.net.Uri;
@@ -44,6 +45,7 @@ import android.util.Log;
 import com.openpeer.javaapi.MessageDeliveryStates;
 import com.openpeer.javaapi.OPContact;
 import com.openpeer.javaapi.OPDownloadedRolodexContacts;
+import com.openpeer.javaapi.OPIdentity;
 import com.openpeer.javaapi.OPIdentityContact;
 import com.openpeer.javaapi.OPIdentityLookup;
 import com.openpeer.javaapi.OPIdentityLookupInfo;
@@ -55,14 +57,19 @@ import com.openpeer.sdk.app.HOPHelper;
 import com.openpeer.sdk.app.HOPSettingsHelper;
 import com.openpeer.sdk.datastore.ContentUriResolver;
 import com.openpeer.sdk.datastore.DatabaseContracts;
+import com.openpeer.sdk.datastore.OPDatabaseHelper;
 import com.openpeer.sdk.datastore.OPModelCursorHelper;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Hashtable;
 import java.util.List;
+import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
-import static com.openpeer.sdk.datastore.DatabaseContracts.COLUMN_PEER_URI;
+import static com.openpeer.sdk.datastore.DatabaseContracts.*;
 
 /**
  * Hold reference to objects that cannot be constructed from database,
@@ -74,6 +81,7 @@ public class HOPDataManager {
     private static HOPDataManager instance;
 
     private Context mContext;
+    SQLiteDatabase mDatabase;
 
     /**
      * Users cache using peer uri as index
@@ -85,6 +93,10 @@ public class HOPDataManager {
 
     Hashtable<String, OPIdentityLookup> mIdentityLookups;
 
+    ArrayBlockingQueue<Runnable> mQueue = new ArrayBlockingQueue<Runnable>(100);
+    ExecutorService executorService = new ThreadPoolExecutor(1, 1, 2000, TimeUnit.MILLISECONDS, mQueue);
+
+
     public static HOPDataManager getInstance() {
         if (instance == null) {
             instance = new HOPDataManager();
@@ -92,9 +104,26 @@ public class HOPDataManager {
         return instance;
     }
 
+    public interface DatastoreCallback {
+        public void onSuccess();
+
+        public void onFail(SQLiteException exception);
+    }
+
+    void execute(Runnable runnable) {
+        executorService.submit(runnable);
+    }
+
     public void init() {
     }
 
+    SQLiteDatabase getWritableDatabase() {
+        if (mDatabase == null) {
+            mDatabase = OPDatabaseHelper.getInstance(mContext)
+                .getWritableDatabase();
+        }
+        return mDatabase;
+    }
     public void onDownloadedRolodexContacts(HOPAccountIdentity identity) {
         OPDownloadedRolodexContacts downloaded = identity
             .getDownloadedRolodexContacts();
@@ -110,10 +139,16 @@ public class HOPDataManager {
                                + identity.getIdentityURI());
             return;
         }
-        contacts = saveDownloadedRolodexContacts(identity,
-                                                 contacts,
-                                                 downloaded.getVersionDownloaded());
-        identityLookup(identity, contacts);
+        List<OPRolodexContact> contactsToLookup = new ArrayList<>();
+        for (OPRolodexContact contact : contacts) {
+            if(contact.getDisposition()!= OPRolodexContact.Dispositions.Disposition_Remove){
+                contactsToLookup.add(contact);
+            }
+        }
+        saveDownloadedRolodexContacts(identity,
+                                      contacts,
+                                      downloaded.getVersionDownloaded());
+        identityLookup(identity, contactsToLookup);
     }
 
     public void identityLookup(HOPAccountIdentity identity,
@@ -144,41 +179,69 @@ public class HOPDataManager {
         }
     }
 
-    public void updateIdentityContacts(String identityUri,
-                                       List<OPIdentityContact> iContacts) {
-
-        // Each IdentityContact represents a user. Update user info
-        saveIdentityContact(iContacts, identityUri.hashCode());
-    }
-
     /**
      * @param url
      * @param lookup
      */
-    public void onIdentityLookupCompleted(String url, OPIdentityLookup lookup) {
-        List<OPIdentityContact> iContacts = lookup.getUpdatedIdentities();
-        if (iContacts != null) {
-            updateIdentityContacts(url, iContacts);
-        }
+    public void onIdentityLookupCompleted(final String url, final OPIdentityLookup lookup) {
+        execute(new Runnable() {
+            @Override
+            public void run() {
+                List<OPIdentityContact> iContacts = lookup.getUpdatedIdentities();
+                if (iContacts != null) {
+                    SQLiteDatabase db = OPDatabaseHelper.getInstance(mContext)
+                        .getWritableDatabase();
+                    try {
+                        db.beginTransaction();
+                        for (OPIdentityContact contact : iContacts) {
+                            db.update(DatabaseContracts.RolodexContactEntry.TABLE_NAME,
+                                      identityContactContentValues(contact),
+                                      DatabaseContracts.RolodexContactEntry.COLUMN_IDENTITY_URI +
+                                          "=?",
+                                      new String[]{contact.getIdentityURI()});
+                        }
+                        db.setTransactionSuccessful();
+                        notifyContactsChanged();
+                    } catch(SQLiteException e) {
+                        e.printStackTrace();
+                    } finally {
+                        db.endTransaction();
+                    }
+                }
+            }
+        });
         if (mIdentityLookups != null) {
             mIdentityLookups.remove(url);
         }
     }
 
-    public long saveAccountIdentity(long accountId,long selfContactId,HOPAccountIdentity identity){
-        HOPIdentity iContact = identity.getSelfIdentityContact();
-        long identityContactId = saveIdentityContactTable((OPIdentityContact)iContact.getContact(),0);
-        long rolodexId = saveRolodexContactTable(iContact.getContact(), selfContactId,
-                                                 identityContactId, 0);
-        long identityId = saveIdentityTable(identity, accountId, rolodexId);
-        identity.setIdentityId(identityId);
+    public long saveAccountIdentity(long accountId,long selfContactId,HOPAccountIdentity identity) {
+        long identityId = 0;
+        SQLiteDatabase db = OPDatabaseHelper.getInstance(mContext).getWritableDatabase();
+        try {
+            db.beginTransaction();
+            String identityProviderDomain = identity.getIdentityProviderDomain();
+            long identityProviderId = getIdentityProviderId(identityProviderDomain);
+            if (identityProviderId == 0) {
+                identityProviderId = saveIdentityProviderTable(identityProviderDomain);
+            }
+            HOPIdentity iContact = identity.getSelfIdentityContact();
+            long rolodexId = saveRolodexContactTable(iContact.getContact(), selfContactId,
+                                                     identityProviderId, 0);
+            identityId = saveIdentityTable(identity, identityProviderId, accountId, rolodexId);
+            identity.setIdentityId(identityId);
+            db.setTransactionSuccessful();
+        } catch(SQLiteException e) {
+            e.printStackTrace();
+        } finally {
+            db.endTransaction();
+        }
         return identityId;
     }
 
     public void onSignOut() {
         mContentUriProvider.onSignout();
     }
-
 
     /**
      *
@@ -307,10 +370,7 @@ public class HOPDataManager {
 
 
     public HOPContact getUserByPeerUri(String peerUri) {
-        HOPContact user = mUsers.get(peerUri);
-        if (user != null) {
-            return user;
-        }
+        HOPContact user;
         String selection = COLUMN_PEER_URI + "=?";
         String args[] = new String[]{peerUri};
         Cursor cursor = getContentResolver()
@@ -334,6 +394,7 @@ public class HOPDataManager {
         }
         return getContact(contact, identities);
     }
+
     HOPContact getContact(OPContact contact,
                           List<HOPIdentity> identityContacts) {
         String peerUri = contact.getPeerURI();
@@ -346,8 +407,7 @@ public class HOPDataManager {
         if (identityContacts == null || identityContacts.size() == 0) {
             OPLogger.error(OPLogLevel.LogLevel_Basic,
                            "No identity attached to contact " + contact.getPeerURI());
-            throw new RuntimeException("No identity attached to contact "
-                                           + contact.getPeerURI());
+            throw new RuntimeException("No identity attached to contact " + contact.getPeerURI());
         }
         // find the existing record of the account
         String stableId = identityContacts.get(0).getStableID();
@@ -410,40 +470,12 @@ public class HOPDataManager {
         return users;
     }
 
-
-    public List<HOPContact> getUsersByCbcId(long cbcId) {
-        Cursor cursor = query(DatabaseContracts.ParticipantEntry.TABLE_NAME,
-                              new String[]{DatabaseContracts.ParticipantEntry.COLUMN_CONTACT_ID},
-                              DatabaseContracts.ParticipantEntry.COLUMN_CBC_ID + "=" + cbcId,
-                              null);
-        if (cursor != null) {
-            if (cursor.getCount() > 0) {
-                List<HOPContact> users = new ArrayList<>(cursor.getCount());
-                cursor.moveToFirst();
-                while (!cursor.isAfterLast()) {
-                    long userId = cursor.getLong(0);
-                    HOPContact user = getUserById(userId);
-                    if (user != null) {
-                        users.add(user);
-                    }
-                    cursor.moveToNext();
-                }
-                cursor.close();
-                return users;
-            }
-        }
-        return null;
-    }
-
     public HOPContact getUserById(long id) {
-        HOPContact user = mUsersById.get(id);
-        if (user != null) {
-            return user;
-        }
-        Cursor cursor = getContentResolver()
-            .query(mContentUriProvider.getContentUri(DatabaseContracts.OpenpeerContactEntry
-                                                         .URI_PATH_INFO_DETAIL
-                                                         + "/" + id), null, null, null, null);
+        HOPContact user=null;
+        SQLiteDatabase db = OPDatabaseHelper.getInstance(mContext).getReadableDatabase();
+        Cursor cursor = db.query(RolodexContactEntry.TABLE_NAME, null,
+                                 DatabaseContracts.RolodexContactEntry.COLUMN_OPENPEER_CONTACT_ID
+                                     + "=" + id, null, null, null, null);
         if (cursor.getCount() > 0) {
             user = fromDetailCursor(cursor);
             cacheUser(user);
@@ -499,89 +531,6 @@ public class HOPDataManager {
         return conversation;
     }
 
-    public List<HOPConversationEvent> getConversationEvents(HOPConversation conversation) {
-        List<HOPConversationEvent> events = null;
-        Cursor cursor = query(DatabaseContracts.ConversationEventEntry.TABLE_NAME, null,
-                              DatabaseContracts.ConversationEventEntry.COLUMN_CONVERSATION_ID +
-                                  "=?", new String[]{conversation.getConversationId()});
-        if (cursor.getCount() > 0) {
-            events = new ArrayList<HOPConversationEvent>();
-            cursor.moveToFirst();
-            while (!cursor.isLast()) {
-                HOPConversationEvent event = new HOPConversationEvent(conversation,
-                                                                    HOPConversationEvent
-                                                                        .EventTypes.valueOf
-                                                                        (cursor.getString(cursor
-                                                                                              .getColumnIndex(DatabaseContracts.ConversationEventEntry.COLUMN_EVENT))),
-                                                                    cursor.getString(cursor
-                                                                                         .getColumnIndex(DatabaseContracts.ConversationEventEntry.COLUMN_CONTENT)));
-                events.add(event);
-            }
-        }
-        cursor.close();
-        return events;
-    }
-
-    public List<MessageEvent> getMessageEvents(String messageId) {
-        List<MessageEvent> events = null;
-        // TODO: fix the message id being replaced when editting/deleting. This shouldn't be a
-        // problemm since we'll always be using the
-        // current message id
-        Cursor cursor = query(
-            DatabaseContracts.MessageEventEntry.TABLE_NAME,
-            null,
-            DatabaseContracts.MessageEventEntry.COLUMN_MESSAGE_ID
-                + "=(select _id from message where message_id=?)",
-            new String[]{messageId});
-        if (cursor.getCount() > 0) {
-            events = new ArrayList<MessageEvent>();
-            cursor.moveToFirst();
-            while (!cursor.isLast()) {
-                MessageEvent event = new MessageEvent(messageId,
-                                                      MessageEvent.EventType.valueOf(cursor
-                                                                                         .getString(cursor
-                                                                                                        .getColumnIndex(DatabaseContracts.MessageEventEntry.COLUMN_EVENT))),
-                                                      cursor.getString(cursor
-                                                                           .getColumnIndex
-                                                                               (DatabaseContracts
-                                                                                    .MessageEventEntry.COLUMN_DESCRIPTION)),
-                                                      cursor.getLong(cursor.getColumnIndex
-                                                          (DatabaseContracts.MessageEventEntry
-                                                               .COLUMN_TIME)));
-                events.add(event);
-            }
-        }
-        cursor.close();
-        return events;
-    }
-
-
-    public List<CallEvent> getCallEvents(String callId) {
-        List<CallEvent> events = null;
-        Cursor cursor = query(DatabaseContracts.CallEventEntry.TABLE_NAME, null,
-                              DatabaseContracts.CallEventEntry.COLUMN_CALL_ID + "=?",
-                              new String[]{callId});
-        if (cursor.getCount() > 0) {
-            events = new ArrayList<CallEvent>();
-            cursor.moveToFirst();
-            while (!cursor.isLast()) {
-                CallEvent event = new CallEvent(callId,
-                                                cursor.getString(cursor
-                                                                     .getColumnIndex
-                                                                         (DatabaseContracts
-                                                                              .CallEventEntry
-                                                                              .COLUMN_EVENT)),
-                                                cursor.getLong(cursor.getColumnIndex
-                                                    (DatabaseContracts.CallEventEntry
-                                                         .COLUMN_TIME)));
-                events.add(event);
-            }
-        }
-        cursor.close();
-        return events;
-    }
-
-
     public void markMessagesRead(HOPConversation conversation) {
         ContentValues values = new ContentValues();
         values.put(DatabaseContracts.MessageEntry.COLUMN_MESSAGE_READ, 1);
@@ -624,7 +573,7 @@ public class HOPDataManager {
         values.put(DatabaseContracts.MessageEntry.COLUMN_SENDER_ID, message.getSenderId());
         values.put(DatabaseContracts.MessageEntry.COLUMN_CBC_ID, conversation.getCurrentCbcId());
 
-        values.put(DatabaseContracts.MessageEntry.COLUMN_CONTEXT_ID, conversation.getId());
+        values.put(DatabaseContracts.MessageEntry.COLUMN_CONVERSATION_ID, conversation.getId());
 
         values.put(DatabaseContracts.MessageEntry.COLUMN_MESSAGE_READ, message.isRead());
         values.put(DatabaseContracts.MessageEntry.COLUMN_EDIT_STATUS, message.getEditState()
@@ -733,33 +682,62 @@ public class HOPDataManager {
         return result;
     }
 
+    void saveDownloadedRolodexContacts(
+        final HOPAccountIdentity identity,
+        final List<OPRolodexContact> contacts, final String contactsVersion) {
+        Runnable runnable = new Runnable() {
+            @Override
+            public void run() {
+                long identityId = identity.getIdentityId();
+                setDownloadedContactsVersion(identity.getIdentityURI(), contactsVersion);
+                SQLiteDatabase db = OPDatabaseHelper.getInstance(mContext).getWritableDatabase();
+                try {
+                    db.beginTransaction();
+                    String tableName=DatabaseContracts.RolodexContactEntry.TABLE_NAME;
+                    long identityProviderId = getIdentityProviderId(identity.getIdentityProviderDomain());
+                    for (OPRolodexContact contact : contacts) {
+                        switch (contact.getDisposition()){
+                        case Disposition_Remove:
+                            db.delete(tableName,
+                                      DatabaseContracts.RolodexContactEntry.COLUMN_IDENTITY_URI+"=?",
+                                      new String[]{contact.getIdentityURI()});
+                            break;
+                        case Disposition_Update:
+                            // updateRolodexContactTable(contact, 0, 0, identityId);
+                            // break;
+                        default:{
+                            ContentValues values = getRolodexContentValues(contact, 0, identityProviderId,identityId);
+                            long rolodexId = simpleQueryForId(
+                                DatabaseContracts.RolodexContactEntry.TABLE_NAME,
+                                DatabaseContracts.RolodexContactEntry.COLUMN_IDENTITY_URI + "=?",
+                                new String[]{contact.getIdentityURI()});
+                            if (rolodexId > 0) {
+                                db.update(DatabaseContracts.RolodexContactEntry.TABLE_NAME, values,
+                                          "_id=" + rolodexId, null);
+                            } else {
+                                db.insert(DatabaseContracts.RolodexContactEntry.TABLE_NAME, null,
+                                          values);
+                                List<OPRolodexContact.OPAvatar> avatars = contact.getAvatars();
+                                if (avatars != null && !avatars.isEmpty()) {
+                                    for (OPRolodexContact.OPAvatar avatar : avatars) {
+                                        saveAvatarTable(avatar, rolodexId);
+                                    }
+                                }
+                            }
+                        }
+                        }
+                    }
 
-    List<OPRolodexContact> saveDownloadedRolodexContacts(
-        HOPAccountIdentity identity,
-        List<OPRolodexContact> contacts, String contactsVersion) {
-
-        long identityId = identity.getIdentityId();
-        setDownloadedContactsVersion(
-            identity.getIdentityURI(), contactsVersion);
-        List<OPRolodexContact> contactsToLookup = new ArrayList<OPRolodexContact>();
-        for (OPRolodexContact contact : contacts) {
-            switch (contact.getDisposition()){
-            case Disposition_Remove:
-                deleteContact(contact.getIdentityURI());
-                contactsToLookup.add(contact);
-                break;
-            case Disposition_Update:
-                // updateRolodexContactTable(contact, 0, 0, identityId);
-                // break;
-            default:
-                saveRolodexContactTable(contact, 0, 0, identityId);
+                    db.setTransactionSuccessful();
+                    notifyContactsChanged();
+                } catch(SQLiteException e) {
+                    e.printStackTrace();
+                } finally {
+                    db.endTransaction();
+                }
             }
-        }
-        if (!contactsToLookup.isEmpty()) {
-            contacts.removeAll(contactsToLookup);
-        }
-        notifyContactsChanged();
-        return contacts;
+        };
+        execute(runnable);
     }
 
 
@@ -788,7 +766,7 @@ public class HOPDataManager {
         values.put(DatabaseContracts.ConversationEntry.COLUMN_ACCOUNT_ID,
                    getCurrentUserId());
         values.put(DatabaseContracts.ConversationEntry.COLUMN_TOPIC, conversation.getTopic());
-        id = getId(insert(DatabaseContracts.ConversationEntry.TABLE_NAME, values));
+        id = insertRecord(DatabaseContracts.ConversationEntry.TABLE_NAME, values);
         conversation.setId(id);
         saveParticipants(conversation.getCurrentCbcId(), conversation.getParticipants());
 
@@ -895,15 +873,6 @@ public class HOPDataManager {
         return eventRecordId;
     }
 
-
-    public void saveIdentityContact(List<OPIdentityContact> iContacts,
-                                    long associatedIdentityId) {
-
-        for (OPIdentityContact contact : iContacts) {
-            saveIdentityContactTable(contact, associatedIdentityId);
-        }
-    }
-
     public boolean deleteIdentity(String identityUri) {
         // TODO Auto-generated method stub
         return false;
@@ -918,12 +887,16 @@ public class HOPDataManager {
                                            .getStableID(), opContact.getPeerURI(),
                                        opContact.getPeerFilePublic());
 
+        long identityProviderId = getIdentityProviderId(identityContacts.get(0)
+                                                            .getIdentityProvider());
+        if (identityProviderId == 0) {
+            OPLogger.error(OPLogLevel.LogLevel_Basic, "Got a user from unknown identity provider "
+                + identityContacts.get(0).getIdentityProvider());
+        }
         for (HOPIdentity contact : identityContacts) {
-            long identityContactId = saveIdentityContactTable((OPIdentityContact)contact.getContact(),
-                                                              associatedIdentityId);
 
-            long rolodexId = saveRolodexContactTable(contact.getContact(), opId,
-                                                     identityContactId, associatedIdentityId);
+            long rolodexId = saveRolodexContactTable(contact.getContact(), opId, identityProviderId,
+                                                     associatedIdentityId);
 
         }
         user.setUserId(opId);
@@ -938,28 +911,15 @@ public class HOPDataManager {
         String[] args = new String[]{callId};
         update(DatabaseContracts.CallEntry.TABLE_NAME, values, where, args);
     }
-
-    private long saveRolodexContactTable(OPRolodexContact contact,
+    private ContentValues getRolodexContentValues(OPRolodexContact contact,
                                          long opId,
-                                         long identityContactId,
+                                         long identityProviderId,
                                          long associatedIdentityId) throws SQLiteException {
-
-        long identityProviderId = simpleQueryForId(
-            DatabaseContracts.IdentityProviderEntry.TABLE_NAME,
-            DatabaseContracts.IdentityProviderEntry.COLUMN_DOMAIN + "=?",
-            new String[]{contact.getIdentityProvider()});
-        if (identityProviderId == 0) {
-            identityProviderId = saveIdentityProviderTable(contact
-                                                               .getIdentityProvider());
-        }
         ContentValues values = new ContentValues();
         if (opId != 0) {
             values.put(DatabaseContracts.RolodexContactEntry.COLUMN_OPENPEER_CONTACT_ID, opId);
         }
-        if (identityContactId != 0) {
-            values.put(DatabaseContracts.RolodexContactEntry.COLUMN_IDENTITY_CONTACT_ID,
-                       identityContactId);
-        }
+
         if (associatedIdentityId != 0) {
             values.put(DatabaseContracts.RolodexContactEntry.COLUMN_ASSOCIATED_IDENTITY_ID,
                        associatedIdentityId);
@@ -975,6 +935,29 @@ public class HOPDataManager {
                    contact.getProfileURL());
         values.put(DatabaseContracts.RolodexContactEntry.COLUMN_VPROFILE_URL,
                    contact.getVProfileURL());
+        //OPIdentityContact fields
+        if(contact instanceof OPIdentityContact) {
+            OPIdentityContact iContact = (OPIdentityContact)contact;
+            values.put(DatabaseContracts.IdentityContactEntry.COLUMN_PRORITY, iContact.getPriority());
+
+            values.put(DatabaseContracts.IdentityContactEntry.COLUMN_WEIGHT, iContact.getWeight());
+            values.put(DatabaseContracts.IdentityContactEntry.COLUMN_IDENTITY_PROOF_BUNDLE,
+                       iContact.getIdentityProofBundle());
+            values.put(DatabaseContracts.IdentityContactEntry.COLUMN_LAST_UPDATE_TIME, iContact
+                .getLastUpdated().toMillis(false));
+            values.put(DatabaseContracts.IdentityContactEntry.COLUMN_EXPIRE,
+                       iContact.getExpires().toMillis(false));
+        }
+
+        return values;
+    }
+
+    private long saveRolodexContactTable(OPRolodexContact contact,
+                                         long opId,
+                                         long identityProviderId,
+                                         long associatedIdentityId) throws SQLiteException {
+
+        ContentValues values =getRolodexContentValues(contact,opId,identityProviderId,associatedIdentityId);
 
         long rolodexId = simpleQueryForId(DatabaseContracts.RolodexContactEntry.TABLE_NAME,
                                           DatabaseContracts.RolodexContactEntry
@@ -1035,7 +1018,7 @@ public class HOPDataManager {
         return getId(uri);
     }
 
-    private long saveIdentityTable(HOPAccountIdentity contact, long accountId,
+    private long saveIdentityTable(HOPAccountIdentity contact,  long identityProviderId, long accountId,
                                    long selfContactId)
         throws SQLiteException {
 
@@ -1045,13 +1028,7 @@ public class HOPDataManager {
         values.put(DatabaseContracts.AccountIdentityEntry.COLUMN_IDENTITY_URI,
                    contact.getIdentityURI());
         values.put(DatabaseContracts.AccountIdentityEntry.COLUMN_SELF_CONTACT_ID, selfContactId);
-        long identityProviderId = simpleQueryForId(
-            DatabaseContracts.IdentityProviderEntry.TABLE_NAME,
-            DatabaseContracts.IdentityProviderEntry.COLUMN_DOMAIN + "=?",
-            new String[]{identityProvider});
-        if (identityProviderId == 0) {
-            identityProviderId = saveIdentityProviderTable(identityProvider);
-        }
+
         values.put(DatabaseContracts.AccountIdentityEntry.COLUMN_IDENTITY_PROVIDER_ID,
                    identityProviderId);
         long identityRecordId = simpleQueryForId(
@@ -1095,10 +1072,9 @@ public class HOPDataManager {
             List<HOPIdentity> contacts = new ArrayList<>();
             cursor.moveToFirst();
 
-            user.setUserId(cursor.getLong(cursor.getColumnIndex(BaseColumns._ID)));
-            user.setPeerUri(cursor.getString(cursor.getColumnIndex(DatabaseContracts
-                                                                       .OpenpeerContactEntry
-                                                                       .COLUMN_PEERURI)));
+            user.setUserId(cursor.getLong(cursor.getColumnIndex(
+                RolodexContactEntry.COLUMN_OPENPEER_CONTACT_ID)));
+//            user.setPeerUri(cursor.getString(cursor.getColumnIndex(OpenpeerContactEntry.COLUMN_PEERURI)));
             while (!cursor.isAfterLast()) {
                 contacts.add(new HOPIdentity(contactFromCursor(cursor)));
                 cursor.moveToNext();
@@ -1139,7 +1115,10 @@ public class HOPDataManager {
             .getColumnIndex(DatabaseContracts.RolodexContactEntry.COLUMN_PROFILE_URL);
         int vprofileURLIndex = cursor
             .getColumnIndex(DatabaseContracts.RolodexContactEntry.COLUMN_VPROFILE_URL);
-        long rolodexId = cursor.getLong(cursor.getColumnIndex("rolodex_id"));
+        long rolodexId = cursor.getLong(cursor.getColumnIndex(BaseColumns._ID));
+        long opId = cursor.getLong(cursor.getColumnIndex(RolodexContactEntry
+                                                             .COLUMN_OPENPEER_CONTACT_ID));
+
 
         OPIdentityContact contact = new OPIdentityContact(rolodexId,
                                                           cursor.getString(identityUrlIndex),
@@ -1156,17 +1135,16 @@ public class HOPDataManager {
             cursor.getString(cursor.getColumnIndex(DatabaseContracts.OpenpeerContactEntry
                                                        .COLUMN_PEERFILE_PUBLIC)),
             cursor.getString(cursor.
-                getColumnIndex(DatabaseContracts.IdentityContactEntry
+                getColumnIndex(DatabaseContracts.RolodexContactEntry
                                    .COLUMN_IDENTITY_PROOF_BUNDLE)),
-            cursor.getInt(cursor.getColumnIndex(DatabaseContracts.IdentityContactEntry
+            cursor.getInt(cursor.getColumnIndex(DatabaseContracts.RolodexContactEntry
                                                     .COLUMN_PRORITY)),
-            cursor.getInt(cursor.getColumnIndex(DatabaseContracts.IdentityContactEntry
+            cursor.getInt(cursor.getColumnIndex(DatabaseContracts.RolodexContactEntry
                                                     .COLUMN_WEIGHT)),
-            cursor.getLong(cursor.getColumnIndex(DatabaseContracts.IdentityContactEntry
+            cursor.getLong(cursor.getColumnIndex(DatabaseContracts.RolodexContactEntry
                                                      .COLUMN_LAST_UPDATE_TIME)),
-            cursor.getLong(cursor.getColumnIndex(DatabaseContracts.IdentityContactEntry
+            cursor.getLong(cursor.getColumnIndex(DatabaseContracts.RolodexContactEntry
                                                      .COLUMN_EXPIRE)));
-
         return contact;
     }
 
@@ -1301,13 +1279,20 @@ public class HOPDataManager {
      * @param rolodexId
      */
     private long saveAvatarTable(OPRolodexContact.OPAvatar avatar, long rolodexId) {
+        SQLiteDatabase db = OPDatabaseHelper.getInstance(mContext).getWritableDatabase();
         ContentValues values = new ContentValues();
         values.put(DatabaseContracts.AvatarEntry.COLUMN_ROLODEX_ID, rolodexId);
         values.put(DatabaseContracts.AvatarEntry.COLUMN_AVATAR_NAME, avatar.getName());
         values.put(DatabaseContracts.AvatarEntry.COLUMN_AVATAR_URI, avatar.getURL());
         values.put(DatabaseContracts.AvatarEntry.COLUMN_HEIGHT, avatar.getHeight());
         values.put(DatabaseContracts.AvatarEntry.COLUMN_WIDTH, avatar.getWidth());
-        return getId(insert(DatabaseContracts.AvatarEntry.TABLE_NAME, values));
+        try {
+            return db.insertWithOnConflict(DatabaseContracts.AvatarEntry.TABLE_NAME, null, values, SQLiteDatabase.CONFLICT_ABORT);
+
+        }catch(SQLiteConstraintException e){
+            e.printStackTrace();
+        }
+        return 0;
     }
 
     private long saveIdentityProviderTable(String providerDomain) {
@@ -1327,112 +1312,18 @@ public class HOPDataManager {
                values, BaseColumns._ID + "=" + id,
                null);
     }
-
-    private long saveIdentityContactTable(
-        OPIdentityContact contact, long associatedIdentityId) {
-
-        String where = DatabaseContracts.RolodexContactEntry.COLUMN_IDENTITY_URI + "=?";
-        String args[] = new String[]{contact.getIdentityURI()};
-        String columns[] = new String[]{
-            BaseColumns._ID,
-            DatabaseContracts.RolodexContactEntry.COLUMN_OPENPEER_CONTACT_ID,
-            DatabaseContracts.RolodexContactEntry.COLUMN_IDENTITY_CONTACT_ID};
-        Cursor cursor = query(DatabaseContracts.RolodexContactEntry.TABLE_NAME,
-                              columns, where, args);
-        if (cursor == null) {
-        }
-        if (cursor.getCount() > 0) {
-            ContentValues values = new ContentValues();
-
-            cursor.moveToFirst();
-
-            long rolodexId = cursor.getLong(0);
-            long opId = cursor.getLong(1);
-            long identityContactId = cursor.getLong(2);
-            cursor.close();
-
-            if (identityContactId == 0) {
-                identityContactId = saveIdentityContactTable(contact);
-                values.put(
-                    DatabaseContracts.RolodexContactEntry.COLUMN_IDENTITY_CONTACT_ID,
-                    identityContactId);
-            } else {
-                // TODO: update
-            }
-            // Insert openpeer_contact table entry
-            if (opId == 0) {
-                // now update rolodex_contact.identity_contact_id
-                String peerfile = contact.getPeerFilePublic()
-                    .getPeerFileString();
-                OPContact opContact = OPContact
-                    .createFromPeerFilePublic(HOPAccount.currentAccount().getAccount(),
-                                              peerfile);
-                String peerUri = opContact.getPeerURI();
-
-                opId = saveOPContactTable(contact.getStableID(),
-                                          peerUri, peerfile);
-                values.put(
-                    DatabaseContracts.RolodexContactEntry.COLUMN_OPENPEER_CONTACT_ID,
-                    opId);
-            } else {
-                // TODO: update
-
-            }
-            if (values.size() > 0) {
-                int count = update(DatabaseContracts.RolodexContactEntry.TABLE_NAME,
-                                   values,
-                                   DatabaseContracts.RolodexContactEntry._ID + "=" + rolodexId,
-                                   null);
-            }
-
-            getContentResolver()
-                .notifyChange(
-                    mContentUriProvider
-                        .getContentUri(DatabaseContracts.RolodexContactEntry.URI_PATH_INFO),
-                    null);
-
-            return identityContactId;
-
-        } else {
-            return  saveIdentityContactTable(contact);
-        }
-
+    private ContentValues identityContactContentValues(OPIdentityContact contact) {
+        ContentValues values = new ContentValues();
+        values.put(DatabaseContracts.IdentityContactEntry.COLUMN_PRORITY, contact.getPriority());
+        values.put(DatabaseContracts.IdentityContactEntry.COLUMN_WEIGHT, contact.getWeight());
+        values.put(DatabaseContracts.IdentityContactEntry.COLUMN_IDENTITY_PROOF_BUNDLE,
+                   contact.getIdentityProofBundle());
+        values.put(DatabaseContracts.IdentityContactEntry.COLUMN_LAST_UPDATE_TIME, contact
+            .getLastUpdated().toMillis(false));
+        values.put(DatabaseContracts.IdentityContactEntry.COLUMN_EXPIRE,
+                   contact.getExpires().toMillis(false));
+        return values;
     }
-
-//    private boolean saveOrUpdateIdentity(OPIdentity identity, long accountId) {
-//        SQLiteDatabase db = getWritableDB();
-//
-//        long identityId = DbUtils.simpleQueryForId(db,
-//                DatabaseContracts.AssociatedIdentityEntry.TABLE_NAME,
-//                AssociatedIdentityEntry.COLUMN_IDENTITY_URI + "=?",
-//                new String[] { identity.getIdentityURI() });
-//        if (identityId == 0) {
-//            long opId = 0;
-//
-//            OPIdentityContact iContact = identity.getSelfIdentityContact();
-//            long identityContactId = saveIdentityContactTable(iContact);
-//            long rolodexId = saveRolodexContactTable(iContact, opId,
-//                    identityContactId, 0);
-//            saveIdentityTable(identity, accountId, rolodexId);
-//        } else if (accountId != 0) {
-//            ContentValues values = new ContentValues();
-//            values.put(AssociatedIdentityEntry.COLUMN_ACCOUNT_ID, accountId);
-//            db.update(AssociatedIdentityEntry.TABLE_NAME, values,
-//                    BaseColumns._ID + "=" + identityId, null);
-//        }
-//        return true;
-//    }
-
-//    private boolean flushContactsForIdentity(long id) {
-//        String selection = IdentityContactEntry.COLUMN_ASSOCIATED_IDENTITY_ID
-//                + "=" + id;
-//        String cSelection = RolodexContactEntry.COLUMN_ASSOCIATED_IDENTITY_ID
-//                + "=" + id;
-//        // mOpenHelper.getWritableDatabase().
-//        delete(IdentityContactEntry.TABLE_NAME, selection, null);
-//        delete(RolodexContactEntry.TABLE_NAME, cSelection, null);
-//        return true;
-//    }
 
     private boolean deleteContact(String identityUri) {
 
@@ -1482,6 +1373,10 @@ public class HOPDataManager {
             whereArgs);
     }
 
+    private long insertRecord(String tableName, ContentValues values) {
+        return getWritableDatabase().insert(tableName, null, values);
+    }
+
     private Uri insert(String tableName, ContentValues values) {
         return getContentResolver().insert(
             mContentUriProvider.getContentUri("/" + tableName), values);
@@ -1510,7 +1405,7 @@ public class HOPDataManager {
             update(tableName,values,whereClause,whereArgs);
             return id;
         } else {
-            return getId(insert(tableName,values));
+            return insertRecord(tableName, values);
         }
     }
 
@@ -1529,6 +1424,13 @@ public class HOPDataManager {
             return id;
         }
         return 0;
+    }
+
+    public long getIdentityProviderId(String identityProviderDomain){
+        return simpleQueryForId(
+            DatabaseContracts.IdentityProviderEntry.TABLE_NAME,
+            DatabaseContracts.IdentityProviderEntry.COLUMN_DOMAIN + "=?",
+            new String[]{identityProviderDomain});
     }
 
     private long getId(Uri uri) {

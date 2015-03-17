@@ -1,4 +1,12 @@
 PRAGMA foreign_keys = false;
+-- ----------------------------
+--  Table structure for identity_provider
+-- ----------------------------
+DROP TABLE IF EXISTS "identity_provider";
+CREATE TABLE "identity_provider" (
+	 "_id" INTEGER PRIMARY KEY,
+	 "domain" TEXT NOT NULL
+);
 
 -- ----------------------------
 --  Table structure for account
@@ -113,28 +121,6 @@ CREATE TABLE "conversation_event" (
 );
 
 -- ----------------------------
---  Table structure for identity_contact
--- ----------------------------
-DROP TABLE IF EXISTS "identity_contact";
-CREATE TABLE "identity_contact" (
-	 "_id" INTEGER PRIMARY KEY,
-	 "identity_proof_bundle" TEXT NOT NULL,
-	 "priority" INTEGER,
-	 "weight" INTEGER,
-	 "last_update_time" INTEGER,
-	 "expire" integer
-);
-
--- ----------------------------
---  Table structure for identity_provider
--- ----------------------------
-DROP TABLE IF EXISTS "identity_provider";
-CREATE TABLE "identity_provider" (
-	 "_id" INTEGER PRIMARY KEY,
-	 "domain" TEXT NOT NULL
-);
-
--- ----------------------------
 --  Table structure for message
 -- ----------------------------
 DROP TABLE IF EXISTS "message";
@@ -218,8 +204,12 @@ CREATE TABLE "rolodex_contact" (
 	 "vprofile_url" TEXT,
 	 "readyForDeletion" integer,
 	 "openpeer_contact_id" integer DEFAULT 0,
-	 "identity_contact_id" INTEGER DEFAULT 0,
 	 "is_primary" integer default 1,
+	 "identity_proof_bundle" TEXT NOT NULL,
+     	 "priority" INTEGER,
+     	 "weight" INTEGER,
+     	 "last_update_time" INTEGER,
+     	 "expire" integer,
 	CONSTRAINT "fk_rolodex_identity_provider_id" FOREIGN KEY ("identity_provider_id") REFERENCES "identity_provider" ("_id") ON DELETE RESTRICT,
 	CONSTRAINT "fk_rolodex_contact_associated_identity_id" FOREIGN KEY ("associated_identity_id") REFERENCES "associated_identity" ("_id") ON DELETE RESTRICT
 );
@@ -294,12 +284,6 @@ CREATE INDEX "idx_participants_cbc_id" ON participants ("cbc_id" );
 --  Indexes structure for table peerfile_public
 -- ----------------------------
 CREATE UNIQUE INDEX "idx_peerfile_public_peer_uri" ON peerfile_public ("peer_uri");
-
--- ----------------------------
---  Indexes structure for table identity_contact
--- ----------------------------
-CREATE  INDEX "idx_identity_contact_priority" ON identity_contact ("priority");
-CREATE  INDEX "idx_identity_contact_weight" ON identity_contact ("weight");
 
 -- ----------------------------
 --  Indexes structure for table associated_identity

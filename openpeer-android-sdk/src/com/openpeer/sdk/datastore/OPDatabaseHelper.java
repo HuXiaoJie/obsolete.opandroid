@@ -62,7 +62,6 @@ public class OPDatabaseHelper extends SQLiteOpenHelper {
         try {
             DbUtils.executeSqlScript(mContext, db, "openpeer_database.sql");
         } catch (IOException e) {
-            // TODO Auto-generated catch block
             e.printStackTrace();
         }
     }
@@ -73,7 +72,6 @@ public class OPDatabaseHelper extends SQLiteOpenHelper {
             try {
                 DbUtils.executeSqlScript(mContext, db, "openpeer_database.sql");
             } catch (IOException e) {
-                // TODO Auto-generated catch block
                 e.printStackTrace();
             }
         }

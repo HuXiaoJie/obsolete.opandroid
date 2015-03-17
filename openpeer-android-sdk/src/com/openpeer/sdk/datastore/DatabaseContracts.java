@@ -65,7 +65,7 @@ public class DatabaseContracts {
 
     public static abstract class RolodexContactEntry implements BaseColumns {
         public static final String TABLE_NAME = "rolodex_contact";
-        public static final String URI_PATH_INFO = "/" + TABLE_NAME+"/contacts";
+        public static final String URI_PATH_INFO = "/" + TABLE_NAME;//+"/contacts";
         public static final String URI_PATH_INFO_ID = "/" + TABLE_NAME + "/#";
 
         public static final String COLUMN_ASSOCIATED_IDENTITY_ID = "associated_identity_id";
@@ -79,6 +79,12 @@ public class DatabaseContracts {
         public static final String COLUMN_CONTACT_NAME = "name";
         public static final String COLUMN_PROFILE_URL = "profile_url";
         public static final String COLUMN_VPROFILE_URL = "vprofile_url";
+        //This used to be in identityContact
+        public static final String COLUMN_IDENTITY_PROOF_BUNDLE = "identity_proof_bundle";
+        public static final String COLUMN_PRORITY = "priority";
+        public static final String COLUMN_WEIGHT = "weight";
+        public static final String COLUMN_LAST_UPDATE_TIME = "last_update_time";
+        public static final String COLUMN_EXPIRE = "expire";
     }
 
     public static abstract class IdentityContactEntry implements BaseColumns {
