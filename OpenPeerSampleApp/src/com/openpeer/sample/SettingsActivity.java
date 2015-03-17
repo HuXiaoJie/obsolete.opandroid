@@ -65,6 +65,8 @@ import com.openpeer.sample.settings.SettingsDownloader;
 import com.openpeer.sample.util.SettingsHelper;
 import com.openpeer.sdk.app.HOPHelper;
 import com.openpeer.sdk.app.HOPSettingsHelper;
+import com.openpeer.sdk.delegates.OPSettingsDelegateImpl;
+import com.openpeer.sdk.model.HOPAccount;
 import com.openpeer.sdk.model.HOPCall;
 import com.openpeer.sdk.model.HOPCallManager;
 
@@ -211,6 +213,7 @@ public class SettingsActivity extends BaseActivity {
                     });
             setupAboutInfo();
             setupLoggerScreen();
+            setupAppSettingScreen();
         }
 
         private static final String KEY_VERSION = "version";
@@ -257,7 +260,19 @@ public class SettingsActivity extends BaseActivity {
             super.onResume();
             setupSettingDisplays();
         }
-
+        private void setupAppSettingScreen() {
+            Preference identityProviderPref =  findPreference("identityProviderUrl");
+            Preference outerFrameUrlPref =  findPreference("outerFrameUrl");
+            Preference appIdPref =  findPreference("appId");
+            Preference myPeerUriPref =  findPreference("myPeerUri");
+            OPSettingsDelegateImpl impl =OPSettingsDelegateImpl.getInstance(getActivity());
+            identityProviderPref.setSummary(impl.getString("identityProviderDomain"));
+            outerFrameUrlPref.setSummary(impl.getString("outerFrameURL"));
+            appIdPref.setSummary(impl.getString("applicationID"));
+            if(HOPAccount.selfContact()!=null) {
+                myPeerUriPref.setSummary(HOPAccount.selfContact().getPeerUri());
+            }
+        }
         private void setupLoggerScreen() {
             PreferenceCategory loggerScreen = (PreferenceCategory) findPreference("logLevels");
             final String loggerKeys[] = getActivity().getResources()
@@ -344,7 +359,7 @@ public class SettingsActivity extends BaseActivity {
                             //App settings have changed so regenerate authorized-application-id and instance-id
                             HOPSettingsHelper.getInstance().applyApplicationSettings();
                             SettingsHelper.getInstance().initLoggers();
-                            
+
                             AlertDialog.Builder builder = new AlertDialog.Builder(
                                     SettingsActivity.this);
                             builder.setMessage(
@@ -375,11 +390,27 @@ public class SettingsActivity extends BaseActivity {
     void doSignout() {
         if (HOPCall.hasCalls()) {
             Toast.makeText(SettingsActivity.this,
-                    R.string.msg_cannot_signout_with_call, Toast.LENGTH_LONG)
-                    .show();
+                           R.string.msg_cannot_signout_with_call,
+                           Toast.LENGTH_LONG).show();
         } else {
-            showSignoutView();
-            OPApplication.getInstance().signout();
+            AlertDialog.Builder builder = new AlertDialog.Builder(this);
+            builder.setMessage(R.string.alert_signout).
+                setNegativeButton(R.string.cancel,
+                                  new DialogInterface.OnClickListener() {
+                                      @Override
+                                      public void onClick(DialogInterface dialog, int which) {
+                                          dialog.cancel();
+                                      }
+                                  }).
+                setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
+
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        showSignoutView();
+                        OPApplication.getInstance().signout();
+                    }
+                });
+            builder.create().show();
         }
     }
 }

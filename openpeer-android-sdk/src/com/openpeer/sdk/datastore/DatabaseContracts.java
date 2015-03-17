@@ -178,7 +178,7 @@ public class DatabaseContracts {
     public static abstract class MessageEntry implements BaseColumns {
         public static final String TABLE_NAME = "message";
         public static final String URI_PATH_INFO_CONTEXT = "/" + TABLE_NAME
-            + "/conversation/*";//URI used for matcher
+            + "/conversation";//URI used for matcher
         public static final String URI_PATH_INFO_CONTEXT_URI_BASE = "/"
             + TABLE_NAME + "/conversation/";//URL used to construct query URI
 

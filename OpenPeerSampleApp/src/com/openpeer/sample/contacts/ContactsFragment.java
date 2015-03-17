@@ -2,16 +2,16 @@
  *
  *  Copyright (c) 2014 , Hookflash Inc.
  *  All rights reserved.
- *  
+ *
  *  Redistribution and use in source and binary forms, with or without
  *  modification, are permitted provided that the following conditions are met:
- *  
+ *
  *  1. Redistributions of source code must retain the above copyright notice, this
  *  list of conditions and the following disclaimer.
  *  2. Redistributions in binary form must reproduce the above copyright notice,
  *  this list of conditions and the following disclaimer in the documentation
  *  and/or other materials provided with the distribution.
- *  
+ *
  *  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
  *  ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
  *  WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
@@ -22,7 +22,7 @@
  *  ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
  *  (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  *  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- *  
+ *
  *  The views and conclusions contained in the software and documentation are those
  *  of the authors and should not be interpreted as representing official policies,
  *  either expressed or implied, of the FreeBSD Project.
@@ -146,6 +146,7 @@ public class ContactsFragment extends BaseFragment implements SwipeRefreshLayout
 	public void onResume() {
 		// TODO Auto-generated method stub
 		super.onResume();
+        getLoaderManager().restartLoader(URL_LOADER,null,this);
 
 	}
 
@@ -200,18 +201,18 @@ public class ContactsFragment extends BaseFragment implements SwipeRefreshLayout
 
 	@Override
 	public Loader<Cursor> onCreateLoader(int loaderID, Bundle arg1) {
-//        StringBuilder builder = new StringBuilder("not (" + RolodexContactEntry.COLUMN_USER_ID + "=0 and " + ContactsEntry.COLUMN_STABLE_ID + " not null)");
-//        String slectionArgs[] = null;
-//		if (arg1 != null) {
-//			String query = arg1.getString("query");
-//			Log.d("test", "ContactsFragment onCreateLoader query " + query);
-//			if (!TextUtils.isEmpty(query)) {
-//				// Note: instr is available from sqlite 3.7.15
-//				builder.append(" and name like ?");
-//				slectionArgs = new String[] { "%" + query + "%" };
-//			}
-//
-//		}
+//        StringBuilder builder = new StringBuilder();//"not (" + RolodexContactEntry.COLUMN_USER_ID + "=0 and " + ContactsEntry.COLUMN_STABLE_ID + " not null)");
+        String selection = null;
+        String slectionArgs[] = null;
+		if (arg1 != null) {
+			String query = arg1.getString("query");
+			if (!TextUtils.isEmpty(query)) {
+				// Note: instr is available from sqlite 3.7.15
+//				builder.append("name like ?");
+                selection = "name like ?";
+				slectionArgs = new String[] { "%" + query + "%" };
+			}
+		}
         switch (loaderID) {
         case URL_LOADER:
             emptyView.showProgress();
@@ -220,8 +221,8 @@ public class ContactsFragment extends BaseFragment implements SwipeRefreshLayout
                             .getContentUri(RolodexContactEntry.URI_PATH_INFO),
 
                     null, // Projection to return
-                    null,// builder.toString(), // No selection clause
-                    null,// slectionArgs, // No selection arguments
+                    selection,// builder.toString(), // No selection clause
+                    slectionArgs,// slectionArgs, // No selection arguments
                     null // Default sort order
             );
         default:

@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.openpeer.sample.conversation.SelfPhotoView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:paddingBottom="@dimen/padding_vertical"
+    android:paddingLeft="@dimen/padding_edge"
+    android:paddingRight="@dimen/padding_edge"
+    android:paddingTop="@dimen/padding_vertical" />

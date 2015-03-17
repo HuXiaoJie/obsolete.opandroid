@@ -46,6 +46,7 @@ public class OPMessage {
     // Used to record/show call record
     public static final String TYPE_INERNAL_CALL_VIDEO = "call/video";
     public static final String TYPE_INERNAL_CALL_AUDIO = "call/audio";
+    public static final String TYPE_INERNAL_FILE_PHOTO= "file/photo";
 
     private OPContact mFrom;
     private String mMessageType;

@@ -68,12 +68,15 @@ import com.openpeer.sample.BaseActivity;
 import com.openpeer.sample.BaseFragment;
 import com.openpeer.sample.IntentData;
 import com.openpeer.sample.OPNotificationBuilder;
+import com.openpeer.sample.PhotoHelper;
 import com.openpeer.sample.R;
+import com.openpeer.sample.UploadPhotoService;
 import com.openpeer.sample.contacts.ProfilePickerActivity;
 import com.openpeer.sample.events.ConversationComposingStatusChangeEvent;
 import com.openpeer.sample.events.ConversationContactsChangeEvent;
 import com.openpeer.sample.events.ConversationSwitchEvent;
 import com.openpeer.sample.events.ConversationTopicChangeEvent;
+import com.openpeer.sample.view.IViewBinder;
 import com.openpeer.sdk.model.HOPDataManager;
 import com.openpeer.sdk.datastore.DatabaseContracts.MessageEntry;
 import com.openpeer.sdk.datastore.OPModelCursorHelper;
@@ -92,6 +95,9 @@ import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
 
+import butterknife.ButterKnife;
+import butterknife.InjectView;
+import butterknife.OnClick;
 import de.greenrobot.event.EventBus;
 
 public class ChatFragment extends BaseFragment implements
@@ -103,6 +109,8 @@ public class ChatFragment extends BaseFragment implements
     private ListView mMessagesList;
     private TextView mComposeBox;
     private View mSendButton;
+    @InjectView(R.id.camera)
+    View mCameraButton;
     private MessagesAdaptor mAdapter;
     Loader mLoader;
 
@@ -144,7 +152,6 @@ public class ChatFragment extends BaseFragment implements
         mConversation = HOPConversation.getConversation(GroupChatMode.valueOf(type),
                                                         mHOPParticipantInfo,
                                                         conversationId, true);
-
     }
 
 
@@ -185,6 +192,7 @@ public class ChatFragment extends BaseFragment implements
 
         mConversation.setComposingStatus(ComposingStates.ComposingState_Active);
         EventBus.getDefault().register(this);
+        getLoaderManager().restartLoader(URL_LOADER, null, this);
     }
 
     @Override
@@ -220,6 +228,7 @@ public class ChatFragment extends BaseFragment implements
     }
 
     View setupView(View view) {
+        ButterKnife.inject(this,view);
         mCallInfoView = (CallInfoView) view.findViewById(R.id.call_info);
         View emptyView = view.findViewById(R.id.empty_view);
         mMessagesList = (ListView) view.findViewById(R.id.listview);
@@ -343,6 +352,8 @@ public class ChatFragment extends BaseFragment implements
         private final static int VIEWTYPE_STATUS_VIEW = 2;
         private final static int VIEWTYPE_CALL_VIEW = 3;
         private final static int VIEWTYPE_CONVERSATION_EVENT_VIEW = 4;
+        private final static int VIEWTYPE_SELF_PHOTO_VIEW = 5;
+        private final static int VIEWTYPE_PEER_PHOTO_VIEW = 6;
 
         int myLastReadMessagePosition = -1;
         int myLastDeliveredMessagePosition = -1;
@@ -412,6 +423,7 @@ public class ChatFragment extends BaseFragment implements
         public int getItemViewType(Cursor cursor) {
             String type = cursor.getString(cursor
                                                .getColumnIndex(MessageEntry.COLUMN_MESSAGE_TYPE));
+
             if (OPMessage.TYPE_INERNAL_CALL_AUDIO.equals(type)
                 || OPMessage.TYPE_INERNAL_CALL_VIDEO.equals(type)) {
                 return VIEWTYPE_CALL_VIEW;
@@ -423,14 +435,21 @@ public class ChatFragment extends BaseFragment implements
             long sender_id = cursor.getLong(cursor
                                                 .getColumnIndex(MessageEntry.COLUMN_SENDER_ID));
             if (sender_id == HOPAccount.selfContactId()) {
+                if(type.equals(OPMessage.TYPE_INERNAL_FILE_PHOTO)){
+                    return VIEWTYPE_SELF_PHOTO_VIEW;
+                }
                 return VIEWTYPE_SELF_MESSAGE_VIEW;
+            } else {
+                if(type.equals(OPMessage.TYPE_INERNAL_FILE_PHOTO)){
+                    return VIEWTYPE_PEER_PHOTO_VIEW;
+                }
             }
             return VIEWTYPE_RECIEVED_MESSAGE_VIEW;
         }
 
         @Override
         public int getViewTypeCount() {
-            return 5;
+            return 7;
         }
 
         public View getView(int position, View convertView, ViewGroup parent) {
@@ -471,6 +490,8 @@ public class ChatFragment extends BaseFragment implements
                         } else if (convertView instanceof ConversationEventView) {
                             ((ConversationEventView) convertView)
                                 .update(message);
+                        } else {
+                            ((IViewBinder<OPMessage>)convertView).update(message);
                         }
                     }
                 }
@@ -519,7 +540,14 @@ public class ChatFragment extends BaseFragment implements
             case VIEWTYPE_CONVERSATION_EVENT_VIEW:
                 view = (ConversationEventView) LayoutInflater.from(context)
                     .inflate(R.layout.item_conversation_event, null);
-
+                break;
+                case VIEWTYPE_SELF_PHOTO_VIEW: {
+                    view = LayoutInflater.from(context).inflate(R.layout.item_photo_self,null);
+                }
+                break;
+                case VIEWTYPE_PEER_PHOTO_VIEW:{
+                    view = LayoutInflater.from(context).inflate(R.layout.item_photo_peer,null);
+                }
                 break;
             }
 
@@ -675,6 +703,16 @@ public class ChatFragment extends BaseFragment implements
             }
         }
         break;
+            case PhotoHelper.ACTIVITY_REQUEST_CODE_TAKE_PICTURE:{
+                if(resultCode==Activity.RESULT_OK) {
+                    uploadImage(PhotoHelper.getInstance().getLastPhotoUri());
+                }
+            }
+            break;
+            case PhotoHelper.ACTIVITY_REQUEST_CODE_GET_PICTURE_FROM_STORAGE:{
+                uploadImage(data.getData());
+            }
+            break;
         }
         super.onActivityResult(requestCode, resultCode, data);
     }
@@ -855,6 +893,20 @@ public class ChatFragment extends BaseFragment implements
 
     void setTitle(String title) {
         getActivity().getActionBar().setTitle(title);
+    }
+
+    @OnClick(R.id.camera)
+    public void onCameraClick(View view){
+        PhotoHelper.getInstance().showPhotoAlert(this);
+    }
+
+    void uploadImage(Uri photoUri) {
+        Intent intent = new Intent(getActivity().getApplicationContext(),UploadPhotoService.class);
+        intent.setAction(UploadPhotoService.ACTION_UPLOAD);
+        intent.setData(photoUri);
+//        intent.putExtra(UploadPhotoService.TAG_FILE_NAME, photoUri);
+        intent.putExtra(UploadPhotoService.TAG_CONERSATION_ID, mConversation.getConversationId());
+        getActivity().startService(intent);
     }
     // End of SessionListener implementation
 }

@@ -33,6 +33,7 @@
 package com.openpeer.sdk.model;
 
 import android.text.TextUtils;
+import android.util.Log;
 
 import com.openpeer.javaapi.ComposingStates;
 import com.openpeer.javaapi.ContactConnectionStates;
@@ -120,7 +121,9 @@ public class HOPConversationManager implements OPConversationThreadDelegate {
         } else if (!thread.getConversationId().equals(conversation.getConversationId())) {
             cacheConversation(thread.getConversationId(), conversation);
         }
-        conversation.setThread(thread);
+        if (conversation != null) {
+            conversation.setThread(thread);
+        }
         return conversation;
     }
 
@@ -182,7 +185,9 @@ public class HOPConversationManager implements OPConversationThreadDelegate {
 
             conversation.setThread(getThread(type, conversationId, HOPParticipantInfo, true));
             cacheCbcToConversation(HOPParticipantInfo.getCbcId(), conversation);
-            cacheConversation(conversation.getConversationId(), conversation);
+            if (!TextUtils.isEmpty(conversation.getConversationId())) {
+                cacheConversation(conversation.getConversationId(), conversation);
+            }
             conversation.save();
         }
         return conversation;
@@ -230,7 +235,7 @@ public class HOPConversationManager implements OPConversationThreadDelegate {
     }
 
     public OPConversationThread getThread(GroupChatMode conversationType, String conversationId,
-                                          HOPParticipantInfo HOPParticipantInfo,
+                                          HOPParticipantInfo participantInfo,
                                           boolean createNew) {
         if (!HOPAccount.isAccountReady()) {
             return null;
@@ -246,13 +251,13 @@ public class HOPConversationManager implements OPConversationThreadDelegate {
             thread = OPConversationThread.create(
                 HOPAccount.currentAccount().getAccount(),
                 HOPAccount.currentAccount().identityContacts(),
-                HOPModelUtils.getProfileInfo(HOPParticipantInfo.getParticipants()),
+                HOPModelUtils.getProfileInfo(participantInfo.getParticipants()),
                 conversationId,
                 metaData);
-            thread.setParticipantInfo(HOPParticipantInfo);
+            thread.setParticipantInfo(participantInfo);
 
             cacheThread(thread);
-            cacheCbcToThread(HOPParticipantInfo.getCbcId(), thread);
+            cacheCbcToThread(participantInfo.getCbcId(), thread);
         }
         return thread;
     }
@@ -293,7 +298,7 @@ public class HOPConversationManager implements OPConversationThreadDelegate {
         if (oldThread != null) {
             long oldCbcId = oldThread.getParticipantInfo().getCbcId();
             HOPConversation conversation = HOPConversationManager.getInstance().
-                getConversation(oldThread, false);
+                getConversation(oldThread, true);
             OPLogger.debug(OPLogLevel.LogLevel_Detail,
                            "onConversationThreadContactsChanged find old thread cbcId " + oldCbcId);
             if (conversation != null) {
@@ -406,6 +411,7 @@ public class HOPConversationManager implements OPConversationThreadDelegate {
         }
         HOPConversation conversation = HOPConversationManager.getInstance().getConversation
             (conversationThread, true);
+        Log.d("HOPConversationManager", "message received " + message.getMessage());
         if (message.getMessageType().equals(OPMessage.TYPE_TEXT)) {
             conversation.onMessageReceived(conversationThread, message);
         }
@@ -418,7 +424,7 @@ public class HOPConversationManager implements OPConversationThreadDelegate {
         MessageDeliveryStates state) {
         HOPDataManager.getInstance().
             updateMessageDeliveryStatus(messageID,
-                                        conversationThread.getConversationId(),
+                                        getConversation(conversationThread, true).getId(),
                                         state);
     }
 

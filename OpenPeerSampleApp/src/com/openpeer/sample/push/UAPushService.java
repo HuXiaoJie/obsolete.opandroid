@@ -113,7 +113,7 @@ public class UAPushService implements PushServiceInterface {
                                             Response response) {
                                             HOPDataManager.getInstance().updateMessageDeliveryStatus(
                                                 message.getMessageId(),
-                                                conversation.getConversationId(),
+                                                conversation.getId(),
                                                 MessageDeliveryStates.MessageDeliveryState_Sent);
                                         }
 

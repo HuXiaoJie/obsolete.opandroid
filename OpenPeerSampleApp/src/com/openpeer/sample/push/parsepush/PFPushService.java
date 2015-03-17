@@ -48,6 +48,7 @@ import com.openpeer.sdk.model.HOPSystemMessage;
 import com.parse.FunctionCallback;
 import com.parse.Parse;
 import com.parse.ParseCloud;
+import com.parse.ParseCrashReporting;
 import com.parse.ParseException;
 import com.parse.ParseInstallation;
 import com.parse.SaveCallback;
@@ -84,10 +85,13 @@ public class PFPushService implements PushServiceInterface {
             } else if (TextUtils.isEmpty(parseClientKey)) {
                 throw new RuntimeException("Parse client key is not defined");
             }
-
+            Parse.setLogLevel(Parse.LOG_LEVEL_VERBOSE);
+            ParseCrashReporting.enable(OPApplication.getInstance());
+//            Parse.enableLocalDatastore(OPApplication.getInstance());
             Parse.initialize(OPApplication.getInstance(),
-                             parseAppId,
-                             parseClientKey);
+                    parseAppId,
+                    parseClientKey);
+
         }
         return instance;
     }
@@ -95,7 +99,7 @@ public class PFPushService implements PushServiceInterface {
     public boolean init() {
         final HOPContact currentUser = HOPAccount.selfContact();
         if (currentUser != null) {
-            Log.d("PFPushService","init calling parse init for "+currentUser.getPeerUri());
+            Log.d("PFPushService", "init calling parse init for " + currentUser.getPeerUri());
             ParseInstallation.getCurrentInstallation().put(KEY_PEER_URI, currentUser.getPeerUri());
             ParseInstallation.getCurrentInstallation().put(KEY_OS_VERSION,
                                                            "" + Build.VERSION.SDK_INT);
@@ -122,7 +126,8 @@ public class PFPushService implements PushServiceInterface {
 
     @Override
     public void onConversationThreadPushMessage(final HOPConversation conversation,
-                                                final OPMessage message, final HOPContact HOPContact) {
+                                                final OPMessage message,
+                                                final HOPContact HOPContact) {
         if (!mInitialized) {
             init();
         }
@@ -212,7 +217,7 @@ public class PFPushService implements PushServiceInterface {
                         HOPDataManager.getInstance()
                             .updateMessageDeliveryStatus(
                                 message.getMessageId(),
-                                conversation.getConversationId(),
+                                conversation.getId(),
                                 MessageDeliveryStates.MessageDeliveryState_Sent);
 
                     } else {

@@ -129,4 +129,13 @@ public class HOPSystemMessage {
             return null;
         }
     }
+    public static OPMessage createSystemMessage(String messageText){
+        OPMessage message = new OPMessage(
+                HOPAccount.selfContactId(),
+                OPSystemMessage.getMessageType(),
+                messageText,
+                System.currentTimeMillis(),
+                UUID.randomUUID().toString());
+        return message;
+    }
 }

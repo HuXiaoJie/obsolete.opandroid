@@ -32,11 +32,15 @@ package com.openpeer.sample.conversation;
 import android.database.Cursor;
 
 import com.openpeer.sdk.datastore.DatabaseContracts;
+import com.openpeer.javaapi.OPMessage;
+import com.openpeer.sample.OPApplication;
+import com.openpeer.sample.R;
 import com.openpeer.sdk.model.HOPDataManager;
 
 public class ChatInfo {
 
     private String mNameString;
+    private String mLastMessageType;
     private String mLastMessage;
     private long mLastMessageTime;
     private int mUnreadCount;
@@ -79,6 +83,9 @@ public class ChatInfo {
     }
 
     public String getLastMessage() {
+        if (mLastMessageType.equals(OPMessage.TYPE_INERNAL_FILE_PHOTO)) {
+            return OPApplication.getInstance().getString(R.string.label_photo);
+        }
         return mLastMessage;
     }
 
@@ -92,6 +99,14 @@ public class ChatInfo {
 
     public long[] getUserIDs() {
         return mUserIDs;
+    }
+
+    public String getLastMessageType() {
+        return mLastMessageType;
+    }
+
+    public void setLastMessageType(String mLastMessageType) {
+        this.mLastMessageType = mLastMessageType;
     }
 
     public ChatInfo(long id,
@@ -134,7 +149,8 @@ public class ChatInfo {
         long lastMessageTime = cursor.getLong(cursor
                                                   .getColumnIndex(DatabaseContracts.ConversationInfoEntry
                                                                       .COLUMN_LAST_MESSAGE_TIME));
-
+        String lastMessageType = cursor.getString(cursor
+                                                  .getColumnIndex("last_message_type"));
 
         long userIds[]= stringToLongArray( cursor.getString(cursor.getColumnIndex(DatabaseContracts.ConversationInfoEntry
                                                                          .COLUMN_USER_ID)));
@@ -152,6 +168,7 @@ public class ChatInfo {
                                    lastMessage,
                                    lastMessageTime,
                                    mUnreadCount, null);
+        ci.mLastMessageType = lastMessageType;
 
         return ci;
     }
