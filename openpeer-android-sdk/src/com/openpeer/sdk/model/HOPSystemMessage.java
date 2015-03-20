@@ -138,4 +138,14 @@ public class HOPSystemMessage {
                 UUID.randomUUID().toString());
         return message;
     }
+
+    public static OPMessage createSystemMessage(String messageId,String messageText){
+        OPMessage message = new OPMessage(
+                HOPAccount.selfContactId(),
+                OPSystemMessage.getMessageType(),
+                messageText,
+                System.currentTimeMillis(),
+                messageId);
+        return message;
+    }
 }

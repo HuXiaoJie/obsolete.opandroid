@@ -37,9 +37,9 @@ public class FileShareSystemMessage {
         return message;
     }
 
-    public static final OPMessage createFileShareSystemMessage(String objectId, int bytesCount,
+    public static final OPMessage createFileShareSystemMessage(String messageId, int bytesCount,
                                                                int width, int height) {
-        String messageText = String.format(MESSAGE_FORMAT, objectId, bytesCount, width, height);
-        return HOPSystemMessage.createSystemMessage(messageText);
+        String messageText = String.format(MESSAGE_FORMAT, messageId, bytesCount, width, height);
+        return HOPSystemMessage.createSystemMessage(messageId,messageText);
     }
 }

@@ -110,13 +110,14 @@ public class UploadPhotoService extends IntentService {
             @Override
             public void done(ParseException e) {
                 Log.d(TAG, "image upload done");
-                final ParseObject imgupload = new ParseObject("ImageUpload");
+                final ParseObject imgupload = new ParseObject("SharedPhoto");
 
                 // Create a column named "ImageName" and set the string
-                imgupload.put("ImageName", uri.toString());
+                imgupload.put("imageName", uri.toString());
 
                 // Create a column named "ImageFile" and insert the image
-                imgupload.put("ImageFile", parseFile);
+                imgupload.put("imageFile", parseFile);
+                imgupload.put("fileID", message.getMessageId());
 
                 // Create the class and the columns
                 imgupload.saveInBackground(new SaveCallback() {
@@ -130,7 +131,7 @@ public class UploadPhotoService extends IntentService {
                                 HOPConversationManager.getInstance().
                                         getConversationById(conversationId).sendMessage(
                                         FileShareSystemMessage.createFileShareSystemMessage
-                                                (imgupload.getObjectId(),
+                                                (message.getMessageId(),
                                                         imageSize, width, height), false);
                                 message.setMessage(String.format(FileShareSystemMessage
                                                 .MESSAGE_STORE_FORMAT, imgupload.getObjectId(),

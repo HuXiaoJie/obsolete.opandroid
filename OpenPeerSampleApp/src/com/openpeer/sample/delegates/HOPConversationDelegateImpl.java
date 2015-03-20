@@ -29,6 +29,7 @@ import com.openpeer.sdk.model.HOPConversationDelegate;
 import com.openpeer.sdk.model.HOPConversationManager;
 import com.openpeer.sdk.model.HOPSystemMessage;
 import com.openpeer.sdk.utils.JSONUtils;
+import com.parse.FindCallback;
 import com.parse.GetCallback;
 import com.parse.GetDataCallback;
 import com.parse.ParseException;
@@ -46,6 +47,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.util.List;
 
 public class HOPConversationDelegateImpl implements HOPConversationDelegate {
     public static final String TAG = "ConversationDelegate";
@@ -159,13 +161,15 @@ public class HOPConversationDelegateImpl implements HOPConversationDelegate {
                 final JSONObject object = systemMessage.getJSONObject(FileShareSystemMessage
                         .KEY_FILE_SHARE);
                 final String objectId = object.getString(FileShareSystemMessage.KEY_OBJECT_id);
-                ParseQuery<ParseObject> query = ParseQuery.getQuery("ImageUpload");
-                query.getInBackground(objectId, new GetCallback<ParseObject>() {
+                ParseQuery<ParseObject> query = ParseQuery.getQuery("SharedPhoto");
+                query.whereEqualTo("fileID",message.getMessageId());
+                query.findInBackground(new FindCallback<ParseObject>() {
                     @Override
-                    public void done(final ParseObject parseObject, ParseException e) {
+                    public void done(final List<ParseObject> objects, ParseException e) {
                         if (e == null) {
-                            final ParseFile imageFile = (ParseFile) parseObject.get("ImageFile");
-                            final String imageName = parseObject.getString("ImageName");
+                            ParseObject parseObject = objects.get(0);
+                            final ParseFile imageFile = (ParseFile) parseObject.get("imageFile");
+                            final String imageName = parseObject.getString("imageName");
 
                             imageFile.getDataInBackground(new GetDataCallback() {
                                 @Override
@@ -189,10 +193,10 @@ public class HOPConversationDelegateImpl implements HOPConversationDelegate {
                                             message.setMessageType(OPMessage
                                                     .TYPE_INERNAL_FILE_PHOTO);
                                             message.setMessage(FileShareSystemMessage.createStoreMessageText(
-                                                            objectId,
-                                                            "file://" + imagePath,
-                                                            "file://" + thumbNailPath,
-                                                            "downloaded"));
+                                                    objectId,
+                                                    "file://" + imagePath,
+                                                    "file://" + thumbNailPath,
+                                                    "downloaded"));
                                             HOPDataManager.getInstance().saveMessage(message,
                                                     conversation.getId(),
                                                     conversation.getParticipantInfo());
